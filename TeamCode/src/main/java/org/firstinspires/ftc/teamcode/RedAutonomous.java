@@ -19,8 +19,11 @@ public class RedAutonomous extends LinearOpMode {
     public void runOpMode() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
-        Trajectory myTrajectory = drive.trajectoryBuilder(new Pose2d())
+        Trajectory traj1 = drive.trajectoryBuilder(new Pose2d())
                 .strafeRight(10)
+                .build();
+
+        Trajectory traj2 = drive.trajectoryBuilder(traj1.end())
                 .forward(5)
                 .build();
 
@@ -28,6 +31,7 @@ public class RedAutonomous extends LinearOpMode {
 
         if(isStopRequested()) return;
 
-        drive.followTrajectory(myTrajectory);
+        drive.followTrajectory(traj1);
+        drive.followTrajectory(traj2);
     }
 }
