@@ -40,6 +40,7 @@ public class MecanumTele2425 extends LinearOpMode {
         backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftSlideMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightSlideMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         // Servos
         Servo leftIntake = hardwareMap.servo.get("leftIntake");
         Servo rightIntake = hardwareMap.servo.get("rightIntake");

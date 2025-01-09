@@ -203,7 +203,7 @@ public class SM_test_OpMode extends LinearOpMode {
 
             else {
                 rightSlideMotor.setPower(0);
-                leftSlideMotor.setPower(0);
+                leftSlideMotor.setPower(100);
             }
 
             // Set power for the motors
