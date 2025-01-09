@@ -194,7 +194,7 @@ public class SM_test_OpMode extends LinearOpMode {
             if (slidePowerUp > 0) {
                 rightSlideMotor.setPower(-slidePowerUp);
                 leftSlideMotor.setPower(slidePowerUp);
-            }
+            }//commit msg
 
             else if (slidePowerDown > 0) {
                 rightSlideMotor.setPower(slidePowerDown);
