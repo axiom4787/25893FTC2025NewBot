@@ -83,7 +83,7 @@ public class SM_test_OpMode extends LinearOpMode {
                 leftIntake.setPosition(0.94);
                 intakeTilt.setPosition(0.2);
                 xfer.setPosition(0.15);
-                if (runtime.seconds()-lasttime>0.3) {
+                if (runtime.seconds()-lasttime>0.60) {
                     horSlideLeft.setPosition(0.33);
                     horSlideRight.setPosition(0.73);
                     }
@@ -108,8 +108,8 @@ public class SM_test_OpMode extends LinearOpMode {
                 break;
 
             case OFF_THE_WALL:
-                rightIntake.setPosition(0.95);
-                leftIntake.setPosition(0.5);
+                rightIntake.setPosition(0.95); // top intake right
+                leftIntake.setPosition(0.05); // top intake left
                 xfer.setPosition(0.20);
                 break;
 
