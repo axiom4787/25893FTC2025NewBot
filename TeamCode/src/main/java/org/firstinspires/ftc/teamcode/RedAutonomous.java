@@ -43,15 +43,15 @@ public class RedAutonomous extends LinearOpMode {
 
 
         Trajectory traj1 = drive.trajectoryBuilder(new Pose2d())
-                .back(24)
+                .strafeLeft(10)
                 .build();
 
         Trajectory traj2 = drive.trajectoryBuilder(traj1.end())
-                .forward(20)
+                .forward(60)
                 .build();
 
         Trajectory traj3 = drive.trajectoryBuilder(traj1.end())
-                .strafeLeft(50)
+                .strafeRight(10)
                 .build();
 
         // Wait for the start signal
@@ -59,12 +59,6 @@ public class RedAutonomous extends LinearOpMode {
 
         if (isStopRequested()) return;
         drive.followTrajectory(traj1);
-        rightIntake.setPosition(0.95); // top intake right
-        leftIntake.setPosition(0.05); // top intake left
-        sleep(1000);
         drive.followTrajectory(traj2);
-        sleep(1000);
-        drive.followTrajectory(traj3);
-
     }
 }

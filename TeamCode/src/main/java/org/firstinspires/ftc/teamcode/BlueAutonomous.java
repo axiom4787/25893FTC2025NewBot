@@ -49,30 +49,43 @@ public class BlueAutonomous extends LinearOpMode {
 
 
         Trajectory traj1 = drive.trajectoryBuilder(new Pose2d())
-                .back(50)
+                .back(53)
                 .build();
 
         Trajectory traj2 = drive.trajectoryBuilder(traj1.end())
-                .forward(20)
+                .forward(150)
                 .build();
 
         Trajectory traj3 = drive.trajectoryBuilder(traj1.end())
                 .strafeLeft(50)
                 .build();
 
+        Trajectory traj4 = drive.trajectoryBuilder(traj1.end())
+                .strafeLeft(5)
+                .build();
+
         // Wait for the start signal
         waitForStart();
 
         if (isStopRequested()) return;
-
+        drive.followTrajectory(traj4);
         drive.followTrajectory(traj1);
         sleep(1000);
-        leftSlideMotor.setPower(1);
-        rightSlideMotor.setPower(1);
-        sleep(1000);
+        leftSlideMotor.setPower(-0.6);
+        rightSlideMotor.setPower(0.6);
+        sleep(2000);
         rightIntake.setPosition(0.65); // top intake right
         leftIntake.setPosition(0.35); // top intake left
-        xfer.setPosition(1);
-
+        sleep(1000);
+        xfer.setPosition(0.15);
+        sleep(1000);
+        rightIntake.setPosition(0.06);
+        leftIntake.setPosition(0.94);
+        sleep(1000);
+        leftSlideMotor.setPower(1);
+        rightSlideMotor.setPower(-1); // put it down
+        sleep(1500);
+        leftSlideMotor.setPower(0);
+        rightSlideMotor.setPower(0);
     }
 }
