@@ -156,7 +156,7 @@ public class AutoLeftArm extends LinearOpMode {
         while (opModeIsActive()) 
         { 
           
-          moveToHang();
+          moveToBasket();
           
           armToBasket();
           
@@ -168,7 +168,7 @@ public class AutoLeftArm extends LinearOpMode {
           
           armDown();
           
-          moveToSpecimine();
+          moveToSpecimen();
           
         telemetry.update();
     }
@@ -182,10 +182,10 @@ public class AutoLeftArm extends LinearOpMode {
     //  *  3) Driver stops the OpMode running.
     //  */
     
-    public void moveToHang()
+    public void moveToBasket()
           {
-            encoderDrive(60, 65, 65, 30, "REVERSE"); //go forward to hang
-            encoderDrive(60, 35, 35, 30, "TURNRIGHT"); 
+            encoderDrive(60, 65, 65, 30, "REVERSE"); //starts backwards so we gotta
+            encoderDrive(60, 35, 35, 30, "TURNRIGHT"); //turn it around
             encoderDrive(60, 85, 85, 30, "FORWARD");
             
             encoderDrive(60,30,30,30,"RIGHT");
@@ -194,9 +194,9 @@ public class AutoLeftArm extends LinearOpMode {
     
     public void armToBasket()
     {
-      rotateMotor.setTargetPosition(rotateMidPosition);
-      rotateMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-      rotateMotor.setPower(ROTATE_DOWN_POWER);
+      rotateMotor.setTargetPosition(rotateMidPosition); //setting target
+      rotateMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION); //going to that target
+      rotateMotor.setPower(ROTATE_DOWN_POWER); //setting power to specific constant
       
       sleep(2000);
       
@@ -230,9 +230,9 @@ public class AutoLeftArm extends LinearOpMode {
           sleep(2000);
           }
           
-          public void moveToSpecimine()
+          public void moveToSpecimen()
           {
-            //get lined up w/ three specimines for driver section
+            //get lined up w/ three specimen for driver section
           encoderDrive(60, 50, 50, 30, "REVERSE");
           encoderDrive(60, 70, 70, 30, "TURNRIGHT");
           encoderDrive(60, 20, 20, 30, "FORWARD");
@@ -241,10 +241,10 @@ public class AutoLeftArm extends LinearOpMode {
         sleep(10000000);
           }
           
-    
+
     public void encoderDrive(double speed, double leftInches, double rightInches, double timeoutS, String direction)
     {
-      //target for the encoder
+      //target for the encoder (wheels turn yippee)
         int newLeftFrontTarget;
         int newRightFrontTarget;
         int newLeftBackTarget;
