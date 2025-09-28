@@ -19,7 +19,7 @@ public class AutoBlue extends OpMode {
 
     private int pathState;
 
-    private final Pose startPose = new Pose(63.4, 9, Math.toRadians(180)); // Start Pose of our robot.
+    private final Pose startPose = new Pose(63.4, 9, Math.toRadians(90)); // Start Pose of our robot.
     private final Pose scorePose = new Pose(58, 90, Math.toRadians(135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     private final Pose align1Pose = new Pose(41.5, 84, Math.toRadians(0)); // Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup1Pose = new Pose(26.5, 84, Math.toRadians(0));
