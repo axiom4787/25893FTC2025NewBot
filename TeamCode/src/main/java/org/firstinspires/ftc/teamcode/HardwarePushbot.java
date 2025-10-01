@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -48,7 +47,11 @@ public class HardwarePushbot {
 // hello this is testing :)
 
 
+
+        public BasicBot_Launcher launcher = null;
+  
        public DriveTrain driveTrain;
+
 
         
         /* local OpMode members. */
@@ -63,6 +66,8 @@ public class HardwarePushbot {
         /* Initialize standard Hardware interfaces */
         public void init(HardwareMap ahwMap) 
         {
+            launcher= new BasicBot_Launcher(hwMap);
+
             driveTrain = new DriveTrain(ahwMap);
         }
     }
