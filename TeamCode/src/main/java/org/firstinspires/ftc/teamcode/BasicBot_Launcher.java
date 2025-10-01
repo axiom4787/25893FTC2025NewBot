@@ -12,20 +12,26 @@ public class BasicBot_Launcher
     private DcMotor flywheel = null;
     private DcMotorEx shooterIntake = null;
 
-    public BasicBot_Launcher(HardwareMap hwMap, double agitatorSpeed)
+    public BasicBot_Launcher(HardwareMap hwMap, double agitatorSpeed, double flywheelSpeed)
     {
         agitator  = hwMap.get(CRServo.class, "agitator");
         flywheel  = hwMap.get(DcMotor.class, "flywheel");
         shooterIntake  = hwMap.get(DcMotorEx.class, "shooterIntake");
-        setAgitatorSpeed(agitatorSpeed);
-        //Remember to set the power for both motors
-        //leftFrontDriveWheel.setPower(0);  //Here is an example change the variable name
 
-        //Remember to set the power for both motors
-        //leftFrontDriveWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        flywheel.setDirection(DcMotor.Direction.FORWARD); // Set to FORWARD if using AndyMark motors
+        flywheel.setPower(0);
+        flywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        setAgitatorSpeed(agitatorSpeed);
+        setFlywheelSpeed(flywheelSpeed);
     }
     void setAgitatorSpeed(double speed)
     {
         agitator.setPower(speed);
+    }
+
+    void setFlywheelSpeed(double speed)
+    {
+        flywheel.setPower(speed);
     }
 }
