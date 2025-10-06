@@ -20,7 +20,11 @@ import java.util.function.Supplier;
 @TeleOp
 public class TeleopDriveBlue extends OpMode {
     private Follower follower;
-    private final Pose startingPose = new Pose(63.4, 9, Math.toRadians(180));
+    private final Pose startingPose = new Pose(58, 90, Math.toRadians(135));
+    private final Pose scorePose = new Pose(58, 90, Math.toRadians(135));
+    private final Pose endgamePose = new Pose(106, 33, Math.toRadians(90));
+    private final Pose gateStartPose = new Pose(18, 72, Math.toRadians(90));
+    private final Pose gateEndPose = new Pose(15, 72, Math.toRadians(90));
     private boolean automatedDrive;
     private Supplier<PathChain> pathChain;
     private TelemetryManager telemetryM;
@@ -34,10 +38,10 @@ public class TeleopDriveBlue extends OpMode {
         follower.update();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
-        pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
+        /*pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
                 .addPath(new Path(new BezierLine(follower::getPose, new Pose(38, 33))))
                 .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(90), 0.8))
-                .build();
+                .build();*/
     }
 
     @Override
@@ -74,12 +78,43 @@ public class TeleopDriveBlue extends OpMode {
                     true // Robot Centric
             );
         }
+        //Shooting Pose
+        if (gamepad1.left_trigger > 0.1) {
+            PathChain shootingPath = follower.pathBuilder()
+                    .addPath(new Path(new BezierLine(follower::getPose, scorePose)))
+                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, scorePose.getHeading(), 0.8))
+                    .build();
+            follower.followPath(shootingPath);
+            automatedDrive = true;
+        }
 
-        //Automated PathFollowing
+        //Gate Pose
+        if (gamepad1.right_trigger > 0.1) {
+            PathChain gatePath = follower.pathBuilder()
+                    .addPath(new Path(new BezierLine(follower::getPose, gateStartPose)))
+                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, gateStartPose.getHeading(), 0.8))
+                    .addPath(new Path(new BezierLine(follower::getPose, gateEndPose)))
+                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, gateEndPose.getHeading(), 0.8))
+                    .build();
+            follower.followPath(gatePath);
+            automatedDrive = true;
+        }
+
+        //Endgame Pose
+        if (gamepad1.xWasPressed()) {
+            PathChain endgamePath = follower.pathBuilder()
+                    .addPath(new Path(new BezierLine(follower::getPose, endgamePose)))
+                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, endgamePose.getHeading(), 0.8))
+                    .build();
+            follower.followPath(endgamePath);
+            automatedDrive = true;
+        }
+
+        /*Automated PathFollowing
         if (gamepad1.aWasPressed()) {
             follower.followPath(pathChain.get());
             automatedDrive = true;
-        }
+        }*/
 
         //Stop automated following if the follower is done
         if (automatedDrive && (gamepad1.bWasPressed() || !follower.isBusy())) {
@@ -93,12 +128,12 @@ public class TeleopDriveBlue extends OpMode {
         }
 
         //Optional way to change slow mode strength
-        if (gamepad1.xWasPressed()) {
+        if (gamepad1.yWasPressed()) {
             slowModeMultiplier += 0.25;
         }
 
         //Optional way to change slow mode strength
-        if (gamepad2.yWasPressed()) {
+        if (gamepad2.aWasPressed()) {
             slowModeMultiplier -= 0.25;
         }
 
