@@ -20,18 +20,21 @@ public class AprilTagTester extends LinearOpMode {
         GamepadEx gamePadOne = new GamepadEx(gamepad1);
         GamepadEx gamePadTwo = new GamepadEx(gamepad2);
         boolean continuousAprilTagLock = false;
-        double turnCorrection = 0;
 
         waitForStart();
         while (opModeIsActive()) {
             gamePadOne.readButtons();
             gamePadTwo.readButtons();
 
+            double turnCorrection;
             if (continuousAprilTagLock) {
-                turnCorrection = aprilAimer.updateTurn();
+                aprilTag.scanGoalTag();
+                double bearing = aprilTag.getBearing();
+                turnCorrection = aprilAimer.calculateTurnPowerToBearing(bearing);
             }
             else {
                 turnCorrection = 0;
+
             }
             movement.teleopTick(gamePadOne.getLeftX(), gamePadOne.getLeftY(), gamePadOne.getRightX(), turnCorrection);
 
@@ -50,9 +53,6 @@ public class AprilTagTester extends LinearOpMode {
             }
              
             if (gamePadTwo.wasJustPressed(GamepadKeys.Button.A)) {
-                aprilTag.scanGoalTag();
-                double bearing = aprilTag.getBearing();
-                aprilAimer.startTurnToAprilTag(bearing);
                 continuousAprilTagLock = true;
 
                 telemetry.addData("Continuously locked in on", "apriltag");
@@ -69,10 +69,12 @@ public class AprilTagTester extends LinearOpMode {
             if(gamePadTwo.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
                 aprilTag.setGoalTagID(20);
                 telemetry.addData("Set to", "Blue Alliance") ;
+                telemetry.update();
             }
             if(gamePadTwo.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
                 aprilTag.setGoalTagID(24);
                 telemetry.addData("Set to", "Red Alliance");
+                telemetry.update();
             }
         }
     }
