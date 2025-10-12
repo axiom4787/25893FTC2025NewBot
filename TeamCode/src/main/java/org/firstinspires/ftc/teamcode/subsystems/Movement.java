@@ -50,26 +50,22 @@ public class Movement {
 
     // tick for teleop
 
-    public void teleopTick(double leftStickX, double leftStickY, double rightStickX/*, boolean toggle,*/){
-        double axial = -leftStickY * STRAFE_MULTIPLIER;  // Note: pushing stick forward gives negative value
+    public void teleopTick(double leftStickX, double leftStickY, double rightStickX, double turnCorrection){
+        double axial = -leftStickY * STRAFE_MULTIPLIER;
         double lateral = -leftStickX * STRAFE_MULTIPLIER;
-        double yaw = rightStickX * ROTATION_MULTIPLIER;
 
-        // Combine the joystick requests for each axis-motion to determine each wheel's power.
-        // Set up a variable for each drive wheel to save the power level for telemetry.
+        double yaw = (rightStickX * ROTATION_MULTIPLIER) + turnCorrection;
+
         double leftFrontPower  = axial + lateral + yaw;
         double rightFrontPower = axial - lateral - yaw;
         double leftBackPower   = axial - lateral + yaw;
         double rightBackPower  = axial + lateral - yaw;
 
-
-        // Normalize the values so no wheel power exceeds 100%
-        // This ensures that the robot maintains the desired motion.
         double max = Math.max(Math.max(Math.max(
-                                Math.abs(leftFrontPower),
-                                Math.abs(rightFrontPower)),
-                        Math.abs(leftBackPower)),
-                Math.abs(rightBackPower));
+                                    Math.abs(leftFrontPower),
+                                    Math.abs(rightFrontPower)),
+                            Math.abs(leftBackPower)),
+                    Math.abs(rightBackPower));
         if (max > 1.0) {
             leftFrontPower  /= max;
             rightFrontPower /= max;
@@ -77,13 +73,13 @@ public class Movement {
             rightBackPower  /= max;
         }
 
-        // Send calculated power to wheels
         leftFront.setPower(leftFrontPower);
         rightFront.setPower(rightFrontPower);
         leftBack.setPower(leftBackPower);
         rightBack.setPower(rightBackPower);
     }
 
+    // NOTE DOESN'T WORK WITH APRILTAG RN
     public void teleopTickFieldCentric(double leftStickX, double leftStickY, double rightStickX, boolean start){
         double axial = -leftStickY; // Remember, Y stick value is reversed
         double lateral = -leftStickX;

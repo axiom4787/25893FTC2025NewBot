@@ -19,56 +19,60 @@ public class AprilTagTester extends LinearOpMode {
         Movement movement = new Movement(hardwareMap);
         GamepadEx gamePadOne = new GamepadEx(gamepad1);
         GamepadEx gamePadTwo = new GamepadEx(gamepad2);
+        boolean continuousAprilTagLock = false;
+        double turnCorrection = 0;
 
         waitForStart();
         while (opModeIsActive()) {
             gamePadOne.readButtons();
             gamePadTwo.readButtons();
 
-            movement.teleopTick(gamePadOne.getLeftX(),gamePadOne.getLeftY(),gamePadOne.getRightX());
+            if (continuousAprilTagLock) {
+                turnCorrection = aprilAimer.updateTurn();
+            }
+            else {
+                turnCorrection = 0;
+            }
+            movement.teleopTick(gamePadOne.getLeftX(), gamePadOne.getLeftY(), gamePadOne.getRightX(), turnCorrection);
 
-            telemetry.addData("X:", "Scan obelisk apriltag");
-            telemetry.addData("A", "Test april tag aimer with blue alliance apriltag");
-            telemetry.addData("B", "Test april tag aimer with red alliance apriltag");
+            telemetry.addData("Y:", "Scan obelisk apriltag");
+            telemetry.addData("A:", "Continuously lock into apriltag");
+            telemetry.addData("B:", "Stop continuously locking into apriltag");
+            telemetry.addData("Left Bumper", "Set to blue alliance apriltag");
+            telemetry.addData("Right Bumper", "Set to red alliance apriltag");
             telemetry.update();
 
-            if (gamePadTwo.wasJustPressed(GamepadKeys.Button.A)) {
-                aprilTag.setGoalTagID(20);
-                aprilTag.scanGoalTag();
-                double bearing = aprilTag.getBearing();
-                aprilAimer.startTurnToAprilTag(bearing);
-
-                while (!aprilAimer.updateTurn()) {
-                    telemetry.addData("Turning towards angle", bearing);
-                    telemetry.update();
-                    sleep(10);
-                }
-
-                telemetry.addData("Finished", "locking on to apriltag");
-                telemetry.update();
-            }
-
-            if (gamePadTwo.wasJustPressed(GamepadKeys.Button.B)) {
-                aprilTag.setGoalTagID(24);
-                aprilTag.scanGoalTag();
-                double bearing = aprilTag.getBearing();
-                aprilAimer.startTurnToAprilTag(bearing);
-
-                while (!aprilAimer.updateTurn()) {
-                    telemetry.addData("Turning towards angle", bearing);
-                    telemetry.update();
-                    sleep(10);
-                }
-
-                telemetry.addData("Finished", "locking on to apriltag");
-                telemetry.update();
-            }
-
-            if (gamePadTwo.wasJustPressed(GamepadKeys.Button.X)) {
+            if (gamePadTwo.wasJustPressed(GamepadKeys.Button.Y)) {
                 aprilTag.scanObeliskTag();
                 telemetry.addData("This is probably only for auto,", "as we can just memorize the 3 possible patterns for teleop");
                 telemetry.addData("Obelisk apriltag ID: ", aprilTag.getObeliskId());
                 telemetry.update();
+            }
+             
+            if (gamePadTwo.wasJustPressed(GamepadKeys.Button.A)) {
+                aprilTag.scanGoalTag();
+                double bearing = aprilTag.getBearing();
+                aprilAimer.startTurnToAprilTag(bearing);
+                continuousAprilTagLock = true;
+
+                telemetry.addData("Continuously locked in on", "apriltag");
+                telemetry.update();
+            }
+            
+            if (gamePadTwo.wasJustPressed(GamepadKeys.Button.B)) {
+                continuousAprilTagLock = false;
+            
+                telemetry.addData("Stopped continuous lock in on", "apriltag");
+                telemetry.update();
+            }
+
+            if(gamePadTwo.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
+                aprilTag.setGoalTagID(20);
+                telemetry.addData("Set to", "Blue Alliance") ;
+            }
+            if(gamePadTwo.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
+                aprilTag.setGoalTagID(24);
+                telemetry.addData("Set to", "Red Alliance");
             }
         }
     }

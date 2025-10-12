@@ -32,33 +32,33 @@ public class AprilTagAimer {
         targetAngle = angleWrapDegrees(currentYaw + bearing);
     }
 
-    public boolean updateTurn() {
-        if (targetAngle == null) return true;
+    public double updateTurn() {
+        if (targetAngle == null) return 0;
 
         double currentYaw = imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).firstAngle;
         double error = angleWrapDegrees(targetAngle - currentYaw);
 
-        if (Math.abs(error) < 1) { // within 1 degree
-            stopMotors();
+        double power = kP * error;
+        power = Math.max(-1, Math.min(1, power));
+
+        return power;
+    }
+
+    public boolean checkIfComplete() {
+        if (targetAngle == null) return true;
+
+        double currentYaw = imu.getRobotOrientation(
+            AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES
+        ).firstAngle;
+
+        double error = angleWrapDegrees(targetAngle - currentYaw);
+
+        // within 1 degree
+        if (Math.abs(error) < 1) {
             targetAngle = null;
             return true;
         }
-        else {
-            double power = kP * error;
-            power = Math.max(-1, Math.min(1, power));
 
-            leftFront.setPower(power);
-            rightFront.setPower(-power);
-            leftBack.setPower(power);
-            rightBack.setPower(-power);
-            return false;
-        }
-    }
-
-    private void stopMotors() {
-        leftFront.setPower(0);
-        rightFront.setPower(0);
-        leftBack.setPower(0);
-        rightBack.setPower(0);
+        return false;
     }
 }
