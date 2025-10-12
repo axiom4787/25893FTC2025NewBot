@@ -36,7 +36,7 @@ public class AprilTagAimer {
     }
 
     public double calculateTurnPowerToBearing(double bearing) {
-        double currentYaw = imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).firstAngle;
+        double currentYaw = imu.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
         double targetAngle = angleWrapDegrees(currentYaw + bearing);
         double error = angleWrapDegrees(targetAngle - currentYaw);
 
