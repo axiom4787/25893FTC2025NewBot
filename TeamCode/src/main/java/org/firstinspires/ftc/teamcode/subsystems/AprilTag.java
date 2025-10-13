@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary;
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
@@ -31,7 +29,7 @@ public class AprilTag {
                 .setTagLibrary(library)
                 .build();
         WebcamName webcamname = hardwareMap.get(WebcamName.class, "webcam");
-        portal = VisionPortal.easyCreateWithDefaults(hardwareMap.get(WebcamName.class, "webcam"), processor);
+        portal = VisionPortal.easyCreateWithDefaults(webcamname, processor);
     }
 
     public void toggle(boolean bool) {
@@ -51,22 +49,21 @@ public class AprilTag {
 
     public void scanGoalTag() {
         id = -1;
-        bearing = Integer.MAX_VALUE;
+        bearing = Double.NaN;
+        elevation = Double.NaN;
+        range = Double.NaN;
+
         // If camera is facing to the right of the center of the cam (if it needs to move to the left) the bearing is positive.
         List<AprilTagDetection> detectionList = processor.getDetections();
         for (AprilTagDetection detection : detectionList) {
             // goalTagID should be gotten before round/during auto
-            if (detection.id == goalTagID) {
+            if (detection.id == goalTagID && detection.ftcPose != null) {
                 range = detection.ftcPose.range; // distance from camera to center of tag
                 bearing = detection.ftcPose.bearing; // the angle (left/right) the camera must turn to directly point at the tag center
                 elevation = detection.ftcPose.elevation; // the angle (up/down) the camera must turn to directly point at the tag center
                 id = detection.id;
                 break;
             }
-        }
-
-        if (bearing == Integer.MAX_VALUE) {
-            bearing = 0;
         }
     }
 

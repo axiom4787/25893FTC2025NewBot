@@ -21,6 +21,13 @@ public class AprilTagTester extends LinearOpMode {
         GamepadEx gamePadTwo = new GamepadEx(gamepad2);
         boolean continuousAprilTagLock = false;
 
+        telemetry.addData("Gamepad 2 Y:", "Scan obelisk apriltag");
+        telemetry.addData("Gamepad 2 A:", "Continuously lock into apriltag");
+        telemetry.addData("Gamepad 2 B:", "Stop continuously locking into apriltag");
+        telemetry.addData("Gamepad 2 Left Bumper", "Set to blue alliance apriltag");
+        telemetry.addData("Gamepad 2 Right Bumper", "Set to red alliance apriltag");
+        telemetry.update();
+
         waitForStart();
         while (opModeIsActive()) {
             gamePadOne.readButtons();
@@ -30,52 +37,49 @@ public class AprilTagTester extends LinearOpMode {
             if (continuousAprilTagLock) {
                 aprilTag.scanGoalTag();
                 double bearing = aprilTag.getBearing();
-                turnCorrection = aprilAimer.calculateTurnPowerToBearing(bearing);
+                if (Double.isNaN(bearing)) {
+                    turnCorrection = 0;
+                } else {
+                    turnCorrection = aprilAimer.calculateTurnPowerToBearing(bearing);
+                }
             }
             else {
                 turnCorrection = 0;
-
             }
-            movement.teleopTick(gamePadOne.getLeftX(), gamePadOne.getLeftY(), gamePadOne.getRightX(), turnCorrection);
 
-            telemetry.addData("Y:", "Scan obelisk apriltag");
-            telemetry.addData("A:", "Continuously lock into apriltag");
-            telemetry.addData("B:", "Stop continuously locking into apriltag");
-            telemetry.addData("Left Bumper", "Set to blue alliance apriltag");
-            telemetry.addData("Right Bumper", "Set to red alliance apriltag");
-            telemetry.update();
+            movement.teleopTick(gamePadOne.getLeftX(), gamePadOne.getLeftY(), gamePadOne.getRightX(), turnCorrection);
 
             if (gamePadTwo.wasJustPressed(GamepadKeys.Button.Y)) {
                 aprilTag.scanObeliskTag();
                 telemetry.addData("This is probably only for auto,", "as we can just memorize the 3 possible patterns for teleop");
                 telemetry.addData("Obelisk apriltag ID: ", aprilTag.getObeliskId());
-                telemetry.update();
             }
              
             if (gamePadTwo.wasJustPressed(GamepadKeys.Button.A)) {
                 continuousAprilTagLock = true;
 
                 telemetry.addData("Continuously locked in on", "apriltag");
-                telemetry.update();
+                telemetry.addData("Goal tag bearing", aprilTag.getBearing());
+                telemetry.addData("Goal tag elevation", aprilTag.getElevation());
+                telemetry.addData("Goal tag range", aprilTag.getRange());
             }
             
             if (gamePadTwo.wasJustPressed(GamepadKeys.Button.B)) {
                 continuousAprilTagLock = false;
             
                 telemetry.addData("Stopped continuous lock in on", "apriltag");
-                telemetry.update();
             }
 
             if(gamePadTwo.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
                 aprilTag.setGoalTagID(20);
                 telemetry.addData("Set to", "Blue Alliance") ;
-                telemetry.update();
             }
             if(gamePadTwo.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
                 aprilTag.setGoalTagID(24);
                 telemetry.addData("Set to", "Red Alliance");
-                telemetry.update();
             }
+
+            telemetry.update();
         }
     }
 }

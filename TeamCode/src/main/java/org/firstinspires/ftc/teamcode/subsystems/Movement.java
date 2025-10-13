@@ -18,7 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 public class Movement {
     private final DcMotor leftFront, leftBack, rightFront, rightBack;
     private final IMU imu;
-    private final double STRAFE_MULTIPLIER = 0.8, ROTATION_MULTIPLIER = 0.3;
+    private final double STRAFE_MULTIPLIER = 0.6, ROTATION_MULTIPLIER = 0.5;
 
     /**
      * Initializes a Movement instance.
@@ -38,9 +38,7 @@ public class Movement {
 
         imu.initialize(parameters);
 
-        // reversed motor, so that when positive power is applied to all motors left and right spin in opp. directions(move foward instead of spinning)
-        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -53,25 +51,20 @@ public class Movement {
     public void teleopTick(double leftStickX, double leftStickY, double rightStickX, double turnCorrection){
         double axial = -leftStickY * STRAFE_MULTIPLIER;
         double lateral = -leftStickX * STRAFE_MULTIPLIER;
-
-        double yaw = (rightStickX * ROTATION_MULTIPLIER) + turnCorrection;
+        double yaw = -(rightStickX * ROTATION_MULTIPLIER) + turnCorrection;
 
         double leftFrontPower  = axial + lateral + yaw;
         double rightFrontPower = axial - lateral - yaw;
         double leftBackPower   = axial - lateral + yaw;
         double rightBackPower  = axial + lateral - yaw;
 
-        double max = Math.max(Math.max(Math.max(
-                                    Math.abs(leftFrontPower),
-                                    Math.abs(rightFrontPower)),
-                            Math.abs(leftBackPower)),
-                    Math.abs(rightBackPower));
-        if (max > 1.0) {
-            leftFrontPower  /= max;
-            rightFrontPower /= max;
-            leftBackPower   /= max;
-            rightBackPower  /= max;
-        }
+        // For smoother joystick movement
+        double denominator = Math.max(1.0, Math.abs(axial) + Math.abs(lateral) + Math.abs(yaw));
+
+        leftFrontPower  /= denominator;
+        rightFrontPower /= denominator;
+        leftBackPower   /= denominator;
+        rightBackPower  /= denominator;
 
         leftFront.setPower(leftFrontPower);
         rightFront.setPower(rightFrontPower);
@@ -80,10 +73,10 @@ public class Movement {
     }
 
     // NOTE DOESN'T WORK WITH APRILTAG RN
-    public void teleopTickFieldCentric(double leftStickX, double leftStickY, double rightStickX, boolean start){
-        double axial = -leftStickY; // Remember, Y stick value is reversed
-        double lateral = -leftStickX;
-        double yaw = rightStickX;
+    public void teleopTickFieldCentric(double leftStickX, double leftStickY, double rightStickX, double turnCorrection, boolean start){
+        double axial = -leftStickY * STRAFE_MULTIPLIER;
+        double lateral = -leftStickX * STRAFE_MULTIPLIER;
+        double yaw = -(rightStickX * ROTATION_MULTIPLIER) + turnCorrection;
 
         // This button choice was made so that it is hard to hit on accident,
         // it can be freely changed based on preference.
