@@ -52,7 +52,12 @@ public class Indexer {
 
     public void setIntaking(boolean isIntaking)
     {
-        intaking = isIntaking;
+        if(isIntaking != intaking) {
+            if (isIntaking)
+                startIntake();
+            else
+                startOuttake();
+        }
     }
 
     public void startIntake()
