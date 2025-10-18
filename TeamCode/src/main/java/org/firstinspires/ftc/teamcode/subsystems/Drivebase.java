@@ -1,22 +1,28 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import android.annotation.SuppressLint;
+
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-public final class Drivebase {
+public final class Drivebase extends Subsystem {
+    private Gamepad gamepad1, gamepad2;
     private final double cardinalSpeed;
     private final double turnSpeed;
-    private final DcMotorEx leftFrontDrive, leftBackDrive, rightFrontDrive, rightBackDrive;
+    private DcMotorEx leftFrontDrive, leftBackDrive, rightFrontDrive, rightBackDrive;
 
-    public Drivebase(String leftFront, String leftBack, String rightFront, String rightBack, double cardinalSpeed, double turnSpeed, HardwareMap hardwareMap) {
+    public Drivebase(double cardinalSpeed, double turnSpeed) {
         this.cardinalSpeed = cardinalSpeed;
         this.turnSpeed = turnSpeed;
+    }
 
-        leftFrontDrive = hardwareMap.get(DcMotorEx.class, leftFront);
-        leftBackDrive = hardwareMap.get(DcMotorEx.class, leftBack);
-        rightFrontDrive = hardwareMap.get(DcMotorEx.class, rightFront);
-        rightBackDrive = hardwareMap.get(DcMotorEx.class, rightBack);
+    @Override
+    public void init(HardwareMap hardwareMap) {
+        leftFrontDrive = hardwareMap.get(DcMotorEx.class, "leftFront");
+        leftBackDrive = hardwareMap.get(DcMotorEx.class, "leftBack");
+        rightFrontDrive = hardwareMap.get(DcMotorEx.class, "rightFront");
+        rightBackDrive = hardwareMap.get(DcMotorEx.class, "rightBack");
 
         leftFrontDrive.setDirection(DcMotorEx.Direction.REVERSE);
         leftBackDrive.setDirection(DcMotorEx.Direction.FORWARD);
@@ -29,12 +35,19 @@ public final class Drivebase {
         rightBackDrive.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
     }
 
-    public void update(Gamepad gamepad) {
+    @Override
+    public void setGamepads(Gamepad gamepad1, Gamepad gamepad2) {
+        this.gamepad1 = gamepad1;
+        this.gamepad2 = gamepad2;
+    }
+
+    @Override
+    public void update() {
         double max, axial, lateral, yaw;
         double leftFrontPower, rightFrontPower, leftBackPower, rightBackPower;
-        axial = -gamepad.left_stick_y * cardinalSpeed;  // Note: pushing stick forward gives negative value
-        lateral = gamepad.left_stick_x * cardinalSpeed;
-        yaw = gamepad.right_stick_x * turnSpeed;
+        axial = -gamepad1.left_stick_y * cardinalSpeed;  // Note: pushing stick forward gives negative value
+        lateral = gamepad1.left_stick_x * cardinalSpeed;
+        yaw = gamepad1.right_stick_x * turnSpeed;
 
         // combine the joystick requests for each axis-motion to determine each wheel's power
         leftFrontPower = axial + lateral + yaw;
@@ -63,7 +76,12 @@ public final class Drivebase {
         rightBackDrive.setPower(rightBackPower);
     }
 
+	@Override
     public String getTelemetryData() {
-        return String.format("Left Front: %f\nRight Front: %f\nLeft Back: %f\nRight Back: %f", leftFrontDrive.getPower(), rightFrontDrive.getPower(), leftBackDrive.getPower(), rightBackDrive.getPower());
+        return String.format("Left Front: %.2f\nRight Front: %.2f\nLeft Back: %.2f\nRight Back: %.2f",
+                leftFrontDrive.getPower(),
+                rightFrontDrive.getPower(),
+                leftBackDrive.getPower(),
+                rightBackDrive.getPower());
     }
 }

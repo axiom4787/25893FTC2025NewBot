@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.opmodes;
 
 import org.firstinspires.ftc.teamcode.utils.DecodeDataTypes.ArtifactColor;
 import org.firstinspires.ftc.teamcode.utils.DecodeDataTypes.ArtifactSequence;
@@ -8,8 +8,6 @@ import org.firstinspires.ftc.teamcode.utils.DecodeDataTypes.MotorPositions;
 
 import org.firstinspires.ftc.teamcode.utils.FtcJsonStorage;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Executable;
 import java.util.List;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;

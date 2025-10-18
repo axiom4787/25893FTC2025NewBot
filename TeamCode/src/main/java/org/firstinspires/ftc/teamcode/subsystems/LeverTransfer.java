@@ -4,41 +4,51 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-public final class LeverTransfer {
-	private final Servo leverTransfer;
-	private final double leverDownPosition;
-	private double leverUpPosition;
+public final class LeverTransfer extends Subsystem {
+	private Gamepad gamepad1, gamepad2;
+	private Servo leverTransfer;
+	private final double leverDownPosition, leverUpPosition;
 	private boolean leverTargetIsUpPosition = false;
-	private boolean dpadUpPressedLastFrame, dpadDownPressedLastFrame = false;
+	private ButtonMap dpadUpButtonMap, dpadDownButtonMap, dpadLeftButtonMap;
 
-    public LeverTransfer(String leverTransferName, double leverDownPosition, double startingLeverUpPosition, HardwareMap hardwareMap) {
+    public LeverTransfer(double leverDownPosition, double leverUpPosition) {
 		this.leverDownPosition = leverDownPosition;
-		this.leverUpPosition = startingLeverUpPosition;
-		leverTransfer = hardwareMap.get(Servo.class, leverTransferName);
+		this.leverUpPosition = leverUpPosition;
 	}
 
-	public void update(Gamepad gamepad) {
-		if (gamepad.dpad_up && !dpadUpPressedLastFrame) {
-			leverUpPosition = Math.min(leverUpPosition + 0.05, 1.0);
-			dpadUpPressedLastFrame = true;
-		} else {
-			dpadUpPressedLastFrame = false;
-		}
+	@Override
+	public void init(HardwareMap hardwareMap) {
+		leverTransfer = hardwareMap.get(Servo.class, "leverTransfer");
+	}
 
-		if (gamepad.dpad_down && !dpadDownPressedLastFrame) {
-			leverUpPosition = Math.max(leverUpPosition - 0.05, 0.05);
-			dpadDownPressedLastFrame = true;
-		} else {
-			dpadDownPressedLastFrame = false;
-		}
+	@Override
+	public void setGamepads(Gamepad gamepad1, Gamepad gamepad2) {
+		this.gamepad1 = gamepad1;
+		this.gamepad2 = gamepad2;
 
-		if (gamepad.dpad_left) {
+		dpadUpButtonMap = new ButtonMap(gamepad1, ButtonMap.TriggerType.ON_INITIAL_PRESS, ButtonMap.Button.DPAD_UP);
+		dpadDownButtonMap = new ButtonMap(gamepad1, ButtonMap.TriggerType.ON_INITIAL_PRESS, ButtonMap.Button.DPAD_DOWN);
+		dpadLeftButtonMap = new ButtonMap(gamepad1, ButtonMap.TriggerType.ON_INITIAL_PRESS, ButtonMap.Button.DPAD_LEFT);
+	}
+
+	@Override
+	public void update() {
+		dpadUpButtonMap.handle(() -> {
+			leverTargetIsUpPosition = true;
+		});
+
+		dpadDownButtonMap.handle(() -> {
+			leverTargetIsUpPosition = false;
+		});
+
+		dpadLeftButtonMap.handle(() -> {
 			leverTargetIsUpPosition = !leverTargetIsUpPosition;
-		}
+		});
 
 		leverTransfer.setPosition(leverTargetIsUpPosition ? leverUpPosition : leverDownPosition);
 	}
 
+	@Override
 	public String getTelemetryData() {
 		return String.format("Lever Up Position: %f\nLever Is Up: %b", leverUpPosition, leverTargetIsUpPosition);
 	}
