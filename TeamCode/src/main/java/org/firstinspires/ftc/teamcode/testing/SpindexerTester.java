@@ -20,6 +20,7 @@ public class SpindexerTester extends LinearOpMode {
     GamepadEx gp2;
 
     @Override
+    // Make sure to check if busy every time you do an indexer move
     public void runOpMode(){
         // colorSensor = hardwareMap.get(ColorSensor.class, "color");
         indexer = new Indexer(hardwareMap);
@@ -27,13 +28,28 @@ public class SpindexerTester extends LinearOpMode {
         gp2 = new GamepadEx(gamepad2);
 
         waitForStart();
+        indexer.startIntake();
         while(opModeIsActive()){
+            gp2.readButtons();
+            telemetry.addData("CurrentState: ", indexer.getState());
+            telemetry.addData("NextState: ", indexer.nextState());
+
             if(gp2.wasJustPressed(GamepadKeys.Button.DPAD_UP)){
-                indexer.moveTo(indexer.nextState());
+                if (!indexer.isBusy()) {
+                    indexer.moveTo(indexer.nextState());
+                }
             }
             if(gp2.wasJustPressed(GamepadKeys.Button.A))
             {
-                indexer.setIntaking(!indexer.getIntaking());
+                if (!indexer.isBusy()) {
+                    indexer.setIntaking(true);
+                }
+            }
+            if(gp2.wasJustPressed(GamepadKeys.Button.B))
+            {
+                if (!indexer.isBusy()) {
+                    indexer.setIntaking(false);
+                }
             }
             if(gp2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER)>0.01){
                 intake.run(true);
@@ -53,6 +69,7 @@ public class SpindexerTester extends LinearOpMode {
             //String mainColor = getMainColor(r, g, b);
             //telemetry.addData("Color Detected overall:",mainColor);
 
+            indexer.updateColorScanning();
             telemetry.update();
         }
     }

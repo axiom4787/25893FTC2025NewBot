@@ -1,19 +1,12 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Indexer {
-
-    //TODO: Optimize the algorithms, it'll work as is though
-
-    // 0, 120, 240, 360 are the possible angles
-    // since 0 and 360 are the same ball, no matter where you are,
-    // you can "quick spin" to shoot all 3 balls quickly
-
     private IndexerState state;
     private boolean intaking = true;
 
@@ -42,6 +35,14 @@ public class Indexer {
     private final SimpleServo indexerServo;
     private final Actuator actuator;
 
+    // Color sensor timing stuff
+    private final ElapsedTime scanTimer = new ElapsedTime();
+    private boolean scanPending = false;
+    private double scanDelay;
+    private final double msPerDegree = 0.6; // tune this
+    private final double minWait = 100;
+    private final double maxWait = 300;
+    private double lastAngle = 0;
     public Indexer (HardwareMap hardwareMap)
     {
         state = IndexerState.one;
@@ -50,13 +51,10 @@ public class Indexer {
         actuator = new Actuator(hardwareMap);
     }
 
-    public void setIntaking(boolean isIntaking)
-    {
-        if(isIntaking != intaking) {
-            if (isIntaking)
-                startIntake();
-            else
-                startOuttake();
+    public void setIntaking(boolean isIntaking) {
+        if (this.intaking != isIntaking) {
+            this.intaking = isIntaking;
+            moveTo(nextState());
         }
     }
 
@@ -143,6 +141,7 @@ public class Indexer {
         }
     }
 
+    // TODO Either low key get rid of this or implement wait(short thread.sleep should be fine?) there is no wait in between so color sensing doesn't work
     public void moveInOrder(int[] arr) {
         Thread moveThread = new Thread(() -> {
             for(int i : arr){
@@ -157,26 +156,37 @@ public class Indexer {
     public void moveTo(IndexerState newState)
     {
         shiftArtifacts(state, newState);
-        double newAngle = (stateToNum(newState) - 1) * 120; // outtake angle calculation
+        double oldAngle = lastAngle;
+        double newAngle;
         if(intaking)
         {
-            newAngle = 360%((stateToNum(newState)-1)*120+180); // intake angle calculation
+            newAngle = ((stateToNum(newState)-1)*120+60)%360; // intake angle calculation
             indexerServo.turnToAngle(newAngle);
         } else {
+            newAngle = (stateToNum(newState) - 1) * 120; // outtake angle calculation
             indexerServo.turnToAngle(newAngle);
         }
+
+        double angleDelta = Math.abs(newAngle - oldAngle);
+        if (angleDelta > 180) angleDelta = 360 - angleDelta;  // shortest path
+
+        double waitTime = Math.min(maxWait, Math.max(minWait, angleDelta * msPerDegree));
+
+        scanTimer.reset();
+        scanDelay = waitTime;
+        scanPending = true;
+
+        lastAngle = newAngle;
+
         state = newState;
-        while (indexerServo.getAngle() > newAngle - 5 && indexerServo.getAngle() < newAngle + 5) {
-            try {
-                // Simulate the blocking operation of the servo
-                Thread.sleep(50);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-        scanArtifact();
     }
 
+    public void updateColorScanning() {
+        if (scanPending && scanTimer.milliseconds() >= scanDelay) {
+            scanArtifact();
+            scanPending = false;
+        }
+    }
 
     public IndexerState numToState(int num)
     {
@@ -225,5 +235,13 @@ public class Indexer {
             return IndexerState.oneAlt;
         }
         return state;
+    }
+
+    public IndexerState getState() {
+        return state;
+    }
+
+    public boolean isBusy() {
+        return scanPending;
     }
 }
