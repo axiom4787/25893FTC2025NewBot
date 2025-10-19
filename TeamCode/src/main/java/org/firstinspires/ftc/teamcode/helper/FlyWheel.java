@@ -29,4 +29,10 @@ public class FlyWheel {
 
         flyWheel.setPower(power);
     }
+
+    public double getPower(){
+        return flyWheel.getPower();
+
+    }
+
     }

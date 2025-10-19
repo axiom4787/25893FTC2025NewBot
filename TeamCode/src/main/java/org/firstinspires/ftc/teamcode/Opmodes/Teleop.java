@@ -7,14 +7,20 @@ import org.firstinspires.ftc.teamcode.Helper.Chassis;
 import org.firstinspires.ftc.teamcode.Helper.FlyWheel;
 import org.firstinspires.ftc.teamcode.Helper.Intake;
 import org.firstinspires.ftc.teamcode.Helper.Kicker;
+import org.firstinspires.ftc.teamcode.Helper.DecodeAprilTag;
 
-@TeleOp(name = "DecodeTeleopV2.94 Alaqmar", group = "TeleOp")
+@TeleOp(name = "DecodeTeleopV2.97 Alaqmar", group = "TeleOp")
 
 public class Teleop extends LinearOpMode {
 
+    Chassis chassis;
+    private volatile boolean threadIsRunning = true;
+    private Thread driveThread;
+
+
     @Override
     public void runOpMode() throws InterruptedException {
-        Chassis chassis = new Chassis();
+        chassis = new Chassis();
         chassis.init(this);
 //   chassis.setDriveMode(Chassis.DriveMode.ROBOT_CENTRIC);
 
@@ -27,12 +33,20 @@ public class Teleop extends LinearOpMode {
         Kicker kicker = new Kicker();
         kicker.init(hardwareMap);
 
-//        DecodeAprilTag aprilTag = new DecodeAprilTag(this);
+        DecodeAprilTag aprilTag  = new DecodeAprilTag(this);
+        aprilTag.initCamera();
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
         chassis.odo.resetPosAndIMU();
+
+        // Define and start the drive thread
+        driveThread = new Thread(new DriveTask());
+
         waitForStart();
+
+        driveThread.start(); // Start the concurrent task
+
         // Run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
@@ -53,32 +67,59 @@ public class Teleop extends LinearOpMode {
 //                chassis.setDriveMode(Chassis.DriveMode.ROBOT_CENTRIC);
 //            }
 
-            float axial = -gamepad1.left_stick_y;
-            float lateral = -gamepad1.left_stick_x;
-            float yaw = -gamepad1.right_stick_x;
-            chassis.moveRobot(axial, lateral, yaw);
+
+
+            /*Running the following code in Thread
+                float axial = -gamepad1.left_stick_y;
+                float lateral = -gamepad1.left_stick_x;
+                float yaw = -gamepad1.right_stick_x;
+                chassis.moveRobot(axial, lateral, yaw);
+             */
 
             // Kicker
             double gateClose = 0.4;
             double gateShooting = 0.05;
             double gateIntake = 0.8;
-            long flyWheelReadyTime = 600;
+            long flyWheelReadyTime = 1000;
+
             //Shooting
             if (gamepad2.right_bumper) {
+
                 intake.stopIntake();
                 kicker.setKickerPos(gateClose);// Middle P
                 sleep(500);
-                flyWheel.start(-0.58);
-                sleep(1800);
+
+                long startTime = System.currentTimeMillis();
+
+                flyWheel.start(-1.0);
+                sleep(400);
+                flyWheel.setPower(-0.6);
+                sleep(1000);
+
+                /*
+                telemetry.addData("Flywheel start power: ",  + flyWheel.getPower());
+
+                while (flyWheel.getPower() >= -0.55){
+                    sleep(180);
+                    telemetry.addData("Flywheel current power: ",  + flyWheel.getPower());
+                    telemetry.update();
+                }
+                long endTime = System.currentTimeMillis();
+                long durationInMillis = endTime - startTime;
+
+                telemetry.addData("Flywheel warmup time (ms): ",  + durationInMillis );
+                telemetry.update();
+                */
+
 
                 // First Shot
                 kicker.setKickerPos(gateShooting);
-                sleep(200);
+                sleep(250);
                 kicker.setKickerPos(gateClose);
 
                 // Turn intake on
                 sleep(flyWheelReadyTime);
-                intake.intake(0.8);
+                intake.intake(0.6);
                 sleep(200);
 
                 //Second Shot
@@ -102,7 +143,7 @@ public class Teleop extends LinearOpMode {
 
         }
             if (gamepad2.a){
-                intake.intake(0.5);
+                intake.intake(1);
             } else if (gamepad2.b) {
                 intake.stopIntake();
             }
@@ -117,6 +158,36 @@ public class Teleop extends LinearOpMode {
                 kicker.setKickerPos(0.15);
             }*/
                 }
+
+        // Clean up the thread
+        threadIsRunning = false;
+        driveThread.interrupt();
+        try {
+            driveThread.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
 
+        }
+
+    private class DriveTask implements Runnable {
+        @Override
+        public void run() {
+            while (threadIsRunning && !Thread.currentThread().isInterrupted()) {
+
+                // Read gamepad input and set drive motor power
+                float axial = -gamepad1.left_stick_y;
+                float lateral = -gamepad1.left_stick_x;
+                float yaw = -gamepad1.right_stick_x;
+                chassis.moveRobot(axial, lateral, yaw);
+
+                try {
+                    Thread.sleep(10); // Pause for a short time
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+    }
 }

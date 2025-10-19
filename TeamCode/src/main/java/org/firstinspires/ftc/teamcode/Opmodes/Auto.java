@@ -5,11 +5,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.Helper.Chassis;
+import org.firstinspires.ftc.teamcode.Helper.DecodeAprilTag;
 import org.firstinspires.ftc.teamcode.Helper.FlyWheel;
 import org.firstinspires.ftc.teamcode.Helper.Kicker;
 import org.firstinspires.ftc.teamcode.Helper.Util;
-
-@Autonomous(name = "Alaqmar Auto 2.73;")
+import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
+@Autonomous(name = "Alaqmar Auto 2.74;")
 
 public class Auto extends LinearOpMode {
 
@@ -45,9 +46,8 @@ public class Auto extends LinearOpMode {
         Kicker kicker = new Kicker();
         kicker.init(hardwareMap);
 
-        //DecodeAprilTag aprilTag = new DecodeAprilTag(this);
-        //aprilTag.initCamera();
-
+        DecodeAprilTag aprilTag  = new DecodeAprilTag(this);
+        aprilTag.initCamera();
 
         while (opModeInInit()) {
             chassis.odo.resetPosAndIMU();
@@ -59,12 +59,7 @@ public class Auto extends LinearOpMode {
 
         while (opModeIsActive()) {
 
-            kicker.setKickerPos(0.45);
-            sleep(1000);
-            kicker.setKickerPos(0.3);
-            sleep(1000);
-            kicker.setKickerPos(0.6);
-            sleep(1000);
+            AprilTagPoseFtc cameraPosition = aprilTag.getCoordinate("BlueTarget");
 
             // for(int i = 15; i <= 180; i += 15){
             //   chassis.turnToAngle(i);
