@@ -146,4 +146,47 @@ public class Util {
         rightFront.setPower(0);
         rightBack.setPower(0);
     }
+
+    public static void telemetryFlyWheelVelocity(FlyWheel flyWheel, double flyWheelPower, int runForMS, Telemetry telemetry){
+
+        telemetry.addData("--- Testing Fly Wheel Velocity ---","");
+        long startTime = System.currentTimeMillis();
+        long intermidiateTime =  System.currentTimeMillis();
+        long endTime = 0;
+        long durationInMillis = intermidiateTime - startTime;
+
+        double flyWheelVelocity = 0.0;
+
+        flyWheel.start(-flyWheelPower);
+        //telemetry.addData("Flywheel StartTime: ", startTime);
+        while(durationInMillis <= runForMS){
+            intermidiateTime =  System.currentTimeMillis();
+            durationInMillis = intermidiateTime - startTime;
+            flyWheelVelocity = flyWheel.getVelocity();
+            //telemetry.addData("Flywheel Intermidiate Time (ms): ", durationInMillis);
+            telemetry.addData("Flywheel Velocity: " + flyWheelVelocity +" in time(ms): ", durationInMillis);
+            sleepThread(250);
+        }
+        endTime = System.currentTimeMillis();
+        durationInMillis = endTime - startTime;
+        telemetry.addData("Flywheel Power: ", flyWheel.getPower());
+        telemetry.addData("Flywheel Total Time: ", durationInMillis);
+
+        flyWheel.stop();
+    }
+
+    public static void waitForFlyWheelVelocity(FlyWheel flyWheel, long velocity, double maxWaitTime){
+        long startTime = System.currentTimeMillis();
+        long intermidiateTime =  System.currentTimeMillis();
+        long durationInMillis = intermidiateTime - startTime;
+
+        while (flyWheel.getVelocity() < velocity){
+            intermidiateTime =  System.currentTimeMillis();
+            durationInMillis = intermidiateTime - startTime;
+            sleepThread(250);
+            if(durationInMillis > maxWaitTime){
+                return;
+            }
+        }
+    }
 }

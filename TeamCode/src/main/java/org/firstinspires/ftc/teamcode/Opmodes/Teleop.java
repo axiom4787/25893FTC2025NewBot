@@ -8,13 +8,19 @@ import org.firstinspires.ftc.teamcode.Helper.FlyWheel;
 import org.firstinspires.ftc.teamcode.Helper.Intake;
 import org.firstinspires.ftc.teamcode.Helper.Kicker;
 import org.firstinspires.ftc.teamcode.Helper.DecodeAprilTag;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-@TeleOp(name = "DecodeTeleopV2.99 Alaqmar", group = "TeleOp")
+import org.firstinspires.ftc.teamcode.Helper.Util;
+
+import com.qualcomm.robotcore.hardware.VoltageSensor;
+
+@TeleOp(name = "DecodeTeleopV3.19 Alaqmar", group = "TeleOp")
 
 public class Teleop extends LinearOpMode {
 
     Chassis chassis;
+    VoltageSensor voltageSensor;
     private volatile boolean threadIsRunning = true;
+    double flyWheelVelocity = 0.0;
+    long maxLoopTimeout = 2000;
     private Thread driveThread;
 
 
@@ -22,6 +28,8 @@ public class Teleop extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         chassis = new Chassis();
         chassis.init(this);
+
+        //voltageSensor = hardwareMap.voltageSensor.get("Motor Controller 1");
 //   chassis.setDriveMode(Chassis.DriveMode.ROBOT_CENTRIC);
 
         FlyWheel flyWheel = new FlyWheel();
@@ -47,13 +55,18 @@ public class Teleop extends LinearOpMode {
 
         driveThread.start(); // Start the concurrent task
 
+        //Util.telemetryFlyWheelVelocity(flyWheel, 0.65, 3000,telemetry);
+        //telemetry.update();
+
         // Run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
             chassis.odo.update();
-            telemetry.addData("Odo x", chassis.odo.getEncoderX());
-            telemetry.addData("Odo y", chassis.odo.getEncoderY());
-            telemetry.update();
+            //telemetry.addData("Odo x", chassis.odo.getEncoderX());
+            //telemetry.addData("Odo y", chassis.odo.getEncoderY());
+
+
+
 //            if (gamepad1.a) {
 //                chassis.resetHeading();
 //
@@ -77,9 +90,10 @@ public class Teleop extends LinearOpMode {
 
 
             // Kicker
-            double gateClose = 0.7;
-            double gateShooting = 0.4;
-            double gateIntake = 1;
+            double gateClose = 0.4;
+            double gateShooting = 0.25;
+            double gateIntake = 0.6
+                    ;
             long flyWheelReadyTime = 1000;
 
             if(gamepad2.dpad_down) {
@@ -94,58 +108,72 @@ public class Teleop extends LinearOpMode {
             //Shooting
             if (gamepad2.right_bumper) {
 
-                intake.intake(0.6); 
+                long startTime = System.currentTimeMillis();
+                long intermidiateTime =  System.currentTimeMillis();
+                long durationInMillis = intermidiateTime - startTime;
+
+                //intake.intake(0.6);
                 kicker.setKickerPos(gateClose);// Middle P
                 sleep(1000);
 
-                long startTime = System.currentTimeMillis();
-
                 flyWheel.setPower(-0.65);
+                sleep(800);
 
-                telemetry.addData("Flywheel start power: ",  + flyWheel.getPower());
+                Util.waitForFlyWheelVelocity(flyWheel,1500,2000);
+                //telemetry.addData("Flywheel warmup time (ms): ",  + durationInMillis );
 
-                while (flyWheel.getVelocity() < -1500){}
-
-                long endTime = System.currentTimeMillis();
-                long durationInMillis = endTime - startTime;
-
-                telemetry.addData("Flywheel warmup time (ms): ",  + durationInMillis );
-
+                intermidiateTime =  System.currentTimeMillis();
+                durationInMillis = intermidiateTime - startTime;
                 double currentVelocity = flyWheel.getVelocity();
-                telemetry.addData("Velocity Before First Shot", currentVelocity);
+                telemetry.addData("Velocity Before First Shot: "+ currentVelocity," in time: "+durationInMillis);
+                telemetry.update();
 
-
-                sleep(1000);
+                //sleep(1000);
                 // First Shot
                 kicker.setKickerPos(gateShooting);
-                sleep(500);
+                sleep(800);
                 kicker.setKickerPos(gateClose);
+
+                 intermidiateTime =  System.currentTimeMillis();
+                 durationInMillis = intermidiateTime - startTime;
                 currentVelocity = flyWheel.getVelocity();
-                telemetry.addData("Velocity After First Shot", currentVelocity);
+                telemetry.addData("Velocity After First Shot: "+ currentVelocity," in time: "+durationInMillis);
 
                 // Turn intake on
-                sleep(flyWheelReadyTime);
+                //sleep(flyWheelReadyTime);
                 intake.intake(0.6);
-                sleep(200);
-                currentVelocity = flyWheel.getVelocity();
-                telemetry.addData("Velocity Before 2nd Shot", currentVelocity);
+                //sleep(200);
 
-                while (flyWheel.getVelocity() < -1500){}
+                Util.waitForFlyWheelVelocity(flyWheel,1500,2000);
+                intermidiateTime =  System.currentTimeMillis();
+                durationInMillis = intermidiateTime - startTime;
+                currentVelocity = flyWheel.getVelocity();
+                telemetry.addData("Velocity Before Second Shot: "+ currentVelocity," in time: "+durationInMillis);
+
+
 
                 //Second Shot
                 kicker.setKickerPos(gateShooting);
-                sleep(500);
+                sleep(800);
                 kicker.setKickerPos(gateClose);
-                sleep(flyWheelReadyTime);
+                //sleep(flyWheelReadyTime);
 
-                while (flyWheel.getVelocity() < -1500){}
+
 
                 // Third Shot
+                Util.waitForFlyWheelVelocity(flyWheel,1500,2000);
+                intermidiateTime =  System.currentTimeMillis();
+                durationInMillis = intermidiateTime - startTime;
                 currentVelocity = flyWheel.getVelocity();
-                telemetry.addData("Velocity Before Third Shot", currentVelocity);
+                telemetry.addData("Velocity Before Third Shot: "+ currentVelocity," in time: "+durationInMillis);
+
                 kicker.setKickerPos(gateShooting);
+                //sleep(1000);
+                //intake.intake(0.0);
+                //kicker.setKickerPos(gateIntake);
 
                 telemetry.update();
+
                 sleep(5000);
 
               // Turns Flywheel off.
