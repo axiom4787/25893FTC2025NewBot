@@ -5,13 +5,18 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.subsystems.AprilTag;
 import org.firstinspires.ftc.teamcode.subsystems.AprilTagAimer;
 import org.firstinspires.ftc.teamcode.subsystems.Movement;
 
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.*;
+
 @TeleOp(name = "AprilTagTester", group = "AA_main")
 public class AprilTagTester extends LinearOpMode {
-
+    OpenCvCamera camera;
     @Override
     public void runOpMode() throws InterruptedException {
         AprilTag aprilTag = new AprilTag(hardwareMap);
@@ -71,5 +76,53 @@ public class AprilTagTester extends LinearOpMode {
                 telemetry.update();
             }
         }
+        //vibe code stuff for the camera stream
+        // Get webcam from config
+        WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
+
+        // Get the viewport ID to display on Driver Hub / Dashboard
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "webcam", "id", hardwareMap.appContext.getPackageName());
+
+        // Create a webcam instance with live preview ID
+        camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
+
+        // Simple pipeline that just returns the camera feed unchanged
+        camera.setPipeline(new OpenCvPipeline() {
+            @Override
+            public Mat processFrame(Mat input) {
+                Imgproc.putText(input, "Preview Active", new org.opencv.core.Point(10, 30),
+                        Imgproc.FONT_HERSHEY_SIMPLEX, 1, new org.opencv.core.Scalar(255, 255, 255), 2);
+                return input;
+            }
+        });
+
+        // Open camera asynchronously
+        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                telemetry.addData("Camera Error: ", errorCode);
+                telemetry.update();
+            }
+        });
+
+        telemetry.addLine("Press INIT, then open Camera Stream from menu");
+        telemetry.update();
+
+        waitForStart();
+
+        // Stream continues while OpMode runs
+        while (opModeIsActive()) {
+            telemetry.addData("Status", "Streaming...");
+            telemetry.update();
+            sleep(50);
+        }
+
+        camera.stopStreaming();
     }
-}
+    }
