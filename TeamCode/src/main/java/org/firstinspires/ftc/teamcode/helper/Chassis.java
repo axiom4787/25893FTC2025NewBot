@@ -551,4 +551,25 @@ public class Chassis {
     public void printIMUTelemetry(){
         Util.printIMUTelemetry(imu, opMode.telemetry);
     }
+
+    public void turnTo(double headingDeg, double power, double holdTime) {
+
+        yawController.reset(headingDeg, power);
+        while (myOpMode.opModeIsActive() && readSensors()) {
+
+            // implement desired axis powers
+            moveRobot(0, 0, yawController.getOutput(heading));
+
+            // Time to exit?
+            if (yawController.inPosition()) {
+                if (holdTimer.time() > holdTime) {
+                    break;   // Exit loop if we are in position, and have been there long enough.
+                }
+            } else {
+                holdTimer.reset();
+            }
+            myOpMode.sleep(10);
+        }
+        stopRobot();
+    }
 }
