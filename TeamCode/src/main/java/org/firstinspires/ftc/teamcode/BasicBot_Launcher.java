@@ -12,7 +12,7 @@ public class BasicBot_Launcher
     private DcMotor flywheel = null;
     private DcMotorEx shooterIntake = null;
 
-    public BasicBot_Launcher(HardwareMap hwMap, double agitatorSpeed, double flywheelSpeed)
+    public BasicBot_Launcher(HardwareMap hwMap, double agitatorSpeed, double flywheelSpeed , double shooterIntakeSpeed)
     {
         agitator  = hwMap.get(CRServo.class, "agitator");
         flywheel  = hwMap.get(DcMotor.class, "flywheel");
@@ -24,6 +24,8 @@ public class BasicBot_Launcher
 
         setAgitatorSpeed(agitatorSpeed);
         setFlywheelSpeed(flywheelSpeed);
+        setShooterIntakeSpeed(shooterIntakeSpeed);
+
     }
     void setAgitatorSpeed(double speed)
     {
@@ -33,5 +35,10 @@ public class BasicBot_Launcher
     void setFlywheelSpeed(double speed)
     {
         flywheel.setPower(speed);
+    }
+
+    void setShooterIntakeSpeed(double speed)
+    {
+        shooterIntake.setPower(speed);
     }
 }
