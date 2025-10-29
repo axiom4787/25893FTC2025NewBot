@@ -1,3 +1,6 @@
+// Copyright (c) 2024-2025 FTC 13532
+// All rights reserved.
+
 package org.firstinspires.ftc.teamcode.Tests;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -11,18 +14,18 @@ public class Coles_Robot extends LinearOpMode {
   DcMotor RMotor, LMotor;
 
   @Override
-  public void runOpMode(){
+  public void runOpMode() {
 
     Init();
     waitForStart();
 
-    while(opModeIsActive()){
-      RMotor.setPower(-gamepad1.left_stick_y/2);
-      LMotor.setPower(-gamepad1.right_stick_y/2);
+    while (opModeIsActive()) {
+      RMotor.setPower(-gamepad1.left_stick_y / 2);
+      LMotor.setPower(-gamepad1.right_stick_y / 2);
     }
   }
 
-  public void Init(){
+  public void Init() {
     RMotor = hardwareMap.get(DcMotor.class, "Rmotor");
     LMotor = hardwareMap.get(DcMotor.class, "Lmotor");
 
