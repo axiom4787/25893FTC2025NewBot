@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Helper;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -176,7 +177,7 @@ public class Util {
         flyWheel.stop();
     }
 
-    public static void waitForFlyWheelVelocity(FlyWheel flyWheel, long velocity, double maxWaitTime){
+    public static void waitForFlyWheelShootingVelocity(FlyWheel flyWheel, long velocity, double maxWaitTime){
         long startTime = System.currentTimeMillis();
         long intermidiateTime =  System.currentTimeMillis();
         long durationInMillis = intermidiateTime - startTime;
@@ -189,6 +190,28 @@ public class Util {
                 return;
             }
         }
+    }
+
+    public static long waitForFlyWheelStopVelocity(FlyWheel flyWheel, long velocity, double maxWaitTime, Telemetry telemetry){
+        long startTime = System.currentTimeMillis();
+        long intermidiateTime =  System.currentTimeMillis();
+        long durationInMillis = intermidiateTime - startTime;
+        double flyWheelVelocity = flyWheel.getVelocity();
+        telemetry.addData("Start flyWheelVelocity - ",flyWheelVelocity);
+
+        while (flyWheelVelocity > velocity){
+            intermidiateTime =  System.currentTimeMillis();
+            durationInMillis = intermidiateTime - startTime;
+            flyWheel.setPower(0.1);
+            sleepThread(500);
+            flyWheel.setPower(0.0);
+            flyWheelVelocity = flyWheel.getVelocity();
+            telemetry.addData("flyWheelVelocity - " + flyWheelVelocity,", durationInMillis - "+durationInMillis);
+            if(durationInMillis > maxWaitTime){
+                return durationInMillis;
+            }
+        }
+        return durationInMillis;
     }
 
     public static boolean waitForMotor(DcMotorEx dcWheel, long timeoutMs, double ticksPerSecond) {
@@ -211,4 +234,90 @@ public class Util {
 
         return ret;
     }
-}
+    public static boolean readyToLoad(DistanceSensor channelSensor, Telemetry telemetry) {
+        boolean ret = false;
+
+        // Get distance reading from 2M sensor
+        double dDistance = channelSensor.getDistance(DistanceUnit.CM);
+        // Check if distance is less than 10 cm
+        if (dDistance > 10 ) ret = true;
+
+        return ret;
+    }
+
+    public static void prepareFlyWheelToShoot(FlyWheel flyWheel, Kicker kicker, Intake intake, DistanceSensor channelDistanceSensor, Telemetry telemetry){
+        kicker.setPosition(Kicker.gateClose);
+        threadSleep(1000);
+        //Replace the timer with distance sensor
+        //When the ball is moved out, start the flywheel
+        flyWheel.setPower(-0.45);
+        threadSleep(800);
+    }
+
+    /*
+    public static long testFlyWheelStopTime(FlyWheel flyWheel){
+        long startTime = System.currentTimeMillis();
+        flyWheel.stop();
+        flyWheel.setPower(0.2);
+        Util.waitForFlyWheelStopVelocity(flyWheel,50,30000,);
+        long endTime =  System.currentTimeMillis();
+        long durationInMillis = endTime - startTime;
+        return durationInMillis;
+    }
+
+     */
+
+    public static void addKickerTelemetry(Kicker kicker, Telemetry telemetry){
+        telemetry.addData("kicker.getPosition() - ",kicker.getPosition());
+        telemetry.addData("kicker.getGatePosition() - ",kicker.getGatePosition());
+    }
+
+    public static void prepareFlyWheelToIntake(FlyWheel flyWheel, Kicker kicker, Intake intake, DistanceSensor channelDistanceSensor, Telemetry telemetry){
+        flyWheel.stop();
+        kicker.setGatePosition(Kicker.GATE_CLOSE);
+        telemetry.addData("flyWheel.getVelocity() - ",flyWheel.getVelocity());
+        /*
+        if(flyWheel.getVelocity() > 1000){
+            flyWheel.start(1);
+            threadSleep(530);
+        }
+         */
+        Util.waitForFlyWheelStopVelocity(flyWheel,100,5000, telemetry);
+        kicker.setPosition(Kicker.gateIntake);
+    }
+
+    public static void shootOneBall(FlyWheel flyWheel, Kicker kicker, Intake intake, DistanceSensor channelDistanceSensor, Telemetry telemetry){
+
+        if (kicker.getPosition() == Kicker.gateIntake){
+            //This is not a great condition, as it would waste 2 sec
+            //Ideal condition is that gamepad2.a is pressed before trying to shoot
+            Util.prepareFlyWheelToShoot(flyWheel,kicker, intake, null, telemetry);
+        } else if (kicker.getPosition() == Kicker.gateShoot) {
+            //This is a condition where shoot is pressed pressed before gate is closed
+        }
+
+        Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000);
+        kicker.setPosition(Kicker.gateShoot);
+        threadSleep(500);// replace with channel distance sensor
+        kicker.setPosition(Kicker.gateClose);
+    }
+
+    public static void startShooting(FlyWheel flyWheel, Kicker kicker, Intake intake, DistanceSensor channelDistanceSensor, Telemetry telemetry){
+
+        Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000);
+        if (Util.readyToLoad(channelDistanceSensor, telemetry)) {
+            kicker.setPosition(Kicker.gateShoot);
+        }else {
+            kicker.setPosition(Kicker.gateClose);
+        }
+    }
+
+    public static void threadSleep(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            return;
+        }
+    }
+
+    }

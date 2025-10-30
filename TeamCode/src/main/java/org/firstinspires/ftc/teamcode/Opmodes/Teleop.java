@@ -5,16 +5,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Helper.*;
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
-//import org.firstinspires.ftc.teamcode.Helper.Chassis;
-//import org.firstinspires.ftc.teamcode.Helper.FlyWheel;
-//import org.firstinspires.ftc.teamcode.Helper.Intake;
-//import org.firstinspires.ftc.teamcode.Helper.Kicker;
-//import org.firstinspires.ftc.teamcode.Helper.DecodeAprilTag;
-//import org.firstinspires.ftc.teamcode.Helper.Util;
-
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-@TeleOp(name = "DecodeTeleopV3.23 Alaqmar", group = "TeleOp")
+@TeleOp(name = "DecodeTeleopV3.47 Alaqmar", group = "TeleOp")
 
 public class Teleop extends LinearOpMode {
 
@@ -24,6 +18,7 @@ public class Teleop extends LinearOpMode {
     double flyWheelVelocity = 0.0;
     long maxLoopTimeout = 2000;
     private Thread driveThread;
+    DistanceSensor channelSensor;
 
 
     @Override
@@ -42,12 +37,18 @@ public class Teleop extends LinearOpMode {
 
         Kicker kicker = new Kicker();
         kicker.init(hardwareMap);
+        //kicker.setPosition(Kicker.gateIntake);
+        //Util.addKickerTelemetry(kicker,telemetry);
+
+
 
         DecodeAprilTag aprilTag  = new DecodeAprilTag(this);
         aprilTag.initCamera();
 
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
+        channelSensor = hardwareMap.get(DistanceSensor.class, "channelSensor");
+
+
+
         chassis.odo.resetPosAndIMU();
 
         // Define and start the drive thread
@@ -60,7 +61,18 @@ public class Teleop extends LinearOpMode {
         //Util.telemetryFlyWheelVelocity(flyWheel, 0.65, 3000,telemetry);
         //telemetry.update();
 
+        /*
 
+
+        Util.readyToLoad(channelSensor,telemetry);
+        telemetry.update();
+        sleep(5000);
+        aprilTag.getCoordinate("BlueTarget");
+
+         */
+
+        telemetry.addData("Status", "Initialized");
+        telemetry.update();
 
         // Run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -86,44 +98,90 @@ public class Teleop extends LinearOpMode {
 
 
 
+            /*
             //Running the following code in Thread
                 float axial = -gamepad1.left_stick_y;
                 float lateral = -gamepad1.left_stick_x;
                 float yaw = -gamepad1.right_stick_x;
                 chassis.moveRobot(axial, lateral, yaw);
 
+             */
+
 
             // Kicker
-            double gateClose = 0.4;
-            double gateShooting = 0.25;
-            double gateIntake = 0.6;
+
             long flyWheelReadyTime = 1000;
 
-            if(gamepad2.dpad_down) {
-                kicker.setKickerPos(gateClose);
-            }
             if(gamepad2.dpad_up) {
-                kicker.setKickerPos(gateShooting);
+                kicker.setPosition(Kicker.gateClose);
+                Util.addKickerTelemetry(kicker,telemetry);
+                telemetry.update();
+            }
+            if(gamepad2.dpad_down) {
+                kicker.setPosition(Kicker.gateShoot);
+                Util.addKickerTelemetry(kicker,telemetry);
+                telemetry.update();
             }
             if(gamepad2.dpad_right) {
-                kicker.setKickerPos(gateIntake);
+                kicker.setPosition(Kicker.gateIntake);
+                Util.addKickerTelemetry(kicker,telemetry);
+                telemetry.update();
             }
 
             //Shooting
             if (gamepad2.right_bumper) {
+
+                //telemetry.addData("Double.compare",Double.compare(kicker.getPosition(), Kicker.gateIntake));
+
+
+                switch (kicker.getGatePosition()) {
+                    case Kicker.GATE_INTAKE:
+                        telemetry.addData("Gate in intake position", " when right_bumper pressed.");
+                        //This is not a great condition, as it would waste 2 sec
+                        //Ideal condition is that gamepad2.a is pressed before trying to shoot
+                        Util.prepareFlyWheelToShoot(flyWheel, kicker, intake, channelSensor, telemetry);
+                        break;
+                    case Kicker.GATE_SHOOT:
+                        telemetry.addData("Gate in shoot position", " when right_bumper pressed.");
+                        //This is a condition where shoot is pressed before gate is open
+                        break;
+                    case Kicker.GATE_CLOSE:
+                        telemetry.addData("Gate in close position", " when right_bumper pressed.");
+                        //This is a condition where shoot is pressed when gate is closed
+                        break;
+                    default:
+                        Util.addKickerTelemetry(kicker, telemetry);
+                        break;
+                }
+
+                while(!gamepad2.left_bumper) {
+                    Util.startShooting(flyWheel, kicker, intake, channelSensor, telemetry);
+                    sleep(300);
+                }
+
+                telemetry.addData("gamepad2.left_bumper - ",gamepad2.left_bumper);
+
+
+                flyWheel.stop();
+                kicker.setGatePosition(Kicker.GATE_CLOSE);
+                long flyWheelStopDuration = Util.waitForFlyWheelStopVelocity(flyWheel,100,5000, telemetry);
+                telemetry.addData("flyWheelStopDuration (ms) - ",flyWheelStopDuration);
+                telemetry.update();
+
+                /*
 
                 long startTime = System.currentTimeMillis();
                 long intermidiateTime =  System.currentTimeMillis();
                 long durationInMillis = intermidiateTime - startTime;
 
                 //intake.intake(0.6);
-                kicker.setKickerPos(gateClose);// Middle P
+                kicker.moveToClosePosition();// Middle P
                 sleep(1000);
 
                 flyWheel.setPower(-0.65);
                 sleep(800);
 
-                Util.waitForFlyWheelVelocity(flyWheel,1500,2000);
+                Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000);
                 //telemetry.addData("Flywheel warmup time (ms): ",  + durationInMillis );
 
                 intermidiateTime =  System.currentTimeMillis();
@@ -134,9 +192,9 @@ public class Teleop extends LinearOpMode {
 
                 //sleep(1000);
                 // First Shot
-                kicker.setKickerPos(gateShooting);
+                kicker.moveToShootingPosition();
                 sleep(400);
-                kicker.setKickerPos(gateClose);
+                kicker.moveToClosePosition();
 
                  intermidiateTime =  System.currentTimeMillis();
                  durationInMillis = intermidiateTime - startTime;
@@ -148,7 +206,7 @@ public class Teleop extends LinearOpMode {
                 intake.intake(0.6);
                 //sleep(200);
 
-                Util.waitForFlyWheelVelocity(flyWheel,1500,2000);
+                Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000);
                 intermidiateTime =  System.currentTimeMillis();
                 durationInMillis = intermidiateTime - startTime;
                 currentVelocity = flyWheel.getVelocity();
@@ -157,59 +215,49 @@ public class Teleop extends LinearOpMode {
 
 
                 //Second Shot
-                kicker.setKickerPos(gateShooting);
+                kicker.moveToShootingPosition();
                 sleep(500);
-                kicker.setKickerPos(gateClose);
+                kicker.moveToClosePosition();
                 //sleep(flyWheelReadyTime);
 
 
 
                 // Third Shot
-                Util.waitForFlyWheelVelocity(flyWheel,1500,2000);
+                Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000);
                 intermidiateTime =  System.currentTimeMillis();
                 durationInMillis = intermidiateTime - startTime;
                 currentVelocity = flyWheel.getVelocity();
                 telemetry.addData("Velocity Before Third Shot: "+ currentVelocity," in time: "+durationInMillis);
 
-                kicker.setKickerPos(gateShooting);
+                kicker.moveToShootingPosition();
                 //sleep(1000);
                 //intake.intake(0.0);
                 //kicker.setKickerPos(gateIntake);
 
                 telemetry.update();
 
-                sleep(5000);
 
-              // Turns Flywheel off.
+                 */
+
             } else if (gamepad2.left_bumper) {
-                intake.stopIntake();
-                kicker.setKickerPos(gateClose);
-                flyWheel.start(1);
-                sleep(530);
-                flyWheel.stop();
-                kicker.setKickerPos(gateIntake);
 
-
-        }
-            if (gamepad2.a){
-                intake.intake(1);
+        } else if (gamepad2.a){
+                Util.prepareFlyWheelToShoot(flyWheel,kicker, intake, channelSensor, telemetry);
             } else if (gamepad2.b) {
+                Util.prepareFlyWheelToIntake(flyWheel,kicker, intake, channelSensor, telemetry);
+            } else if (gamepad2.x){
+                intake.startIntake();
+            } else if (gamepad2.y) {
                 intake.stopIntake();
             }
-
-          /*  if (gamepad2.x){
-                kicker.setKickerPos(1);
-            }
-            else if (gamepad2.y)
-            kicker.setKickerPos(0.5);
-
             else if (gamepad2.dpad_right){
-                kicker.setKickerPos(0.15);
-            }*/
-                }
+
+            }
+        }
 
         // Clean up the thread
         threadIsRunning = false;
+        sleep(2000);
         driveThread.interrupt();
         try {
             driveThread.join();
@@ -220,9 +268,10 @@ public class Teleop extends LinearOpMode {
         }
 
     private class DriveTask implements Runnable {
+
         @Override
         public void run() {
-            while (threadIsRunning && !Thread.currentThread().isInterrupted()) {
+            while ( threadIsRunning && !Thread.currentThread().isInterrupted()) {
 
                 // Read gamepad input and set drive motor power
                 float axial = -gamepad1.left_stick_y;
@@ -230,12 +279,7 @@ public class Teleop extends LinearOpMode {
                 float yaw = -gamepad1.right_stick_x;
                 chassis.moveRobot(axial, lateral, yaw);
 
-                try {
-                    Thread.sleep(10); // Pause for a short time
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
+                sleep(10);
             }
         }
     }

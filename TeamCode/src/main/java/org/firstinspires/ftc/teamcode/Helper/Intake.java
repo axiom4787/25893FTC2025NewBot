@@ -20,6 +20,9 @@ public class Intake {
         intake.setPower(motorPower);
     }
 
+    public void startIntake(){
+        intake.setPower(1);
+    }
     public void stopIntake(){
         intake.setPower(0);
     }

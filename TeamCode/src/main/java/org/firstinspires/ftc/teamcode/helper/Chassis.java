@@ -311,84 +311,9 @@ public class Chassis {
         return x - 180.0;
     }
 
-    final double MIN_TURN_PWR = 0.1;
+    final double MIN_TURN_PWR = 0.3;
     final double MAX_TURN_PWR = 0.8;
     final double ERROR_RANGE_DEGREE = 2;
-
-    public void turnToAngle(double targetAngle) {
-
-        while (((LinearOpMode) opMode).opModeIsActive()) {
-            odo.update();
-            double currentAngle = odo.getHeading(AngleUnit.DEGREES);
-            double error = (targetAngle - currentAngle);
-
-            opMode.telemetry.addData("Current Angle", currentAngle);
-            opMode.telemetry.addData("Error", error);
-            opMode.telemetry.update();
-
-            if (Math.abs(error) < 2) {
-                setPowerToWheels(0, 0, 0, 0);
-                break;
-            }
-
-            double turnPower = 0.01 * error;
-            turnPower = Math.max(-0.5, Math.min(turnPower, 0.5));
-
-            drive(0, 0, turnPower);
-        }
-    }
-    public static double P_DRIVE_COEFF = 0.05;
-    public static final double minPower = 0.08;
-
-    public void moveWithProportionalDeceleration(Direction direction, double maxPower, double distanceInches) {
-        if (!linearOpMode.opModeIsActive()) return;
-
-        int targetTicks = (int) (distanceInches * COUNTS_PER_INCH);
-
-
-        setMotorWheelMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        setMotorWheelMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-
-        while (linearOpMode.opModeIsActive()) {
-
-
-            int remainingTicks = targetTicks - getAverageCurrentPositionAllWheels();
-            if (remainingTicks <= 0) break;
-
-
-            double progress = (double) remainingTicks / (double) targetTicks;
-            double drivePower = minPower + (maxPower - minPower) * Math.pow(progress, 0.5);
-            drivePower = Math.max(minPower, Math.min(drivePower, maxPower));
-
-
-
-
-            //double calculatedPower = remainingTicks * P_DRIVE_COEFF;
-            //double drivePower = Math.max(0.1, Math.min(Math.abs(calculatedPower), maxPower));
-
-
-
-
-            switch (direction) {
-                case FORWARD:
-                    setPowerToWheels(drivePower, drivePower, drivePower, drivePower);
-                    break;
-                case BACKWARD:
-                    setPowerToWheels(-drivePower, -drivePower, -drivePower, -drivePower);
-                    break;
-                case LEFT:
-                    setPowerToWheels(-drivePower, drivePower, drivePower, -drivePower);
-                    break;
-                case RIGHT:
-                    setPowerToWheels(drivePower, -drivePower, -drivePower, drivePower);
-                    break;
-            }
-        }
-        setPowerToWheels(0,0,0,0);
-    }
-
-
 
 
     //Gyroscope
@@ -552,24 +477,41 @@ public class Chassis {
         Util.printIMUTelemetry(imu, opMode.telemetry);
     }
 
-    public void turnTo(double headingDeg, double power, double holdTime) {
+    public void turnToAngle(double targetAngle) {
 
-        yawController.reset(headingDeg, power);
-        while (myOpMode.opModeIsActive() && readSensors()) {
+        while (((LinearOpMode) opMode).opModeIsActive()) {
+            odo.update();
+            double currentAngleRAD = odo.getHeading(AngleUnit.RADIANS);
 
-            // implement desired axis powers
-            moveRobot(0, 0, yawController.getOutput(heading));
+            double currentAngle = Math.toDegrees(AngleUnit.normalizeRadians(currentAngleRAD));
+            double errorAngle = AngleUnit.normalizeDegrees(targetAngle - currentAngle);
 
-            // Time to exit?
-            if (yawController.inPosition()) {
-                if (holdTimer.time() > holdTime) {
-                    break;   // Exit loop if we are in position, and have been there long enough.
-                }
-            } else {
-                holdTimer.reset();
+
+            opMode.telemetry.addData("Target Angle", targetAngle);
+            opMode.telemetry.addData("Current Angle", currentAngle);
+            opMode.telemetry.addData("Error Angle", errorAngle);
+            opMode.telemetry.update();
+
+            if( Math.abs(errorAngle) < ERROR_RANGE_DEGREE ) {
+                setPowerToWheels(0,0,0,0);
+
+                break;
             }
-            myOpMode.sleep(10);
+
+            //double turnPower = 0.01 * error;
+            //turnPower = Math.max(-0.5, Math.min(turnPower, 0.5));
+
+            double turnPower = ( (Math.abs(errorAngle) / 180) * (MAX_TURN_PWR - MIN_TURN_PWR) + MIN_TURN_PWR ) * Math.signum(errorAngle) * -1;
+
+            drive(0, 0, turnPower);
         }
-        stopRobot();
     }
+
+
+
+
+
+
+
+
 }

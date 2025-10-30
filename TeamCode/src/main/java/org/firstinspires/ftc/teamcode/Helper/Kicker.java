@@ -16,26 +16,47 @@ public class Kicker {
 
     private Servo kickerPos;
     private OpMode opMode;
-    private DistanceSensor channelSensor;
+
+    public static final double gateClose = 0.4;
+    public static final double gateShoot = 0.25;
+    public static final double gateIntake = 0.6;
+
+    public static final String GATE_CLOSE = "GATE_CLOSE";
+    public static final String GATE_SHOOT = "GATE_SHOOT";
+    public static final String GATE_INTAKE = "GATE_INTAKE";
+
+    private String gatePosition;
 
     public void init(HardwareMap hwMap) {
         kickerPos = hwMap.get(Servo.class, "kicker");
         this.opMode = opMode;
-        channelSensor = hardwareMap.get(DistanceSensor.class, "channelSensor");
+        setGatePosition(GATE_INTAKE);
+    }
+    public void setGatePosition(String gatePosition){
+        this.gatePosition = gatePosition;
+
+        if(gatePosition.equals(GATE_CLOSE)){
+            kickerPos.setPosition(gateClose);
+        } else if(gatePosition.equals(GATE_SHOOT)){
+            kickerPos.setPosition(gateShoot);
+        }  else if(gatePosition.equals(GATE_INTAKE)){
+            kickerPos.setPosition(gateIntake);
+        } else {
+            return;
+        }
+
     }
 
-    public void setKickerPos(double position){
+    public String getGatePosition(){
+        return gatePosition;
+    }
+
+    public void setPosition(double position){
         kickerPos.setPosition(position);
     }
 
-    private boolean readyToLoad() {
-        boolean ret = false;
-
-        // Get distance reading from 2M sensor
-        double dDistance = channelSensor.getDistance(DistanceUnit.CM);
-        telemetry.addData("channel distance sensor", dDistance);
-        if (dDistance > 10 ) ret = true;
-
-        return ret;
+    public double getPosition(){
+        return kickerPos.getPosition();
     }
+
 }
