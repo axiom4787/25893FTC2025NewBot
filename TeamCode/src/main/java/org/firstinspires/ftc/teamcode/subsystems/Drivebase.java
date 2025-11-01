@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.directives.DefaultDrivebase;
 
 import org.firstinspires.ftc.teamcode.stellarstructure.Subsystem;
 
+//todo: make init auto and init tele
 public final class Drivebase extends Subsystem {
     private static final Drivebase drivebase = new Drivebase();
 

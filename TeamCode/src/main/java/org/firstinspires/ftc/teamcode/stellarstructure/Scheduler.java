@@ -7,6 +7,8 @@ import org.firstinspires.ftc.teamcode.stellarstructure.conditions.Condition;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -56,7 +58,13 @@ public class Scheduler {
 	private boolean startRunnable(Runnable runnableToStart) {
 		boolean didInterrupt = false;
 
+		//todo: make "runnables to remove" a function and make it check for if its already present
+
+
+		//todo: maybe fix the thing where runnables will be removed even if the whole process isn't finished
 		// for every running directive
+
+		//todo: combine the 2 for loops into 1 at some point
 		for (Runnable activeRunnable : this.activeRunnables) {
 			// check for conflicts
 			CONFLICT_CHECK:
@@ -68,12 +76,6 @@ public class Scheduler {
 						// CONFLICT FOUND!
 
 						if (activeRunnable.getInterruptible()) {
-							// if the running command is interruptible, stop it and remove it
-							activeRunnable.schedulerStop(true);
-
-							// remove the runnable's triggers
-							activeTriggers.removeAll(activeRunnable.getOwnedTriggers());
-
 							runnablesToRemove.add(activeRunnable);
 							didInterrupt = true;
 						} else {
@@ -88,26 +90,48 @@ public class Scheduler {
 			}
 		}
 
-		this.activeRunnables.add(runnableToStart); // add to running directives
+		for (Runnable activeRunnable : this.runnablesToAdd) {
+			// check for conflicts
+			CONFLICT_CHECK:
+			// for every subsystem required by the new directive
+			for (Subsystem requiredByNew : runnableToStart.getRequiredSubsystems()) {
+				// for every subsystem required by the running directive
+				for (Subsystem requiredByRunning : activeRunnable.getRequiredSubsystems()) {
+					if (requiredByNew == requiredByRunning) {
+						// CONFLICT FOUND!
 
-		//add runnable's triggers
-		for (Trigger trigger : runnableToStart.getOwnedTriggers()) {
-			addTrigger(trigger);
+						if (activeRunnable.getInterruptible()) {
+							runnablesToRemove.add(activeRunnable);
+							didInterrupt = true;
+						} else {
+							// running command unable to be interrupted, so can't schedule new directive
+							return false;
+						}
+
+						// checked requirements for this runningDirective, move to next
+						break CONFLICT_CHECK;
+					}
+				}
+			}
 		}
 
-		runnableToStart.schedulerStart(didInterrupt); // start directive and pass hadToInterruptToStart status
+		this.runnablesToAdd.add(runnableToStart);
 		return true;
 	}
 
 	public void schedule(@NonNull Runnable runnableToSchedule) {
 		// prevent scheduling of the same directive multiple times
-		if (this.runnableScheduleQueue.contains(runnableToSchedule) || this.activeRunnables.contains(runnableToSchedule)) {
+		if (
+				this.runnableScheduleQueue.contains(runnableToSchedule) ||
+				this.runnablesToAdd.contains(runnableToSchedule) ||
+				this.activeRunnables.contains(runnableToSchedule)
+		) {
 			return;
 		}
 
 		// check for starting conditions
 		if (!checkStartingConditions(runnableToSchedule)) {
-			this.runnablesToAdd.add(runnableToSchedule);
+			this.runnableScheduleQueue.add(runnableToSchedule);
 			return;
 		}
 
@@ -130,44 +154,41 @@ public class Scheduler {
 	}
 
 	public void run() {
-		// check schedule queue and potentially move directives to running directives
 		checkScheduleQueue();
 
-		//todo: make the queuing system work
-
-		// stop directives
-		for (Iterator<Runnable> iterator = this.runnablesToAdd.iterator(); iterator.hasNext();) {
-			Runnable runnable = iterator.next();
-			this.activeRunnables.remove(runnable);
-			runnable.schedulerStop(true);
-		}
-
-		// start directives
-		for (Runnable runnable : this.runnablesToAdd) {
-			this.activeRunnables.add(runnable);
-			runnable.schedulerStart(false);
-		}
-
-		// check and run all triggers
-		for (Trigger trigger : this.activeTriggers) {
+		for (Trigger trigger : new ArrayList<>(this.activeTriggers)) {
 			if (trigger.check()) {
 				trigger.run();
 			}
 		}
 
-		// update directives and remove finished directives
-		for (Runnable runnable : this.activeRunnables) {
+		for (Runnable runnable : new ArrayList<>(this.activeRunnables)) {
 			if (runnable.getFinished()) {
-				// remove the runnable's triggers
-				activeTriggers.removeAll(runnable.getOwnedTriggers());
-
-				runnablesToRemove.add(runnable);
+				if (!runnablesToRemove.contains(runnable)) {
+					activeTriggers.removeAll(runnable.getOwnedTriggers());
+					runnablesToRemove.add(runnable);
+				}
 			} else {
 				runnable.update();
 			}
 		}
 
-		// if subsystem isn't being used, then schedule default directive
+		for (Runnable runnable : runnablesToRemove) {
+			runnable.schedulerStop(true);
+			this.activeRunnables.remove(runnable);
+
+			activeTriggers.removeAll(runnable.getOwnedTriggers());
+		}
+		runnablesToRemove.clear();
+
+		for (Runnable runnable : runnablesToAdd) {
+			this.activeRunnables.add(runnable);
+			runnable.schedulerStart(false);
+
+			activeTriggers.addAll(runnable.getOwnedTriggers());
+		}
+		runnablesToAdd.clear();
+
 		for (Subsystem subsystem : this.subsystems) {
 			Runnable defaultDirective = subsystem.getDefaultDirective();
 
@@ -180,6 +201,16 @@ public class Scheduler {
 	private boolean isSubsystemInUse(Subsystem subsystemToCheck) {
 		// for every running directive
 		for (Runnable activeRunnable : this.activeRunnables) {
+			// check if running directive requires subsystem
+			// includes the default directive itself but that's fine for this application
+			for (Subsystem requiredSubsystem : activeRunnable.getRequiredSubsystems()) {
+				if (requiredSubsystem == subsystemToCheck) {
+					return true;
+				}
+			}
+		}
+
+		for (Runnable activeRunnable : this.runnablesToAdd) {
 			// check if running directive requires subsystem
 			// includes the default directive itself but that's fine for this application
 			for (Subsystem requiredSubsystem : activeRunnable.getRequiredSubsystems()) {
@@ -206,6 +237,9 @@ public class Scheduler {
 
 		// clear all running directives
 		this.activeRunnables.clear();
+
+		this.runnablesToAdd.clear();
+		this.runnablesToRemove.clear();
 	}
 
 	public String getTelemetry() {
