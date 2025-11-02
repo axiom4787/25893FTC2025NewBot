@@ -16,9 +16,10 @@ public class Intake {
         intake = opMode.hardwareMap.get(DcMotor.class, "intake");
     }
 
-    public void intake(double motorPower) {
+    public void setIntakePower(double motorPower) {
         intake.setPower(motorPower);
     }
+
 
     public void startIntake(){
         intake.setPower(1);

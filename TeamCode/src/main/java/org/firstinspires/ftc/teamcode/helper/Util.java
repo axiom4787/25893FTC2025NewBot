@@ -159,7 +159,7 @@ public class Util {
 
         double flyWheelVelocity = 0.0;
 
-        flyWheel.start(-flyWheelPower);
+        flyWheel.setPower(flyWheelPower);
         //telemetry.addData("Flywheel StartTime: ", startTime);
         while(durationInMillis <= runForMS){
             intermidiateTime =  System.currentTimeMillis();
@@ -193,6 +193,28 @@ public class Util {
     }
 
     public static long waitForFlyWheelStopVelocity(FlyWheel flyWheel, long velocity, double maxWaitTime, Telemetry telemetry){
+
+        long startTime = System.currentTimeMillis();
+        double startFlyWheelVelocity = flyWheel.getVelocity();
+        double currentFlyWheelVelocity = flyWheel.getVelocity();
+
+        telemetry.addData("Start FlyWheel Velocity - " , startFlyWheelVelocity);
+
+        while (currentFlyWheelVelocity > velocity){
+            flyWheel.setPower(-0.1);
+            sleepThread(500);
+            flyWheel.setPower(0.0);
+            currentFlyWheelVelocity = flyWheel.getVelocity();
+        }
+
+        long endTime = System.currentTimeMillis();
+
+        long durationInMillis = (endTime - startTime);
+        double endFlyWheelVelocity = flyWheel.getVelocity();
+        telemetry.addData("flyWheelVelocity - " + endFlyWheelVelocity,", durationInMillis - "+durationInMillis);
+        return durationInMillis;
+
+        /*
         long startTime = System.currentTimeMillis();
         long intermidiateTime =  System.currentTimeMillis();
         long durationInMillis = intermidiateTime - startTime;
@@ -207,11 +229,14 @@ public class Util {
             flyWheel.setPower(0.0);
             flyWheelVelocity = flyWheel.getVelocity();
             telemetry.addData("flyWheelVelocity - " + flyWheelVelocity,", durationInMillis - "+durationInMillis);
-            if(durationInMillis > maxWaitTime){
-                return durationInMillis;
-            }
+            //if(durationInMillis > maxWaitTime){
+            //    return durationInMillis;
+            //}
+            durationInMillis = intermidiateTime - startTime;
         }
         return durationInMillis;
+
+         */
     }
 
     public static boolean waitForMotor(DcMotorEx dcWheel, long timeoutMs, double ticksPerSecond) {
@@ -234,23 +259,32 @@ public class Util {
 
         return ret;
     }
-    public static boolean readyToLoad(DistanceSensor channelSensor, Telemetry telemetry) {
+    public static boolean isObjectDetected(DistanceSensor channelSensor, Telemetry telemetry) {
         boolean ret = false;
 
         // Get distance reading from 2M sensor
         double dDistance = channelSensor.getDistance(DistanceUnit.CM);
+        telemetry.addData("distanceSensor - ",dDistance);
+        telemetry.update();
         // Check if distance is less than 10 cm
-        if (dDistance > 10 ) ret = true;
+        if (dDistance < 14 ) ret = true;
 
         return ret;
     }
 
-    public static void prepareFlyWheelToShoot(FlyWheel flyWheel, Kicker kicker, Intake intake, DistanceSensor channelDistanceSensor, Telemetry telemetry){
+    public static double getDistance(DistanceSensor channelSensor, Telemetry telemetry) {
+
+        double dDistance = channelSensor.getDistance(DistanceUnit.CM);
+
+        return dDistance;
+    }
+
+    public static void prepareFlyWheelToShoot(FlyWheel flyWheel, Kicker kicker, Intake intake, DistanceSensor frontDistanceSensor, int requiredFlyWheelVelocity, Telemetry telemetry){
         kicker.setPosition(Kicker.gateClose);
         threadSleep(1000);
         //Replace the timer with distance sensor
         //When the ball is moved out, start the flywheel
-        flyWheel.setPower(-0.45);
+        flyWheel.start(requiredFlyWheelVelocity);
         threadSleep(800);
     }
 
@@ -275,42 +309,32 @@ public class Util {
     public static void prepareFlyWheelToIntake(FlyWheel flyWheel, Kicker kicker, Intake intake, DistanceSensor channelDistanceSensor, Telemetry telemetry){
         flyWheel.stop();
         kicker.setGatePosition(Kicker.GATE_CLOSE);
-        telemetry.addData("flyWheel.getVelocity() - ",flyWheel.getVelocity());
-        /*
-        if(flyWheel.getVelocity() > 1000){
-            flyWheel.start(1);
-            threadSleep(530);
-        }
-         */
         Util.waitForFlyWheelStopVelocity(flyWheel,100,5000, telemetry);
         kicker.setPosition(Kicker.gateIntake);
     }
 
-    public static void shootOneBall(FlyWheel flyWheel, Kicker kicker, Intake intake, DistanceSensor channelDistanceSensor, Telemetry telemetry){
-
-        if (kicker.getPosition() == Kicker.gateIntake){
-            //This is not a great condition, as it would waste 2 sec
-            //Ideal condition is that gamepad2.a is pressed before trying to shoot
-            Util.prepareFlyWheelToShoot(flyWheel,kicker, intake, null, telemetry);
-        } else if (kicker.getPosition() == Kicker.gateShoot) {
-            //This is a condition where shoot is pressed pressed before gate is closed
-        }
-
-        Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000);
+    public static void startShooting(FlyWheel flyWheel, Kicker kicker, Intake intake, DistanceSensor channelDistanceSensor, int requiredFlyWheelVelocity, Telemetry telemetry){
+        Util.waitForFlyWheelShootingVelocity(flyWheel,requiredFlyWheelVelocity,3000);
         kicker.setPosition(Kicker.gateShoot);
-        threadSleep(500);// replace with channel distance sensor
-        kicker.setPosition(Kicker.gateClose);
-    }
-
-    public static void startShooting(FlyWheel flyWheel, Kicker kicker, Intake intake, DistanceSensor channelDistanceSensor, Telemetry telemetry){
-
-        Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000);
-        if (Util.readyToLoad(channelDistanceSensor, telemetry)) {
-            kicker.setPosition(Kicker.gateShoot);
-        }else {
+        boolean isObjectDetected = isObjectDetected(channelDistanceSensor, telemetry);
+        if (isObjectDetected) {
             kicker.setPosition(Kicker.gateClose);
         }
     }
+
+    public static int getFlyWheelVelocityRequiredForDistance(double distanceInInchFromAprilTag){
+        int desiredFlyWheelVelocity = FlyWheel.FLYWHEEL_SHOOTING_VELOCITY;
+
+        return desiredFlyWheelVelocity;
+    }
+
+    public static double getDistanceRequiredForFlyWheelVelocity(int flyWheelVelocity){
+        double distanceInInchFromAprilTag = 53.0;
+
+        return distanceInInchFromAprilTag;
+    }
+
+
 
     public static void threadSleep(int millis) {
         try {

@@ -3,12 +3,13 @@ package org.firstinspires.ftc.teamcode.Opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Helper.*;
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-@TeleOp(name = "DecodeTeleopV3.47 Alaqmar", group = "TeleOp")
+@TeleOp(name = "DecodeTeleopV3.78 Alaqmar", group = "TeleOp")
 
 public class Teleop extends LinearOpMode {
 
@@ -19,6 +20,7 @@ public class Teleop extends LinearOpMode {
     long maxLoopTimeout = 2000;
     private Thread driveThread;
     DistanceSensor channelSensor;
+    DistanceSensor frontDistanceSensor;
 
 
     @Override
@@ -46,8 +48,7 @@ public class Teleop extends LinearOpMode {
         aprilTag.initCamera();
 
         channelSensor = hardwareMap.get(DistanceSensor.class, "channelSensor");
-
-
+        frontDistanceSensor = hardwareMap.get(DistanceSensor.class, "front_distance_sensor");
 
         chassis.odo.resetPosAndIMU();
 
@@ -58,19 +59,6 @@ public class Teleop extends LinearOpMode {
 
         driveThread.start(); // Start the concurrent task
 
-        //Util.telemetryFlyWheelVelocity(flyWheel, 0.65, 3000,telemetry);
-        //telemetry.update();
-
-        /*
-
-
-        Util.readyToLoad(channelSensor,telemetry);
-        telemetry.update();
-        sleep(5000);
-        aprilTag.getCoordinate("BlueTarget");
-
-         */
-
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -78,40 +66,21 @@ public class Teleop extends LinearOpMode {
         while (opModeIsActive()) {
 
             chassis.odo.update();
-            //telemetry.addData("Odo x", chassis.odo.getEncoderX());
-            //telemetry.addData("Odo y", chassis.odo.getEncoderY());
 
+            AprilTagPoseFtc aprilTagPoseFtc = aprilTag.getCoordinate(DecodeAprilTag.BLUE_APRIL_TAG);
+            Double robotDistanceFromAprilTagUsingCamera = 0.0;
+            if(aprilTagPoseFtc !=null) {
+                robotDistanceFromAprilTagUsingCamera = aprilTagPoseFtc.range;
+            }
+            double robotDistanceFromAprilTagUsingFrontDistanceSensor = frontDistanceSensor.getDistance(DistanceUnit.CM);
+            telemetry.addData("Distance From Camera: ", String.valueOf(robotDistanceFromAprilTagUsingCamera));
+            telemetry.addData("Distance From Front Sensor: ", String.valueOf(robotDistanceFromAprilTagUsingFrontDistanceSensor));
 
-
-//            if (gamepad1.a) {
-//                chassis.resetHeading();
-//
-//            }
-//            // If gamepad x is pressed then switch to field centric
-//             If gamepad y is pressed then switch to robot centric
-//            if (gamepad1.x) {
-//                chassis.resetIMU();
-//                chassis.setDriveMode(Chassis.DriveMode.FIELD_CENTRIC);
-//            } else if (gamepad1.y) {
-//                chassis.setDriveMode(Chassis.DriveMode.ROBOT_CENTRIC);
-//            }
-
-
-
-            /*
-            //Running the following code in Thread
-                float axial = -gamepad1.left_stick_y;
-                float lateral = -gamepad1.left_stick_x;
-                float yaw = -gamepad1.right_stick_x;
-                chassis.moveRobot(axial, lateral, yaw);
-
-             */
-
+            double distanceSensor = Util.getDistance(channelSensor, telemetry);
+            telemetry.addData("Channel Distance Sensor - ",distanceSensor);
+            telemetry.update();
 
             // Kicker
-
-            long flyWheelReadyTime = 1000;
-
             if(gamepad2.dpad_up) {
                 kicker.setPosition(Kicker.gateClose);
                 Util.addKickerTelemetry(kicker,telemetry);
@@ -122,8 +91,17 @@ public class Teleop extends LinearOpMode {
                 Util.addKickerTelemetry(kicker,telemetry);
                 telemetry.update();
             }
-            if(gamepad2.dpad_right) {
+            if(gamepad2.dpad_left) {
                 kicker.setPosition(Kicker.gateIntake);
+                Util.addKickerTelemetry(kicker,telemetry);
+                telemetry.update();
+            }
+            if(gamepad2.dpad_right) {
+                if(kicker.getGatePosition().equals(Kicker.GATE_CLOSE)){
+                    kicker.setPosition(Kicker.gateShoot);
+                    sleep(400);
+                    kicker.setPosition(Kicker.gateClose);
+                }
                 Util.addKickerTelemetry(kicker,telemetry);
                 telemetry.update();
             }
@@ -131,128 +109,52 @@ public class Teleop extends LinearOpMode {
             //Shooting
             if (gamepad2.right_bumper) {
 
-                //telemetry.addData("Double.compare",Double.compare(kicker.getPosition(), Kicker.gateIntake));
+                 aprilTagPoseFtc = aprilTag.getCoordinate(DecodeAprilTag.BLUE_APRIL_TAG);
+                 robotDistanceFromAprilTagUsingCamera = aprilTagPoseFtc.range;
+                 robotDistanceFromAprilTagUsingFrontDistanceSensor = frontDistanceSensor.getDistance(DistanceUnit.INCH);
 
+                 int flyWheelVelocityRequired = Util.getFlyWheelVelocityRequiredForDistance(robotDistanceFromAprilTagUsingCamera);
 
-                switch (kicker.getGatePosition()) {
-                    case Kicker.GATE_INTAKE:
-                        telemetry.addData("Gate in intake position", " when right_bumper pressed.");
-                        //This is not a great condition, as it would waste 2 sec
-                        //Ideal condition is that gamepad2.a is pressed before trying to shoot
-                        Util.prepareFlyWheelToShoot(flyWheel, kicker, intake, channelSensor, telemetry);
-                        break;
-                    case Kicker.GATE_SHOOT:
-                        telemetry.addData("Gate in shoot position", " when right_bumper pressed.");
-                        //This is a condition where shoot is pressed before gate is open
-                        break;
-                    case Kicker.GATE_CLOSE:
-                        telemetry.addData("Gate in close position", " when right_bumper pressed.");
-                        //This is a condition where shoot is pressed when gate is closed
-                        break;
-                    default:
-                        Util.addKickerTelemetry(kicker, telemetry);
-                        break;
-                }
+                Util.prepareFlyWheelToShoot(flyWheel, kicker, intake, channelSensor, flyWheelVelocityRequired, telemetry);
+
+                intake.setIntakePower(0.4);
 
                 while(!gamepad2.left_bumper) {
                     Util.startShooting(flyWheel, kicker, intake, channelSensor, telemetry);
                     sleep(300);
                 }
 
-                telemetry.addData("gamepad2.left_bumper - ",gamepad2.left_bumper);
+                intake.stopIntake();
+                Util.prepareFlyWheelToIntake(flyWheel,kicker,intake, channelSensor,telemetry);
 
-
-                flyWheel.stop();
-                kicker.setGatePosition(Kicker.GATE_CLOSE);
-                long flyWheelStopDuration = Util.waitForFlyWheelStopVelocity(flyWheel,100,5000, telemetry);
-                telemetry.addData("flyWheelStopDuration (ms) - ",flyWheelStopDuration);
-                telemetry.update();
 
                 /*
-
-                long startTime = System.currentTimeMillis();
-                long intermidiateTime =  System.currentTimeMillis();
-                long durationInMillis = intermidiateTime - startTime;
-
-                //intake.intake(0.6);
-                kicker.moveToClosePosition();// Middle P
-                sleep(1000);
-
-                flyWheel.setPower(-0.65);
-                sleep(800);
-
-                Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000);
-                //telemetry.addData("Flywheel warmup time (ms): ",  + durationInMillis );
-
-                intermidiateTime =  System.currentTimeMillis();
-                durationInMillis = intermidiateTime - startTime;
-                double currentVelocity = flyWheel.getVelocity();
-                telemetry.addData("Velocity Before First Shot: "+ currentVelocity," in time: "+durationInMillis);
+                kicker.setGatePosition(Kicker.GATE_CLOSE);
+                long flyWheelStopDuration = Util.waitForFlyWheelStopVelocity(flyWheel,100,5000, telemetry);
+                //telemetry.addData("flyWheelStopDuration (ms) - ",flyWheelStopDuration);
+                kicker.setGatePosition(Kicker.GATE_INTAKE);
                 telemetry.update();
-
-                //sleep(1000);
-                // First Shot
-                kicker.moveToShootingPosition();
-                sleep(400);
-                kicker.moveToClosePosition();
-
-                 intermidiateTime =  System.currentTimeMillis();
-                 durationInMillis = intermidiateTime - startTime;
-                currentVelocity = flyWheel.getVelocity();
-                telemetry.addData("Velocity After First Shot: "+ currentVelocity," in time: "+durationInMillis);
-
-                // Turn intake on
-                //sleep(flyWheelReadyTime);
-                intake.intake(0.6);
-                //sleep(200);
-
-                Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000);
-                intermidiateTime =  System.currentTimeMillis();
-                durationInMillis = intermidiateTime - startTime;
-                currentVelocity = flyWheel.getVelocity();
-                telemetry.addData("Velocity Before Second Shot: "+ currentVelocity," in time: "+durationInMillis);
-
-
-
-                //Second Shot
-                kicker.moveToShootingPosition();
-                sleep(500);
-                kicker.moveToClosePosition();
-                //sleep(flyWheelReadyTime);
-
-
-
-                // Third Shot
-                Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000);
-                intermidiateTime =  System.currentTimeMillis();
-                durationInMillis = intermidiateTime - startTime;
-                currentVelocity = flyWheel.getVelocity();
-                telemetry.addData("Velocity Before Third Shot: "+ currentVelocity," in time: "+durationInMillis);
-
-                kicker.moveToShootingPosition();
-                //sleep(1000);
-                //intake.intake(0.0);
-                //kicker.setKickerPos(gateIntake);
-
-                telemetry.update();
-
-
+                //sleep(5000);
                  */
+            }
 
-            } else if (gamepad2.left_bumper) {
+            if (gamepad2.a){
+                // = Util.getFlyWheelVelocityRequiredForDistance();
+                Util.prepareFlyWheelToShoot(flyWheel,kicker, intake, channelSensor, FlyWheel.FLYWHEEL_SHOOTING_VELOCITY, telemetry);
+            }
 
-        } else if (gamepad2.a){
-                Util.prepareFlyWheelToShoot(flyWheel,kicker, intake, channelSensor, telemetry);
-            } else if (gamepad2.b) {
+            if (gamepad2.b) {
                 Util.prepareFlyWheelToIntake(flyWheel,kicker, intake, channelSensor, telemetry);
-            } else if (gamepad2.x){
+            }
+
+            if (gamepad2.x){
                 intake.startIntake();
-            } else if (gamepad2.y) {
+            }
+
+            if (gamepad2.y) {
                 intake.stopIntake();
             }
-            else if (gamepad2.dpad_right){
 
-            }
         }
 
         // Clean up the thread

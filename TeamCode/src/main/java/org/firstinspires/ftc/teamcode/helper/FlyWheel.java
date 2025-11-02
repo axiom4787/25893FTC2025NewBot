@@ -3,14 +3,16 @@ package org.firstinspires.ftc.teamcode.Helper;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
 public class FlyWheel {
 
     
     private DcMotorEx flyWheel;
     private OpMode opMode;
-    public int FLYWHEEL_SHOOTING_VELOCITY = 1000;
-    public double FLYWHEEL_SHOOTING_POWER = -0.45;
+    public static int FLYWHEEL_SHOOTING_VELOCITY = 1350;
+    public double FLYWHEEL_SHOOTING_POWER = (0.65*FLYWHEEL_SHOOTING_VELOCITY)/1500;
 
 
     public void init (OpMode opMode) {
@@ -20,10 +22,14 @@ public class FlyWheel {
         flyWheel = opMode.hardwareMap.get(DcMotorEx.class, "flyWheel");
         flyWheel.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         flyWheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        flyWheel.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
-    public void start(double power) {
-        flyWheel.setPower(power);
+    public void start() {
+        flyWheel.setPower(FLYWHEEL_SHOOTING_POWER);
+    }
+    public void start(int flyWheelShootingPower) {
+        flyWheel.setPower(flyWheelShootingPower);
     }
     public void stop() {
         flyWheel.setPower(0.0);

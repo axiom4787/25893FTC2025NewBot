@@ -179,7 +179,7 @@ public class AutoBasketBlue extends LinearOpMode {
 
         // Turn intake on
         //sleep(flyWheelReadyTime);
-        intake.intake(0.6);
+        intake.setIntakePower(0.6);
         //sleep(200);
 
         Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000);

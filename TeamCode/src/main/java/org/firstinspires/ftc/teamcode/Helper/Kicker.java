@@ -17,7 +17,7 @@ public class Kicker {
     private Servo kickerPos;
     private OpMode opMode;
 
-    public static final double gateClose = 0.4;
+    public static final double gateClose = 0.37;
     public static final double gateShoot = 0.25;
     public static final double gateIntake = 0.6;
 
