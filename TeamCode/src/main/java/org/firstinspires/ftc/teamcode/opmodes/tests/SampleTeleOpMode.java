@@ -1,14 +1,19 @@
 package org.firstinspires.ftc.teamcode.opmodes.tests;
 
+import static org.firstinspires.ftc.teamcode.subsystems.cameras.LogitechSubsystem.obelisk;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+
 import org.firstinspires.ftc.teamcode.Hardware;
 import org.firstinspires.ftc.teamcode.subsystems.mecanum.MecanumCommand;
 import org.firstinspires.ftc.teamcode.subsystems.odometry.PinPointOdometrySubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.cameras.LimelightSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.cameras.LogitechSubsystem;
 
 
 @TeleOp(name = "TeleopSample", group = "TeleOp")
@@ -16,6 +21,8 @@ public class SampleTeleOpMode extends LinearOpMode {
 
     // opmodes should only own commands
     private MecanumCommand mecanumCommand;
+    private LimelightSubsystem limelightsub;
+    private LogitechSubsystem logitechsub;
     private ElapsedTime timer;
     private Hardware hw;
     private ElapsedTime resetTimer;
@@ -26,6 +33,7 @@ public class SampleTeleOpMode extends LinearOpMode {
 
     // --- Button edge detection ---
     private boolean previousAState = false;
+    private boolean previousBState = false;
     private boolean previousXState = false;
     private boolean previousYState = false;
 
@@ -42,6 +50,8 @@ public class SampleTeleOpMode extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         hw = Hardware.getInstance(hardwareMap);
         mecanumCommand = new MecanumCommand(hw);
+        limelightsub = new LimelightSubsystem(hw, telemetry);
+        logitechsub = new LogitechSubsystem();
         resetTimer = new ElapsedTime();
         hw.pusher.setPosition(PUSHER_DOWN);
 
@@ -50,6 +60,17 @@ public class SampleTeleOpMode extends LinearOpMode {
 
         // Loop while OpMode is running
         while (opModeIsActive()) {
+            logitechsub.pattern();
+            telemetry.addData("Pattern ", obelisk);
+
+//            if (obelisk == "PPG"){
+//
+//            } else if (obelisk == "PGP"){
+//
+//            } else if (obelisk == "GPP"){
+//
+//            }
+
             mecanumCommand.processOdometry();
             mecanumCommand.fieldOrientedMove(
                     gamepad1.left_stick_y,
@@ -97,6 +118,12 @@ public class SampleTeleOpMode extends LinearOpMode {
                 hw.shooter.setPower(isOuttakeMotorOn ? 1.0 : 0.0);
             }
             previousXState = currentXState;
+
+            boolean currentBState = gamepad1.b;
+            if (currentBState && !previousBState) {
+                limelightsub.ballPosition(telemetry, mecanumCommand);
+            }
+            previousBState = currentBState;
 
         }
 

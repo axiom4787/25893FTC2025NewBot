@@ -19,7 +19,7 @@ public class LogitechSubsystem {
     private static boolean PGP = false;
     private static boolean PPG = false;
 
-    private static String obelisk;
+    public static String obelisk;
 
     private AprilTagProcessor aprilTag;
 
@@ -55,11 +55,6 @@ public class LogitechSubsystem {
             }
         }
 
-        if (obelisk == "PPG"){
-
-        } else if (obelisk == "PPG"){
-
-        }
     }
     public void telemetryAprilTag(Telemetry telemetry){
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
