@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.mechanisms;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class LauncherControl {
@@ -10,7 +11,7 @@ public class LauncherControl {
 
     public void init(HardwareMap hardwareMap){
         launchMotor = hardwareMap.get(DcMotor.class, "shooter");
-        launchMotor.setDirection(DcMotor.Direction.REVERSE);
+        launchMotor.setDirection(DcMotor.Direction.FORWARD);
         launchMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         ticksPerRotation = launchMotor.getMotorType().getTicksPerRev();
 
