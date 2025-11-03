@@ -332,9 +332,11 @@ public class Util {
 
          desiredFlyWheelVelocity = doubleDesiredFlyWheelVelocity.intValue();
 
+         /*
          if (desiredFlyWheelVelocity<1000){
              desiredFlyWheelVelocity = FlyWheel.FLYWHEEL_SHOOTING_VELOCITY;
          }
+          */
 
         return desiredFlyWheelVelocity;
     }

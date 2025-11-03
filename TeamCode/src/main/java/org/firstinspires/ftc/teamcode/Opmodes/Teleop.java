@@ -9,7 +9,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-@TeleOp(name = "DecodeTeleopV3.82 Alaqmar", group = "TeleOp")
+@TeleOp(name = "DecodeTeleopV3.83 Alaqmar", group = "TeleOp")
 
 public class Teleop extends LinearOpMode {
 
