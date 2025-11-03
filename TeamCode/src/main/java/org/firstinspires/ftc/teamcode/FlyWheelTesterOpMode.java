@@ -123,39 +123,40 @@ public class FlyWheelTesterOpMode extends OpMode {
         telemetry.addData("Right Velocity", flyWheelRight.getVelocity());
         telemetry.addData("Launch State", launchState.toString());
 
-        launch(gamepad1.yWasPressed());
+        launch(gamepad1.yWasPressed(), targetVelocity);
 
         telemetry.update();
 
     }
 
-    void launch(boolean shotRequested) {
+    void launch(boolean shotRequested, double shootVelocity) {
         switch (launchState) {
             case IDLE:
-                if (shotRequested) {
-                    launchState = LaunchState.SPIN_UP;
-                }
+               if (shotRequested) {
+                   launchState = LaunchState.SPIN_UP;
+               }
                 break;
             case SPIN_UP:
-                flyWheelLeft.setVelocity(targetVelocity);
-                flyWheelRight.setVelocity(targetVelocity);
+                flyWheelLeft.setVelocity(shootVelocity);
+                flyWheelRight.setVelocity(shootVelocity);
 
                 // Advance to LAUNCH when both motors are up to speed
-                if (flyWheelLeft.getVelocity() >= (targetVelocity - tolerance) &&
-                flyWheelRight.getVelocity() >= (targetVelocity - tolerance)) {
+                if (flyWheelLeft.getVelocity() >= (shootVelocity - tolerance) &&
+                        flyWheelRight.getVelocity() >= (shootVelocity - tolerance)) {
                     launchState = LaunchState.LAUNCH;
                 }
                 break;
             case LAUNCH:
-                flyWheelLeft.setVelocity(targetVelocity);
-                flyWheelRight.setVelocity(targetVelocity);
+                flyWheelLeft.setVelocity(shootVelocity);
+                flyWheelRight.setVelocity(shootVelocity);
                 // For now, if velocity drops on either flyWheel, we probably fired...
                 // go back to SPIN_UP
-                if (flyWheelLeft.getVelocity() < (targetVelocity + tolerance) ||
-                flyWheelRight.getVelocity() < (targetVelocity + tolerance)) {
+                if (flyWheelLeft.getVelocity() < (shootVelocity + tolerance) ||
+                        flyWheelRight.getVelocity() < (shootVelocity + tolerance)) {
                     launchState = LaunchState.SPIN_UP;
                 }
                 break;
         }
     }
+
 }

@@ -30,10 +30,8 @@ public class GamepadDriveTeleOp extends OpMode {
         }
 
         if (gamepad1.yWasReleased()) {
-            boolean yeetStatus = yeeter.toggle();
-            telemetry.addData("Yeet (Score) Status", yeetStatus);
+            yeeter.launch(gamepad1.yWasPressed(), 67);
         }
-
         double forward = -gamepad1.left_stick_y;
         double right = -gamepad1.left_stick_x;
         double rotate = gamepad1.right_stick_x;
