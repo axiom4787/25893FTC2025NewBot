@@ -23,6 +23,7 @@ import java.util.List;
 
 @TeleOp(name = "FTC Comp", group = "Ftc Comp")
 @Disabled
+//This is to not duplicate the TeleOp
 //we need to add the DcMotors
 public class FtcCompAuto extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
