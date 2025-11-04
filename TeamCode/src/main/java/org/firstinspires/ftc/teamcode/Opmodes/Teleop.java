@@ -3,11 +3,21 @@ package org.firstinspires.ftc.teamcode.Opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Helper.*;
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
+
+//Imports LimeLight
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.LLStatus;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+
 
 @TeleOp(name = "DecodeTeleopV3.84 Alaqmar", group = "TeleOp")
 
@@ -21,6 +31,10 @@ public class Teleop extends LinearOpMode {
     private Thread driveThread;
     DistanceSensor channelSensor;
     DistanceSensor frontDistanceSensor;
+
+    WebcamName webcamName;
+    private Limelight3A limelight;
+
 
 
     @Override
@@ -40,8 +54,15 @@ public class Teleop extends LinearOpMode {
         Kicker kicker = new Kicker();
         kicker.init(hardwareMap);
 
-        DecodeAprilTag aprilTag  = new DecodeAprilTag(this);
-        aprilTag.initCamera();
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        telemetry.setMsTransmissionInterval(11);
+        limelight.pipelineSwitch(0);
+        limelight.start();
+
+        //webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
+        //DecodeAprilTag aprilTag  = new DecodeAprilTag(this);
+        //aprilTag.initCamera();
+
 
         channelSensor = hardwareMap.get(DistanceSensor.class, "channelSensor");
         frontDistanceSensor = hardwareMap.get(DistanceSensor.class, "front_distance_sensor");
@@ -61,6 +82,9 @@ public class Teleop extends LinearOpMode {
         // Run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
+            Integer flyWheelVelocityRequired =  FlyWheel.FLYWHEEL_SHOOTING_VELOCITY;
+
+            /*
             AprilTagPoseFtc aprilTagPoseFtc = null;
             Double robotDistanceFromAprilTagUsingCamera = 0.0;
             Double robotDistanceUsingFrontDistanceSensor = 0.0;
@@ -84,6 +108,8 @@ public class Teleop extends LinearOpMode {
             distanceSensor = Util.getDistance(channelSensor, telemetry);
             telemetry.addData("Distance From Channel Sensor - ",distanceSensor);
             telemetry.update();
+
+             */
 
             // Kicker
             if(gamepad2.dpad_up) {
