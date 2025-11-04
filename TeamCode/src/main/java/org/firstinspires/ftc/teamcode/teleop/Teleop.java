@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
@@ -22,6 +23,8 @@ public class Teleop extends LinearOpMode {
     public static double target = 0;
     public double hoodpos = 0;
     public static Follower follower;
+    ElapsedTime time1 = new ElapsedTime();
+
     @Override
     public void runOpMode() throws InterruptedException {
         follower = Constants.createFollower(hardwareMap);
@@ -52,12 +55,15 @@ public class Teleop extends LinearOpMode {
         backRightMotor.setDirection(DcMotorEx.Direction.FORWARD);
         frontRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        time1.startTime();
+
 
         waitForStart();
 
         if (isStopRequested()) return;
 
-        while (opModeIsActive()) {
+        while (opModeIsActive() && !isStopRequested()) {
+            time1.reset();
             intake.setPower(gamepad1.left_stick_x);
 //            follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
 //            follower.update();
@@ -106,6 +112,7 @@ public class Teleop extends LinearOpMode {
 //            telemetry.addData("Distance: ", robotX);
 //            telemetry.addData("Distance: ", robotY);
             telemetry.addData("right trigger", gamepad1.left_stick_y);
+            telemetry.addData("time", time1.milliseconds());
             telemetry.update();
         }
     }

@@ -19,7 +19,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-@Configurable
+@Config
 @TeleOp
 public class Shooter extends OpMode {
     private FtcDashboard dashboard;
@@ -31,7 +31,7 @@ public class Shooter extends OpMode {
     private static double vel = 0;
     public static double alpha = 0.6;
 
-    private DcMotorEx shooterb, shootert;
+    private DcMotorEx shooterb, shootert, intake;
     private VoltageSensor volt;
 
     @Override
@@ -40,12 +40,15 @@ public class Shooter extends OpMode {
         controller = new PIDController(p, i, d);
         shooterb = hardwareMap.get(DcMotorEx.class, "sb");
         shootert = hardwareMap.get(DcMotorEx.class, "st");
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
         volt = hardwareMap.get(VoltageSensor.class, "Control Hub");
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
     }
 
     @Override
     public void loop() {
+        intake.setPower(gamepad1.right_trigger);
+
         controller.setPID(p, i, d);
         double presentVoltage = volt.getVoltage();
         vel = vel * alpha + shooterb.getVelocity() * (2 * Math.PI / 28) * (1 - alpha);
@@ -54,12 +57,11 @@ public class Shooter extends OpMode {
         shooterb.setPower((pid + f * target) / presentVoltage);
         shootert.setPower((-1) * (pid + f * target) / presentVoltage);
 
-        telemetryM.addData("Velocity B", shooterb.getVelocity());
-        telemetryM.addData("Velocity T", shootert.getVelocity());
-        telemetryM.debug("Velocity B", vel);
-        telemetryM.debug("Target", target);
-        telemetryM.debug("Power", pid);
-        telemetryM.update(telemetry);
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("Velocity", vel);
+        packet.put("Target", target);
+        packet.put("Power", pid);
+        dashboard.sendTelemetryPacket(packet);
 
         try {
             Thread.sleep(10);
