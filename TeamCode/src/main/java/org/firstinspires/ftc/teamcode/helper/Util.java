@@ -178,12 +178,13 @@ public class Util {
         flyWheel.stop();
     }
 
-    public static Long waitForFlyWheelShootingVelocity(FlyWheel flyWheel, long velocity, double maxWaitTime){
+    public static Long waitForFlyWheelShootingVelocity(FlyWheel flyWheel, long velocity, double maxWaitTime, Telemetry telemetry){
         long startTime = System.currentTimeMillis();
         long intermidiateTime =  System.currentTimeMillis();
         long durationInMillis = intermidiateTime - startTime;
-
+        int loopCounter = 0;
         while (flyWheel.getVelocity() < velocity){
+            loopCounter++;
             intermidiateTime =  System.currentTimeMillis();
             durationInMillis = intermidiateTime - startTime;
             sleepThread(250);
@@ -191,6 +192,7 @@ public class Util {
                 return durationInMillis;
             }
         }
+        telemetry.addData("waitForFlyWheelShootingVelocity - loopCounter - ",loopCounter);
         return durationInMillis;
     }
 
@@ -315,8 +317,10 @@ public class Util {
         kicker.setPosition(Kicker.gateIntake);
     }
 
+
     public static void startShooting(FlyWheel flyWheel, Kicker kicker, Flipper flipper, Intake intake, DistanceSensor channelDistanceSensor, int requiredFlyWheelVelocity, Telemetry telemetry){
         Long timeForFlyWheelVelocity = Util.waitForFlyWheelShootingVelocity(flyWheel,requiredFlyWheelVelocity,3000);
+
         telemetry.addData("timeForFlyWheelVelocity - ",timeForFlyWheelVelocity);
         kicker.setPosition(Kicker.gateShoot);
         flipper.turnFlipper();
@@ -339,7 +343,9 @@ public class Util {
     public static int getFlyWheelVelocityRequiredForDistance(double distanceInInchFromAprilTag){
         int desiredFlyWheelVelocity = FlyWheel.FLYWHEEL_SHOOTING_VELOCITY;
 
-        Double doubleDesiredFlyWheelVelocity = 0.004*(distanceInInchFromAprilTag)+0.399;
+        Double doubleDesiredFlyWheelPower = 0.004*(distanceInInchFromAprilTag)+0.399;
+        Double doubleDesiredFlyWheelVelocity = (doubleDesiredFlyWheelPower * 1500)/0.65;
+
 
          desiredFlyWheelVelocity = doubleDesiredFlyWheelVelocity.intValue();
 

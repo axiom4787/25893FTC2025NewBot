@@ -156,7 +156,7 @@ public class AutoBasketBlue extends LinearOpMode {
         flyWheel.setPower(-0.65);
         sleep(800);
 
-        Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000);
+        Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000,telemetry);
         //telemetry.addData("Flywheel warmup time (ms): ",  + durationInMillis );
 
         intermediateTime =  System.currentTimeMillis();
@@ -182,7 +182,7 @@ public class AutoBasketBlue extends LinearOpMode {
         intake.setIntakePower(0.6);
         //sleep(200);
 
-        Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000);
+        Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000, telemetry);
         intermediateTime =  System.currentTimeMillis();
         durationInMillis = intermediateTime - startTime;
         currentVelocity = flyWheel.getVelocity();
@@ -199,7 +199,7 @@ public class AutoBasketBlue extends LinearOpMode {
 
 
         // Third Shot
-        Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000);
+        Util.waitForFlyWheelShootingVelocity(flyWheel,1500,2000, telemetry);
         intermediateTime =  System.currentTimeMillis();
         durationInMillis = intermediateTime - startTime;
         currentVelocity = flyWheel.getVelocity();

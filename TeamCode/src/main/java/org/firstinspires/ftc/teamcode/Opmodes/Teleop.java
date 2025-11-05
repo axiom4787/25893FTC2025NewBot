@@ -9,7 +9,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-@TeleOp(name = "DecodeTeleopV3.83 Alaqmar", group = "TeleOp")
+@TeleOp(name = "DecodeTeleopV3.84 Alaqmar", group = "TeleOp")
 
 public class Teleop extends LinearOpMode {
 
@@ -121,10 +121,13 @@ public class Teleop extends LinearOpMode {
 
                 intake.setIntakePower(0.4);
 
+                int loopCounter = 0;
                 while(!gamepad2.left_bumper) {
                     Util.startShooting(flyWheel, kicker, flipper, intake, channelSensor, flyWheelVelocityRequired, telemetry);
                     sleep(200);
                 }
+                telemetry.addData("gamepad2.right_bumper - loopCounter - ",loopCounter);
+                telemetry.update();
 
                 flipper.resetFlipper();
                 intake.startIntake();
