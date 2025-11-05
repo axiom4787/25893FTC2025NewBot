@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.shooter;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -16,6 +17,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
+@Config
 @TeleOp
 public class Test extends OpMode {
     public static Follower follower;
@@ -26,10 +28,13 @@ public class Test extends OpMode {
     public static double target = 0;
     private static double vel = 0;
     public static double alpha = 0.6;
-    InterpLUT controlPoints = new InterpLUT();
-    private DcMotorEx shooterb, shootert, intake;
+    InterpLUT RPM = new InterpLUT();
+    InterpLUT angle = new InterpLUT();
+    private DcMotorEx shooterb, shootert, intake, turret;
+    private Servo hood;
     private VoltageSensor volt;
-
+    public static double tangle = 40;
+    public static double theta = 0;
     private final int shooterX = 135;
     private final int shooterY = 135;
     Servo latch;
@@ -38,16 +43,30 @@ public class Test extends OpMode {
     public void init() {
         controller = new PIDController(p, i, d);
         shooterb = hardwareMap.get(DcMotorEx.class, "sb");
+        turret = hardwareMap.get(DcMotorEx.class, "turret");
         shootert = hardwareMap.get(DcMotorEx.class, "st");
         intake = hardwareMap.get(DcMotorEx.class, "intake");
+        hood = hardwareMap.get(Servo.class, "hood");
         volt = hardwareMap.get(VoltageSensor.class, "Control Hub");
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 //        flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
-        controlPoints.add(31 / 2.2, 325);
-        controlPoints.add(88 / 2.2, 360);
-        controlPoints.add(132 / 2.2, 410);
-        controlPoints.add(90, 480);
-        controlPoints.createLUT();
+        RPM.add(20, 350);
+        RPM.add(39, 350);
+        RPM.add(50, 375);
+        RPM.add(60, 400);
+        RPM.add(74, 415);
+        RPM.add(90, 450);
+        RPM.add(180, 450);
+        RPM.createLUT();
+
+        angle.add(20, 1);
+        angle.add(39, 0.7);
+        angle.add(50, 0.6);
+        angle.add(60, 0.5);
+        angle.add(74, 0.4);
+        angle.add(90, 0.3);
+        angle.add(180, 0.3);
+        angle.createLUT();
 
         latch = hardwareMap.servo.get("latch");
     }
@@ -80,18 +99,21 @@ public class Test extends OpMode {
         double robotY = follower.getPose().getY();
         double robotHeading = follower.getPose().getHeading();
         double distance = Math.sqrt(Math.pow(Math.abs(shooterX - robotX), 2) + Math.pow(Math.abs(shooterY - robotY), 2));
-//        double theta = Math.atan(Math.abs(shooterY - robotY) / Math.abs(shooterX - robotX)); // radians
-//        double turretAngle = theta - robotHeading;
-//        double turretDegrees = Math.toDegrees(turretAngle);
-//        turretDegrees = (turretDegrees + 180) % 360 / 360.0;
-//        target = turretDegrees * 1600 - 600;
-//        controller.setPID(p, i, d);
-//        int pos = turret.getCurrentPosition();
-//        double pid = controller.calculate(pos, target);
-//        turret.setPower(pid);
+        double theta = Math.atan(Math.abs(shooterY - robotY) / Math.abs(shooterX - robotX)); // radians
+        double turretAngle = theta - robotHeading;
+        double turretDegrees = Math.toDegrees(turretAngle);
+        turretDegrees = (turretDegrees + tangle) % 360 / 360.0;
+//        targetTurret = turretDegrees * 1640 - 450;
+        controller.setPID(0.025, 0, 0);
+        int pos = turret.getCurrentPosition();
+        telemetry.addData("Turret angle", turretDegrees);
+        telemetry.addData("Position", turretDegrees * 1640 - 450);
+        double pidturret = controller.calculate(pos, turretDegrees * 1640 - 450);
+        turret.setPower(pidturret);
 
         intake.setPower(gamepad1.right_trigger);
-        target = controlPoints.get(distance);
+        target = RPM.get(distance);
+        hood.setPosition(angle.get(distance));
         controller.setPID(p, i, d);
         double presentVoltage = volt.getVoltage();
         vel = vel * alpha + shooterb.getVelocity() * (2 * Math.PI / 28) * (1 - alpha);
@@ -110,8 +132,8 @@ public class Test extends OpMode {
         telemetry.addData("Distance: ", distance);
         telemetry.addData("x: ", robotX);
         telemetry.addData("y: ", robotY);
-        telemetry.addData("RPM: ", controlPoints.get(distance));
-
+        telemetry.addData("RPM: ", RPM.get(distance));
+        telemetry.addData("Angle: ", angle.get(distance));
         telemetry.update();
     }
 }

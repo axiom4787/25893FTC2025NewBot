@@ -30,6 +30,8 @@ public class Shooter extends OpMode {
     public static double target = 0;
     private static double vel = 0;
     public static double alpha = 0.6;
+    private Servo hood, latch;
+    public static double theta = 0;
 
     private DcMotorEx shooterb, shootert, intake;
     private VoltageSensor volt;
@@ -40,14 +42,23 @@ public class Shooter extends OpMode {
         controller = new PIDController(p, i, d);
         shooterb = hardwareMap.get(DcMotorEx.class, "sb");
         shootert = hardwareMap.get(DcMotorEx.class, "st");
+        hood = hardwareMap.get(Servo.class, "hood");
         intake = hardwareMap.get(DcMotorEx.class, "intake");
         volt = hardwareMap.get(VoltageSensor.class, "Control Hub");
+        latch = hardwareMap.servo.get("latch");
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
     }
 
     @Override
     public void loop() {
         intake.setPower(gamepad1.right_trigger);
+        hood.setPosition(theta);
+
+        if (gamepad1.y) {
+            latch.setPosition(1);
+        } else {
+            latch.setPosition(0);
+        }
 
         controller.setPID(p, i, d);
         double presentVoltage = volt.getVoltage();
