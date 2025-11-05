@@ -8,28 +8,29 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @Autonomous(name="AutoMode_Hinaa", group="Robot")
 public class AutoMode_Hinaa extends LinearOpMode {
 
-    // Declare motors
     private DcMotor frontleft, frontright, backleft, backright;
     private ElapsedTime runtime = new ElapsedTime();
 
-    // Encoder constants
-    static final double COUNTS_PER_MOTOR_REV = 383.6; // GoBilda 5202/5203 motor encoder counts
-    static final double DRIVE_GEAR_REDUCTION = 1.0;
-    static final double WHEEL_DIAMETER_INCHES = 4.0;
+    // Motor and wheel configuration (adjust if different)
+    static final double COUNTS_PER_MOTOR_REV = 537.6;    // GoBilda 5202 312 RPM
+    static final double DRIVE_GEAR_REDUCTION = 1.0;     // No external gearing
+    static final double WHEEL_DIAMETER_INCHES = 4.0;   // Wheel diameter
     static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-            (WHEEL_DIAMETER_INCHES * 3.1415);
-    static final double DRIVE_SPEED = 0.5;
+            (WHEEL_DIAMETER_INCHES * Math.PI);
+
+    static final double DRIVE_SPEED = 0.6;
+    static final double STRAFE_SPEED = 0.5;
 
     @Override
     public void runOpMode() {
 
-        // Initialize hardware
-        frontleft  = hardwareMap.get(DcMotor.class, "frontleft");
+        // Map motors
+        frontleft = hardwareMap.get(DcMotor.class, "frontleft");
         frontright = hardwareMap.get(DcMotor.class, "frontright");
-        backleft   = hardwareMap.get(DcMotor.class, "backleft");
-        backright  = hardwareMap.get(DcMotor.class, "backright");
+        backleft = hardwareMap.get(DcMotor.class, "backleft");
+        backright = hardwareMap.get(DcMotor.class, "backright");
 
-        // Set motor directions (adjust if needed)
+        // Set directions
         frontleft.setDirection(DcMotor.Direction.REVERSE);
         backleft.setDirection(DcMotor.Direction.REVERSE);
         frontright.setDirection(DcMotor.Direction.FORWARD);
@@ -41,121 +42,68 @@ public class AutoMode_Hinaa extends LinearOpMode {
         backleft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backright.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
+        // Run using encoders
         frontleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        telemetry.addLine("Initialized. Ready to start!");
+        telemetry.addData("Status", "Ready to run");
         telemetry.update();
 
         waitForStart();
 
-        // Step 1: Drive forward 8 inches
-        encoderDrive(DRIVE_SPEED, 8, 8, 4.0);
+        // Move forward 8 inches
+        encoderDrive(DRIVE_SPEED, 8, 8, 8, 8, 5);
 
-        // Step 2: Drive backward 8 inches
-        encoderDrive(DRIVE_SPEED, -8, -8, 4.0);
+        // Move backward 8 inches
+        encoderDrive(DRIVE_SPEED, -8, -8, -8, -8, 5);
 
-        // Step 3: Strafe right 8 inches
-        encoderStrafe(DRIVE_SPEED, 8, 4.0);
+        // Strafe right 8 inches (mecanum)
+        encoderDrive(STRAFE_SPEED, 8, -8, -8, 8, 5);
 
-        telemetry.addLine("Auto Complete!");
+        telemetry.addData("Path", "Complete");
         telemetry.update();
         sleep(1000);
     }
 
-    /** Drive forward or backward */
-    public void encoderDrive(double speed, double leftInches, double rightInches, double timeoutS) {
-        int newFrontLeftTarget, newFrontRightTarget, newBackLeftTarget, newBackRightTarget;
+    public void encoderDrive(double speed,
+                             double flInches, double frInches, double blInches, double brInches,
+                             double timeoutS) {
 
-        if (opModeIsActive()) {
-            // Calculate target positions
-            newFrontLeftTarget = frontleft.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newFrontRightTarget = frontright.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            newBackLeftTarget = backleft.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newBackRightTarget = backright.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+        int newFL = frontleft.getCurrentPosition() + (int)(flInches * COUNTS_PER_INCH);
+        int newFR = frontright.getCurrentPosition() + (int)(frInches * COUNTS_PER_INCH);
+        int newBL = backleft.getCurrentPosition() + (int)(blInches * COUNTS_PER_INCH);
+        int newBR = backright.getCurrentPosition() + (int)(brInches * COUNTS_PER_INCH);
 
-            // Set targets
-            frontleft.setTargetPosition(newFrontLeftTarget);
-            frontright.setTargetPosition(newFrontRightTarget);
-            backleft.setTargetPosition(newBackLeftTarget);
-            backright.setTargetPosition(newBackRightTarget);
+        frontleft.setTargetPosition(newFL);
+        frontright.setTargetPosition(newFR);
+        backleft.setTargetPosition(newBL);
+        backright.setTargetPosition(newBR);
 
-            // Run to position
-            frontleft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontright.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backleft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backright.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontleft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontright.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backleft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backright.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-            // Start motion
-            runtime.reset();
-            setAllMotorPower(Math.abs(speed));
+        runtime.reset();
+        frontleft.setPower(Math.abs(speed));
+        frontright.setPower(Math.abs(speed));
+        backleft.setPower(Math.abs(speed));
+        backright.setPower(Math.abs(speed));
 
-            while (opModeIsActive() &&
-                    (runtime.seconds() < timeoutS) &&
-                    (frontleft.isBusy() && frontright.isBusy() && backleft.isBusy() && backright.isBusy())) {
-                telemetry.addData("Driving", "FL:%d FR:%d BL:%d BR:%d",
-                        frontleft.getCurrentPosition(),
-                        frontright.getCurrentPosition(),
-                        backleft.getCurrentPosition(),
-                        backright.getCurrentPosition());
-                telemetry.update();
-            }
+        while (opModeIsActive() &&
+                (runtime.seconds() < timeoutS) &&
+                (frontleft.isBusy() && frontright.isBusy() && backleft.isBusy() && backright.isBusy())) {
 
-            stopAllMotors();
+            telemetry.addData("FL Target", newFL);
+            telemetry.addData("FR Target", newFR);
+            telemetry.addData("BL Target", newBL);
+            telemetry.addData("BR Target", newBR);
+            telemetry.update();
         }
-    }
 
-    /** Strafe right (negative inches = left) */
-    public void encoderStrafe(double speed, double inches, double timeoutS) {
-        int newFrontLeftTarget, newFrontRightTarget, newBackLeftTarget, newBackRightTarget;
-
-        if (opModeIsActive()) {
-            // Strafing: opposite wheel pairs move opposite directions
-            newFrontLeftTarget = frontleft.getCurrentPosition() + (int)(inches * COUNTS_PER_INCH);
-            newFrontRightTarget = frontright.getCurrentPosition() - (int)(inches * COUNTS_PER_INCH);
-            newBackLeftTarget = backleft.getCurrentPosition() - (int)(inches * COUNTS_PER_INCH);
-            newBackRightTarget = backright.getCurrentPosition() + (int)(inches * COUNTS_PER_INCH);
-
-            // Set targets
-            frontleft.setTargetPosition(newFrontLeftTarget);
-            frontright.setTargetPosition(newFrontRightTarget);
-            backleft.setTargetPosition(newBackLeftTarget);
-            backright.setTargetPosition(newBackRightTarget);
-
-            // Run to position
-            frontleft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            frontright.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backleft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            backright.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            runtime.reset();
-            setAllMotorPower(Math.abs(speed));
-
-            while (opModeIsActive() &&
-                    (runtime.seconds() < timeoutS) &&
-                    (frontleft.isBusy() && frontright.isBusy() && backleft.isBusy() && backright.isBusy())) {
-                telemetry.addData("Strafing", "FL:%d FR:%d BL:%d BR:%d",
-                        frontleft.getCurrentPosition(),
-                        frontright.getCurrentPosition(),
-                        backleft.getCurrentPosition(),
-                        backright.getCurrentPosition());
-                telemetry.update();
-            }
-
-            stopAllMotors();
-        }
-    }
-
-    private void setAllMotorPower(double power) {
-        frontleft.setPower(power);
-        frontright.setPower(power);
-        backleft.setPower(power);
-        backright.setPower(power);
-    }
-
-    private void stopAllMotors() {
+        // Stop all motors
         frontleft.setPower(0);
         frontright.setPower(0);
         backleft.setPower(0);
@@ -169,7 +117,6 @@ public class AutoMode_Hinaa extends LinearOpMode {
         sleep(250);
     }
 }
-
 
 /*
 package org.firstinspires.ftc.teamcode;
