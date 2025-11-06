@@ -1,124 +1,4 @@
-package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
-@Autonomous(name="AutoMode_Hinaa", group="Robot")
-public class AutoMode_Hinaa extends LinearOpMode {
-
-    private DcMotor frontleft, frontright, backleft, backright;
-    private ElapsedTime runtime = new ElapsedTime();
-
-    // Motor and wheel configuration (adjust if different)
-    static final double COUNTS_PER_MOTOR_REV = 537.6;    // GoBilda 5202 312 RPM
-    static final double DRIVE_GEAR_REDUCTION = 1.0;     // No external gearing
-    static final double WHEEL_DIAMETER_INCHES = 4.0;   // Wheel diameter
-    static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-            (WHEEL_DIAMETER_INCHES * Math.PI);
-
-    static final double DRIVE_SPEED = 0.6;
-    static final double STRAFE_SPEED = 0.5;
-
-    @Override
-    public void runOpMode() {
-
-        // Map motors
-        frontleft = hardwareMap.get(DcMotor.class, "frontleft");
-        frontright = hardwareMap.get(DcMotor.class, "frontright");
-        backleft = hardwareMap.get(DcMotor.class, "backleft");
-        backright = hardwareMap.get(DcMotor.class, "backright");
-
-        // Set directions
-        frontleft.setDirection(DcMotor.Direction.REVERSE);
-        backleft.setDirection(DcMotor.Direction.REVERSE);
-        frontright.setDirection(DcMotor.Direction.FORWARD);
-        backright.setDirection(DcMotor.Direction.FORWARD);
-
-        // Reset encoders
-        frontleft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontright.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backleft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backright.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        // Run using encoders
-        frontleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        telemetry.addData("Status", "Ready to run");
-        telemetry.update();
-
-        waitForStart();
-
-        // Move forward 8 inches
-        encoderDrive(DRIVE_SPEED, 8, 8, 8, 8, 5);
-
-        // Move backward 8 inches
-        encoderDrive(DRIVE_SPEED, -8, -8, -8, -8, 5);
-
-        // Strafe right 8 inches (mecanum)
-        encoderDrive(STRAFE_SPEED, 8, -8, -8, 8, 5);
-
-        telemetry.addData("Path", "Complete");
-        telemetry.update();
-        sleep(1000);
-    }
-
-    public void encoderDrive(double speed,
-                             double flInches, double frInches, double blInches, double brInches,
-                             double timeoutS) {
-
-        int newFL = frontleft.getCurrentPosition() + (int)(flInches * COUNTS_PER_INCH);
-        int newFR = frontright.getCurrentPosition() + (int)(frInches * COUNTS_PER_INCH);
-        int newBL = backleft.getCurrentPosition() + (int)(blInches * COUNTS_PER_INCH);
-        int newBR = backright.getCurrentPosition() + (int)(brInches * COUNTS_PER_INCH);
-
-        frontleft.setTargetPosition(newFL);
-        frontright.setTargetPosition(newFR);
-        backleft.setTargetPosition(newBL);
-        backright.setTargetPosition(newBR);
-
-        frontleft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontright.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backleft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backright.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        runtime.reset();
-        frontleft.setPower(Math.abs(speed));
-        frontright.setPower(Math.abs(speed));
-        backleft.setPower(Math.abs(speed));
-        backright.setPower(Math.abs(speed));
-
-        while (opModeIsActive() &&
-                (runtime.seconds() < timeoutS) &&
-                (frontleft.isBusy() && frontright.isBusy() && backleft.isBusy() && backright.isBusy())) {
-
-            telemetry.addData("FL Target", newFL);
-            telemetry.addData("FR Target", newFR);
-            telemetry.addData("BL Target", newBL);
-            telemetry.addData("BR Target", newBR);
-            telemetry.update();
-        }
-
-        // Stop all motors
-        frontleft.setPower(0);
-        frontright.setPower(0);
-        backleft.setPower(0);
-        backright.setPower(0);
-
-        frontleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backleft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backright.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        sleep(250);
-    }
-}
-
-/*
 package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -126,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
- Copyright (c) 2017 FIRST. All rights reserved.
+ /*Copyright (c) 2017 FIRST. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -153,7 +33,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+*/
 
 
 
@@ -163,7 +43,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-
+/*
  * This OpMode illustrates the concept of driving a path based on encoder counts.
  * The code is structured as a LinearOpMode
  *
@@ -187,16 +67,13 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
-
-
+*/
+@Disabled
 @Autonomous(name="AutoMode_Hinaa", group="Robot")
 //@Disabled
 public class AutoMode_Hinaa extends LinearOpMode {
 
-     Declare OpMode members.
-    private DcMotor intake;
-    private DcMotor outtakeleft;
-    private DcMotor outtakeright;
+     //Declare OpMode members.
     private DcMotor frontleft   = null;
     private DcMotor frontright  = null;
     private DcMotor backleft  = null;
@@ -269,14 +146,14 @@ public class AutoMode_Hinaa extends LinearOpMode {
         sleep(1000);  // pause to display final telemetry message.
     }
 
-
+/*
      *  Method to perform a relative move, based on encoder counts.
      *  Encoders are not reset as the move is based on the current position.
      *  Move will stop if any of three conditions occur:
      *  1) Move gets to the desired position
      *  2) Move runs out of time
      *  3) Driver stops the OpMode running.
-
+*/
     public void encoderDrive(double speed,
                              double leftInches, double rightInches,
                              double timeoutS) {
@@ -346,4 +223,3 @@ public class AutoMode_Hinaa extends LinearOpMode {
         }
     }
 }
-*/

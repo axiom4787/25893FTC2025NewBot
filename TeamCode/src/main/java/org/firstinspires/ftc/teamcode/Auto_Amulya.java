@@ -130,8 +130,8 @@ public class Auto_Amulya extends LinearOpMode {
     private void strafeLeft(double inches) {
         int move = (int)(inches * COUNTS_PER_INCH);
         frontleft.setTargetPosition(frontleft.getCurrentPosition() - move);
-        frontright.setTargetPosition(frontright.getCurrentPosition() + move);
-        backleft.setTargetPosition(backleft.getCurrentPosition() - move);
+        frontright.setTargetPosition(frontright.getCurrentPosition() - move);
+        backleft.setTargetPosition(backleft.getCurrentPosition() + move);
         backright.setTargetPosition(backright.getCurrentPosition() + move);
 
         runToPosition();
