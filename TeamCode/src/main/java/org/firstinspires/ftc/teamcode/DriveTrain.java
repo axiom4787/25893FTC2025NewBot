@@ -37,7 +37,7 @@ public class DriveTrain
         leftFrontDriveWheel.setDirection(DcMotor.Direction.FORWARD);// Set to REVERSE if using AndyMark motors
         leftBackDriveWheel.setDirection(DcMotor.Direction.FORWARD);
         rightFrontDriveWheel.setDirection(DcMotor.Direction.FORWARD);
-        rightBackDriveWheel.setDirection(DcMotor.Direction.FORWARD);// Set to FORWARD if using AndyMark motors
+        rightBackDriveWheel.setDirection(DcMotor.Direction.FORWARD);//set to FORWARDS if using AndyMark motors
 
         // Set all motors to zero power
         leftFrontDriveWheel.setPower(0);

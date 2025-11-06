@@ -1,26 +1,50 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class BasicBot_Launcher
 {
-    private Servo agitator = null;
+    private CRServo agitator = null;
     private DcMotor flywheel = null;
     private DcMotorEx shooterIntake = null;
 
-    public BasicBot_Launcher(HardwareMap hwMap)
+    public BasicBot_Launcher(HardwareMap hwMap, double agitatorSpeed, double flywheelSpeed , double shooterIntakeSpeed)
     {
-        agitator  = hwMap.get(Servo.class, "agitator");
+        agitator  = hwMap.get(CRServo.class, "agitator");
         flywheel  = hwMap.get(DcMotor.class, "flywheel");
         shooterIntake  = hwMap.get(DcMotorEx.class, "shooterIntake");
 
-        //Remember to set the power for both motors
-        //leftFrontDriveWheel.setPower(0);  //Here is an example change the variable name
+        flywheel.setDirection(DcMotor.Direction.REVERSE);
+        flywheel.setPower(0);
+        flywheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        //Remember to set the power for both motors
-        //leftFrontDriveWheel.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        shooterIntake.setDirection(DcMotor.Direction.REVERSE);
+        shooterIntake.setPower(0);
+        shooterIntake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        setAgitatorSpeed(agitatorSpeed);
+        setFlywheelSpeed(flywheelSpeed);
+        setShooterIntakeSpeed(shooterIntakeSpeed);
+
+
+    }
+    void setAgitatorSpeed(double speed)
+    {
+        agitator.setPower(speed);
+    }
+
+    void setFlywheelSpeed(double speed)
+    {
+        flywheel.setPower(speed);
+    }
+
+    void setShooterIntakeSpeed(double speed)
+    {
+        shooterIntake.setPower(speed);
     }
 }
