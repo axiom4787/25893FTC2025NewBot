@@ -149,9 +149,9 @@ public class Util {
         rightBack.setPower(0);
     }
 
-    public static void telemetryFlyWheelVelocity(FlyWheel flyWheel, double flyWheelPower, int runForMS, Telemetry telemetry){
+    public static void telemetryFlyWheelVelocity(FlyWheel flyWheel, double flyWheelPower, DistanceSensor frontDistanceSensor,  int runForMS, Telemetry telemetry){
 
-        telemetry.addData("--- Testing Fly Wheel Velocity ---","");
+        telemetry.addData("Power - "+ flyWheelPower, "Distance - " + Util.getDistance(frontDistanceSensor, telemetry));
         long startTime = System.currentTimeMillis();
         long intermidiateTime =  System.currentTimeMillis();
         long endTime = 0;
@@ -167,11 +167,11 @@ public class Util {
             flyWheelVelocity = flyWheel.getVelocity();
             //telemetry.addData("Flywheel Intermidiate Time (ms): ", durationInMillis);
             telemetry.addData("Flywheel Velocity: " + flyWheelVelocity +" in time(ms): ", durationInMillis);
-            sleepThread(250);
+            sleepThread(1000);
         }
         endTime = System.currentTimeMillis();
         durationInMillis = endTime - startTime;
-        telemetry.addData("Flywheel Power: ", flyWheel.getPower());
+
         telemetry.addData("Flywheel Total Time: ", durationInMillis);
 
         flyWheel.stop();
@@ -275,9 +275,9 @@ public class Util {
         return ret;
     }
 
-    public static double getDistance(DistanceSensor channelSensor, Telemetry telemetry) {
+    public static double getDistance(DistanceSensor distanceSensor, Telemetry telemetry) {
 
-        double dDistance = channelSensor.getDistance(DistanceUnit.CM);
+        double dDistance = distanceSensor.getDistance(DistanceUnit.INCH);
 
         return dDistance;
     }
@@ -287,7 +287,7 @@ public class Util {
         threadSleep(1000);
         //Replace the timer with distance sensor
         //When the ball is moved out, start the flywheel
-        flyWheel.start(requiredFlyWheelVelocity);
+        flyWheel.start();
         threadSleep(800);
     }
 

@@ -19,7 +19,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
 
-@TeleOp(name = "DecodeTeleopV3.84 Alaqmar", group = "TeleOp")
+@TeleOp(name = "DecodeTeleopV3.92 Alaqmar", group = "TeleOp")
 
 public class Teleop extends LinearOpMode {
 
@@ -54,10 +54,12 @@ public class Teleop extends LinearOpMode {
         Kicker kicker = new Kicker();
         kicker.init(hardwareMap);
 
+/*
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         telemetry.setMsTransmissionInterval(11);
         limelight.pipelineSwitch(0);
         limelight.start();
+ */
 
         //webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
         //DecodeAprilTag aprilTag  = new DecodeAprilTag(this);
@@ -76,30 +78,42 @@ public class Teleop extends LinearOpMode {
 
         driveThread.start(); // Start the concurrent task
 
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
+        //telemetry.addData("Status", "Initialized");
+
+        //Util.prepareFlyWheelToShoot(flyWheel, kicker, intake, channelSensor, 1100, telemetry);
+
 
         // Run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-            Integer flyWheelVelocityRequired =  FlyWheel.FLYWHEEL_SHOOTING_VELOCITY;
-
             /*
-            AprilTagPoseFtc aprilTagPoseFtc = null;
+            kicker.setGatePosition(Kicker.GATE_SHOOT);
+            flyWheel.setPower(0.45);
+            telemetry.addData("FlyWheel Power - ", flyWheel.getPower());
+            telemetry.addData("FlyWheel Velocity - ", flyWheel.getVelocity());
+            telemetry.addData("Distance - ", "Distance - " + Util.getDistance(frontDistanceSensor, telemetry));
+            //Util.telemetryFlyWheelVelocity(flyWheel,0.45, frontDistanceSensor, 30000,telemetry);
+            telemetry.update();
+            */
+
+            Integer flyWheelVelocityRequired =  FlyWheel.FLYWHEEL_SHOOTING_VELOCITY;
             Double robotDistanceFromAprilTagUsingCamera = 0.0;
             Double robotDistanceUsingFrontDistanceSensor = 0.0;
             Double distanceSensor = 0.0;
-            Integer flyWheelVelocityRequired =  FlyWheel.FLYWHEEL_SHOOTING_VELOCITY;
+
+           /* AprilTagPoseFtc aprilTagPoseFtc = null;
+            Double robotDistanceFromAprilTagUsingCamera = 0.0;
+            Double robotDistanceUsingFrontDistanceSensor = 0.0;
+            Double distanceSensor = 0.0;
 
             if(aprilTag.findAprilTag(DecodeAprilTag.BLUE_APRIL_TAG)){
                 aprilTagPoseFtc = aprilTag.getCoordinate(DecodeAprilTag.BLUE_APRIL_TAG);
                 if(aprilTagPoseFtc !=null) {
                     robotDistanceFromAprilTagUsingCamera = aprilTagPoseFtc.range;
                 }
-            }
-
-            flyWheelVelocityRequired = Util.getFlyWheelVelocityRequiredForDistance(robotDistanceFromAprilTagUsingCamera);
+            }*/
             robotDistanceUsingFrontDistanceSensor = frontDistanceSensor.getDistance(DistanceUnit.INCH);
+            flyWheelVelocityRequired = Util.getFlyWheelVelocityRequiredForDistance(robotDistanceUsingFrontDistanceSensor);
 
             telemetry.addData("Distance From Camera - ", String.valueOf(robotDistanceFromAprilTagUsingCamera));
             telemetry.addData("Distance From Front Sensor - ", String.valueOf(robotDistanceUsingFrontDistanceSensor));
@@ -109,10 +123,10 @@ public class Teleop extends LinearOpMode {
             telemetry.addData("Distance From Channel Sensor - ",distanceSensor);
             telemetry.update();
 
-             */
+
 
             // Kicker
-            if(gamepad2.dpad_up) {
+            /*if(gamepad2.dpad_up) {
                 kicker.setPosition(Kicker.gateClose);
                 Util.addKickerTelemetry(kicker,telemetry);
                 telemetry.update();
@@ -136,7 +150,7 @@ public class Teleop extends LinearOpMode {
                 Util.addKickerTelemetry(kicker,telemetry);
                 telemetry.update();
             }
-
+           */
             //Shooting
             if (gamepad2.right_bumper) {
 

@@ -67,21 +67,14 @@ public class DecodeAprilTagLimeLight {
         outTelemetry();
     }
 
-    /**
-     * Finds a specific AprilTag by its friendly name.
-     * @param name The friendly name (e.g., BLUE_APRIL_TAG).
-     * @return true if the tag is found and currently visible, false otherwise.
-     */
-    public boolean findAprilTag(String name) {
-        int targetId = getTargetId(name);
-        if (targetId == -1) return false;
+    public boolean findAprilTag(int aprilTagID) {
 
         LLResult result = limelight.getLatestResult();
         if (result == null || !result.isValid()) return false;
 
         // Check the fiducial results list
         for (LLResultTypes.FiducialResult fr : result.getFiducialResults()) {
-            if (fr.getFiducialId() == targetId) {
+            if (fr.getFiducialId() == aprilTagID) {
                 return true;
             }
         }
@@ -89,21 +82,14 @@ public class DecodeAprilTagLimeLight {
         return false;
     }
 
-    /**
-     * Gets the coordinate/pose information for a specific AprilTag.
-     * @param name The friendly name (e.g., BLUE_APRIL_TAG).
-     * @return An AprilTagPoseFtc object with the pose data, or null if not found.
-     */
-    public AprilTagPoseFtc getCoordinate(String name) {
-        int targetId = getTargetId(name);
-        if (targetId == -1) return null;
+    public AprilTagPoseFtc getCoordinate(int aprilTagID) {
 
         LLResult result = limelight.getLatestResult();
         if (result == null || !result.isValid()) return null;
 
         // Step through the fiducial detections
         for (LLResultTypes.FiducialResult fr : result.getFiducialResults()) {
-            if (fr.getFiducialId() == targetId) {
+            if (fr.getFiducialId() == aprilTagID) {
 
                 // Limelight SDK method getTargetPoseCameraSpace() returns an FTC Pose3D object.
                 Pose3D pose = fr.getTargetPoseCameraSpace();
@@ -142,7 +128,7 @@ public class DecodeAprilTagLimeLight {
                         yaw_deg                 // Yaw (Rotate Z in degrees)
                 );
 
-                telemetryMsgList.add(String.format("\n==== (ID %d) %s", fr.getFiducialId(), name));
+                //telemetryMsgList.add(String.format("\n==== (ID %d) %s", fr.getFiducialId(), name));
                 telemetryMsgList.add(String.format("Range, %5.1f inches", retPose.range));
                 telemetryMsgList.add(String.format("Bearing (Yaw),%3.0f degrees", retPose.bearing));
                 telemetryMsgList.add(String.format("Pitch, %3.0f degrees", retPose.elevation));

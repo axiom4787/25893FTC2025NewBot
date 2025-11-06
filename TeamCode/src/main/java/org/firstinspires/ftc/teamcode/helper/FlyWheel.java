@@ -11,7 +11,7 @@ public class FlyWheel {
     
     private DcMotorEx flyWheel;
     private OpMode opMode;
-    public static int FLYWHEEL_SHOOTING_VELOCITY = 1350;
+    public static int FLYWHEEL_SHOOTING_VELOCITY = 1200;
     public double FLYWHEEL_SHOOTING_POWER = (0.65*FLYWHEEL_SHOOTING_VELOCITY)/1500;
 
 
