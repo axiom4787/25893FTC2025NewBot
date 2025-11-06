@@ -75,7 +75,7 @@ public class Auto_Amulya extends LinearOpMode {
             strafeLeft(12);
 
 
-
+/*
             outtakeleft.setPower(0.5);
             outtakeright.setPower(0.5);
             telemetry.addLine("Running outtake...");
@@ -91,7 +91,7 @@ public class Auto_Amulya extends LinearOpMode {
             telemetry.update();
             sleep(2000); // intake runs for 2 seconds
             intake.setPower(0);
-
+*/
             telemetry.addLine("Auto Complete!");
             telemetry.update();
         }
