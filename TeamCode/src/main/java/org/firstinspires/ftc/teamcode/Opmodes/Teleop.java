@@ -57,6 +57,10 @@ public class Teleop extends LinearOpMode {
         DecodeAprilTag aprilTag  = new DecodeAprilTag(this);
         aprilTag.initCamera();
 
+        Flipper flipper = new Flipper();
+        flipper.init(hardwareMap);
+
+
         channelSensor = hardwareMap.get(DistanceSensor.class, "channelSensor");
         frontDistanceSensor = hardwareMap.get(DistanceSensor.class, "front_distance_sensor");
 
@@ -131,15 +135,14 @@ public class Teleop extends LinearOpMode {
                 telemetry.update();
             }
             if(gamepad2.dpad_right) {
-                if(kicker.getGatePosition().equals(Kicker.GATE_CLOSE)){
+                if (kicker.getGatePosition().equals(Kicker.GATE_CLOSE)) {
                     kicker.setPosition(Kicker.gateShoot);
                     sleep(400);
                     kicker.setPosition(Kicker.gateClose);
                 }
-                Util.addKickerTelemetry(kicker,telemetry);
+                Util.addKickerTelemetry(kicker, telemetry);
                 telemetry.update();
             }
-           */
             //Shooting
             if (gamepad2.right_bumper) {
 
