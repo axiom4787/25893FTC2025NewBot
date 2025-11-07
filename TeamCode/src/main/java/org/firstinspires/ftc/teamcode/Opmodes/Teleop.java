@@ -181,27 +181,36 @@ public class Teleop extends LinearOpMode {
 
                 Util.prepareFlyWheelToShoot(flyWheel, kicker, intake, robotDistanceFromAprilTag, telemetry);
 
-                intake.setIntakePower(0.4);
+                intake.setIntakePower(0.5);
 
                 int loopCounter = 0;
-                while(!gamepad2.left_bumper) {
-                    if(flipper.getPosition() < 0.15){
-                        break;
-                    }
-                    Util.startShooting(flyWheel, kicker, flipper, intake, channelSensor, robotDistanceFromAprilTag, telemetry);
-/*
-                    if (flyWheel.getVelocity() < Util.getRequiredFlyWheelVelocity(robotDistanceFromAprilTag)){
-                        kicker.setGatePosition(Kicker.GATE_CLOSE);
-                    }
 
- */
+                while(!gamepad2.left_bumper && loopCounter<4) {
+
+                    // wait flywheel to get the desired speed
+                    Util.startShooting(flyWheel, kicker, flipper, intake, channelSensor, robotDistanceFromAprilTag, telemetry);
+
+                    kicker.setPosition(Kicker.gateShoot);
                     sleep(200);
+
+                    flipper.turnFlipper();
+                    sleep(200);
+                    kicker.setGatePosition(Kicker.GATE_CLOSE);
+                    flipper.resetFlipper();
+                    sleep(200);
+
+
+                    loopCounter = loopCounter+1;
+
+                  //  sleep(200);
+
                 }
                 telemetry.addData("gamepad2.right_bumper - loopCounter - ",loopCounter);
                 telemetry.update();
 
                 //flipper.resetFlipper();
-                intake.stopIntake();
+
+
                 Util.prepareFlyWheelToIntake(flyWheel,kicker,intake,flipper, telemetry);
 
 

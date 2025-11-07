@@ -187,7 +187,7 @@ public class Util {
         long intermidiateTime =  System.currentTimeMillis();
         long durationInMillis = intermidiateTime - startTime;
         int loopCounter = 0;
-        while (flyWheel.getVelocity() < velocity){
+        while (flyWheel.getVelocity() < 0.9*velocity){          //90% is good
             loopCounter++;
             intermidiateTime =  System.currentTimeMillis();
             durationInMillis = intermidiateTime - startTime;
@@ -289,6 +289,9 @@ public class Util {
 
     public static void prepareFlyWheelToShoot(FlyWheel flyWheel, Kicker kicker, Intake intake, Double distance, Telemetry telemetry){
         kicker.setPosition(Kicker.gateClose);
+
+        intake.setIntakePower(0.5); //reduce intake power to avoid jam
+
         threadSleep(800);
         //Replace the timer with distance sensor
         //When the ball is moved out, start the flywheel
@@ -300,7 +303,7 @@ public class Util {
         flyWheel.stop();
         kicker.setGatePosition(Kicker.GATE_CLOSE);
         flipper.resetFlipper();
-        Util.waitForFlyWheelStopVelocity(flyWheel,100,5000, telemetry);
+        Util.waitForFlyWheelStopVelocity(flyWheel,200,5000, telemetry);
         kicker.setPosition(Kicker.gateIntake);
         intake.startIntake();
     }
@@ -310,20 +313,26 @@ public class Util {
         Double requiredFlyWheelPower = Util.getRequiredFlyWheelPower(distanceInInchFromAprilTag);
         Integer requiredFlyWheelVelocity = Util.getRequiredFlyWheelVelocity(distanceInInchFromAprilTag);
 
-        Long timeToReachRequiredFlyWheelVelocity = Util.waitForFlyWheelShootingVelocity(flyWheel,requiredFlyWheelVelocity,6000, telemetry);
+        Long timeToReachRequiredFlyWheelVelocity = Util.waitForFlyWheelShootingVelocity(flyWheel,requiredFlyWheelVelocity,3000, telemetry);
 
         telemetry.addData("timeToReachRequiredFlyWheelVelocity - ",timeToReachRequiredFlyWheelVelocity);
-        kicker.setPosition(Kicker.gateShoot);
-        //sleepThread(100);
+      //  kicker.setPosition(Kicker.gateShoot);
+       // sleepThread(200);
+
+       /*
         if(!isObjectDetected(channelDistanceSensor, telemetry)){
             flipper.turnFlipper();
-            sleepThread(100);
+            sleepThread(200);
+            kicker.setPosition(Kicker.gateClose);
+
         }
+
+
 
         if ( isObjectDetected(channelDistanceSensor, telemetry) ) {
             kicker.setPosition(Kicker.gateClose);
         }
-
+        */
 
 
         //boolean isObjectDetected = isObjectDetected(channelDistanceSensor, telemetry);
@@ -371,7 +380,7 @@ public class Util {
             integerDesiredFlyWheelVelocity = 1300;
         }
         else if (distanceInInchFromAprilTag>70 && distanceInInchFromAprilTag<=85){
-            integerDesiredFlyWheelVelocity = 1500;
+            integerDesiredFlyWheelVelocity = 1400;
         }
 
         return integerDesiredFlyWheelVelocity;

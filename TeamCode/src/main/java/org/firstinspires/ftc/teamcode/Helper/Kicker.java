@@ -18,7 +18,7 @@ public class Kicker {
     private OpMode opMode;
 
     public static final double gateClose = 0.37;
-    public static final double gateShoot = 0.23;
+    public static final double gateShoot = 0.21;
     public static final double gateIntake = 0.6;
 
     public static final String GATE_CLOSE = "GATE_CLOSE";
