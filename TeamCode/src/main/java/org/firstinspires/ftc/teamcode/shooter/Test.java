@@ -25,10 +25,10 @@ public class Test extends OpMode {
     private PIDController controller, controllerTurret;
     private TelemetryManager telemetryM;
     public static double p = 0.2, i = 0.05, d = 0;
-    public static double pT = 0.028, iT = 0, dT = 0;
+    public static double pT = 0.12, iT = 0, dT = 0;
     public static double f = 0.0265;
-    public static double target = 0;
     private static double vel = 0;
+    public static double target = 0;
     public static double alpha = 0.6;
     InterpLUT RPM = new InterpLUT();
     InterpLUT angle = new InterpLUT();
@@ -37,7 +37,7 @@ public class Test extends OpMode {
     private VoltageSensor volt;
     public static double tangle = 40;
     public static double theta = 0;
-    public static double shooterX = 145;
+    public static double shooterX = 135;
     public static double shooterY = 135;
     Servo latch;
     double turretOffset = 0;
@@ -58,7 +58,6 @@ public class Test extends OpMode {
         hood = hardwareMap.get(Servo.class, "hood");
         volt = hardwareMap.get(VoltageSensor.class, "Control Hub");
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-//        flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         RPM.add(20, 350);
         RPM.add(39, 350);
         RPM.add(50, 375);
@@ -84,7 +83,7 @@ public class Test extends OpMode {
     public void start() {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(72, 72, 0));
-        follower.startTeleopDrive();
+        follower.startTeleOpDrive();
         follower.update();
         controller = new PIDController(p, i, d);
     }
@@ -95,7 +94,7 @@ public class Test extends OpMode {
      */
     @Override
     public void loop() {
-        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
+        follower.setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, false);
         follower.update();
 
         latch.setPosition(gamepad1.y ? 1 : 0);
@@ -110,7 +109,7 @@ public class Test extends OpMode {
         double targetAngleRad = Math.atan2(dy, dx);
         double targetAngleDeg = Math.toDegrees(targetAngleRad) - Math.toDegrees(robotHeading);
         targetAngleDeg = Math.max(targetAngleDeg, -30);
-        targetAngleDeg = Math.min(targetAngleDeg, 90);
+        targetAngleDeg = Math.min(targetAngleDeg, 240);
         telemetry.addData("Target Angle", targetAngleDeg);
         double turretPos = ((double)turret.getCurrentPosition()) / TICKS_PER_DEGREES;
         telemetry.addData("Turret Pos", turretPos);

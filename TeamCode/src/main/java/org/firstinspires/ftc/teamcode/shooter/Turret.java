@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.shooter;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.bylazar.telemetry.TelemetryManager;
@@ -18,25 +20,31 @@ import java.util.Base64;
 @Config
 @TeleOp
 public class Turret extends OpMode {
+    private FtcDashboard dashboard;
+
     private PIDController controller;
 
-    public static double p = 0.028, i = 0, d = 0;
+    public static double p = 0.12, i = 0, d = 0;
     public static double target = 0;
 
     private final double ticks = 537.7 / 3;
 
     private DcMotorEx turret;
+    public static  double TICKS_PER_DEGREES = ((((1.0+(46.0/17.0))) * (1.0+(46.0/11.0))) * 28.0 * 3.0) / 360.0;
 
     @Override
     public void init() {
         controller = new PIDController(p, i, d);
+        dashboard = FtcDashboard.getInstance();
         turret = hardwareMap.get(DcMotorEx.class, "turret");
+        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     @Override
     public void loop() {
         controller.setPID(p, i, d);
-        int pos = turret.getCurrentPosition();
+        double pos = turret.getCurrentPosition() / TICKS_PER_DEGREES;
         double pid = controller.calculate(pos, target);
         turret.setPower(pid);
 
@@ -44,5 +52,11 @@ public class Turret extends OpMode {
         telemetry.addData("Target", target);
         telemetry.addData("Power", pid);
         telemetry.update();
+
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("Position", pos);
+        packet.put("Target", target);
+        packet.put("Power", pid);
+        dashboard.sendTelemetryPacket(packet);
     }
 }

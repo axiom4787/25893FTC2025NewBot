@@ -19,11 +19,12 @@ public class Teleop extends LinearOpMode {
 //    private PIDController controller;
     double shooterX = 135;
     double shooterY = 135;
-    public static double p = 0.025, i = 0, d = 0;
+    public static double p = 0.1, i = 0, d = 0.002;
     public static double target = 0;
     public double hoodpos = 0;
     public static Follower follower;
     ElapsedTime time1 = new ElapsedTime();
+
 
     @Override
     public void runOpMode() throws InterruptedException {
