@@ -53,8 +53,6 @@ public class Specifications {
 
     public static final String PUSHER = "pusher";
     public static final String TURRET = "turret";
-    public static final String TURN = "sorter";
-    public static final String SHOOTER = "shooter";
 
 
 //    public static final String COLOR_SENSOR = "colorSensor";
