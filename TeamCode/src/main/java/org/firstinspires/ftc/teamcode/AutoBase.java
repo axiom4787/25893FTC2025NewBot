@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @Autonomous
 public class AutoBase extends LinearOpMode {
@@ -17,7 +16,6 @@ public class AutoBase extends LinearOpMode {
         bl = hardwareMap.get(DcMotor.class, "backleft");
         br = hardwareMap.get(DcMotor.class, "backright");
 
-        //launcherLeft = hardwareMap.get(DcMotor.class, "shooter");
         launcher = hardwareMap.get(DcMotor.class, "shooter");
 
         fr.setDirection(DcMotor.Direction.REVERSE);
@@ -29,6 +27,7 @@ public class AutoBase extends LinearOpMode {
         for (DcMotor motor : motors) {
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
 
         launcher.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
