@@ -15,7 +15,7 @@ public class GamePadTester extends LinearOpMode {
                 telemetry.addData("Left Stick X", gamepad1.left_stick_x);
                 telemetry.addData("Left Stick Y", gamepad1.left_stick_y);
                 telemetry.update();
-            }
+            }   
         }
     }
 }
