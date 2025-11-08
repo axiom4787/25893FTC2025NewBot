@@ -3,10 +3,9 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.Range;
 
-@TeleOp(name="Mecanum TeleOp (Corrected)", group="TeleOp")
-public class MEchanum extends OpMode {
+@TeleOp
+public class OldRevTeleOp extends OpMode {
     private DcMotor rightFront;
     private DcMotor rightRear;
     private DcMotor leftFront;
