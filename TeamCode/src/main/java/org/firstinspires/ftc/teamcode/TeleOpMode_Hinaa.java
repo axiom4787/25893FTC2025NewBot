@@ -174,9 +174,9 @@ public class TeleOpMode_Hinaa extends LinearOpMode {
             // Outtake control — press 'A' to run both outtakes, 'B' to reverse
             double outtakePower = 0;
             if (gamepad2.a) {
-                outtakePower = .75; // full forward
+                outtakePower = .5; // full forward
             } else if (gamepad2.b) {
-                outtakePower = -.75; // reverse
+                outtakePower = -.5; // reverse
             }
 
             outtakeleft.setPower(outtakePower);
