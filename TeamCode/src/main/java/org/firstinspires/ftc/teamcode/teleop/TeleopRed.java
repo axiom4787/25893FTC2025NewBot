@@ -1,14 +1,11 @@
-package org.firstinspires.ftc.teamcode.shooter;
+package org.firstinspires.ftc.teamcode.teleop;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
-import org.firstinspires.ftc.teamcode.robot.Memory;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -21,7 +18,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Config
 @TeleOp
-public class Test extends OpMode {
+public class TeleopRed extends OpMode {
     public static Follower follower;
     private PIDController controller, controllerTurret;
     private TelemetryManager telemetryM;
@@ -39,7 +36,7 @@ public class Test extends OpMode {
     public static double tangle = 40;
     public static double theta = 0;
     public static double shooterX = 135;
-    public static double shooterY = 135;
+    public static double shooterY = 10;
     Servo latch;
     double turretOffset = 0;
     private static final int TICKS_MIN = -330;
@@ -48,9 +45,6 @@ public class Test extends OpMode {
 
     @Override
     public void init() {
-        if (Memory.allianceRed) {
-            shooterY = 10;
-        }
         controller = new PIDController(p, i, d);
         controllerTurret = new PIDController(pT, iT, dT);
         shooterb = hardwareMap.get(DcMotorEx.class, "sb");
@@ -86,27 +80,16 @@ public class Test extends OpMode {
     @Override
     public void start() {
         follower = Constants.createFollower(hardwareMap);
-        if (Memory.autoRan) {
-            follower.setStartingPose(new Pose(Memory.robotAutoX, Memory.robotAutoY, Memory.robotHeading + (Memory.allianceRed ? -90.0 : 90.0)));
-        } else {
-            follower.setStartingPose(new Pose(72, 72, 0));
-        }
+        follower.setStartingPose(new Pose(72, 72, 0));
         follower.startTeleOpDrive();
         follower.update();
         controller = new PIDController(p, i, d);
-        Memory.autoRan = false;
     }
 
-    @Override
-    public void init_loop() {
-        if (gamepad1.a) {
-            Memory.allianceRed = true;
-        } else if (gamepad1.b) {
-            Memory.allianceRed = false;
-        }
-        telemetry.addData("Alliance", Memory.allianceRed ? "Red" : "Blue");
-    }
-
+    /**
+     * This updates the robot's pose estimate, the simple bnbnmecanum drive, and updates the
+     * Panels telemetry with the robot's position as well as draws the robot's position.
+     */
     @Override
     public void loop() {
         double multiplier = 1;
@@ -148,7 +131,7 @@ public class Test extends OpMode {
         vel = vel * alpha + shooterb.getVelocity() * (2 * Math.PI / 28) * (1 - alpha);
         double pid = controller.calculate(vel, target);
         pid = Math.max(-presentVoltage, Math.min(pid, presentVoltage));
-        if (!gamepad1.a || robotX >= 40) {
+        if (!gamepad1.a && robotX >= 40) {
             shooterb.setPower((pid + f * target) / presentVoltage);
             shootert.setPower((-1) * (pid + f * target) / presentVoltage);
         } else {
