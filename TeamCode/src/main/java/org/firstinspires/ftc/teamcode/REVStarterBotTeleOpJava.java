@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 @TeleOp
-public class REVStarterBotTeleOpJava extends LinearOpMode {
+public class  REVStarterBotTeleOpJava extends LinearOpMode {
 
   private DcMotor flywheel;
   private DcMotor coreHex;
