@@ -1,0 +1,118 @@
+package org.firstinspires.ftc.teamcode.robot;
+
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import android.graphics.Color;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
+public class VisionController {
+    private final RobotHardware robot;
+    private final Telemetry telemetry;
+    private AprilTagProcessor aprilTag;
+    private VisionPortal visionPortal;
+
+    // Constructor
+    public VisionController(RobotHardware RoboRoar) {
+        this.robot = RoboRoar;
+        this.telemetry = RoboRoar.telemetry;
+    }
+
+    // Vision setup
+    public void initAprilTag() {
+        aprilTag = new AprilTagProcessor.Builder()
+                .setDrawAxes(true)
+                .setDrawCubeProjection(true)
+                .setDrawTagOutline(true)
+                .setCameraPose(robot.cameraPosition, robot.cameraOrientation)
+                .build();
+
+        visionPortal = new VisionPortal.Builder()
+                .setCamera(robot.camera)
+                .addProcessor(aprilTag)
+                .build();
+    }
+
+    public AprilTagProcessor getAprilTag() {
+        return aprilTag;
+    }
+
+    public VisionPortal getVisionPortal() {
+        return visionPortal;
+    }
+
+    public int findTagID(AprilTagProcessor aprilTag) {
+        if (aprilTag == null || aprilTag.getDetections().isEmpty()) return 0;
+
+        for (AprilTagDetection detection : aprilTag.getDetections()) {
+            switch (detection.id) {
+                case 21: return 1;
+                case 22: return 2;
+                case 23: return 3;
+            }
+        }
+        return 0;
+    }
+    public void aprilTagTelemetry() {
+        if (aprilTag != null && !aprilTag.getDetections().isEmpty()) {
+            AprilTagDetection tag = aprilTag.getDetections().get(0);
+            telemetry.addData("Tag ", "ID: %d | X: %.1f | Y: %.1f | Heading: %.1f°",
+                    tag.id, tag.ftcPose.x, tag.ftcPose.y, tag.ftcPose.yaw);
+            telemetry.update();
+        }
+    }
+    public int artifactColor() {
+        return isFinalColor(isColor(robot.sensorL), isColor(robot.sensorR));
+    }
+    private int isFinalColor(int ls, int rs){
+        int finalColor = 0;
+        if (ls == 0 && rs == 0) {
+            finalColor = 0;
+        } else if (ls == 2 || rs == 2) {
+            finalColor = 2; // Green
+        } else if (ls == 1 || rs == 1){
+            finalColor = 1; // Purple
+        }
+        return finalColor;
+    }
+    private int isColor(RevColorSensorV3 colorSensor){
+        float hsvValues[] = new float[3];
+        int r = colorSensor.red();
+        int g = colorSensor.green();
+        int b = colorSensor.blue();
+        // Scale RGB to 0–255 and convert to HSV
+        Color.RGBToHSV(r * 255 / 800, g * 255 / 800, b * 255 / 800, hsvValues);
+        float hue = hsvValues[0];  // Hue (0 to 360)
+        float sat = hsvValues[1];  // Saturation (0 to 1)
+        float val = hsvValues[2];  // Value (0 to 1)
+        // Get distance
+        double distance = colorSensor.getDistance(DistanceUnit.MM);
+        // Color classification
+        int detectedColor;
+        if (distance < 8.0) {
+            if (isGreen(hue, sat, val)) {
+                detectedColor = 2; // Green
+            } else if (isPurple(hue, sat, val)) {
+                detectedColor = 1; // Purple
+            } else {
+                detectedColor = 0;
+            }
+        } else {
+            detectedColor = 0;
+        }
+        return detectedColor;
+    }
+    private boolean isGreen(float hue, float sat, float val) {
+        return hue >= 80 && hue <= 190 && sat > 0.3 && val > 0.2;
+    }
+    private boolean isPurple(float hue, float sat, float val) {
+        return (hue >= 200 && hue <= 300) && sat > 0.3 && val > 0.2;
+    }
+
+    public void sensorTelemetry() {
+        telemetry.addData("finalColor", artifactColor());
+        telemetry.update();
+    }
+}

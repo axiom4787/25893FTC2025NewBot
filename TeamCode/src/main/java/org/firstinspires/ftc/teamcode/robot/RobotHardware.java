@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.robot;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -19,7 +19,7 @@ public class RobotHardware {
     public final GoBildaPinpointDriver pinpoint;
     public final IMU imu;
     public final Telemetry telemetry;
-    public final NormalizedColorSensor sensorR, sensorL;
+    public final RevColorSensorV3 sensorR, sensorL;
     public final WebcamName camera;
     /*
      * Position:
@@ -49,8 +49,8 @@ public class RobotHardware {
         pinpoint = hwMap.get(GoBildaPinpointDriver.class, "pinpoint"); //I2C 1
         imu = hwMap.get(IMU.class, "imu");
 
-        sensorL = hwMap.get(NormalizedColorSensor.class, "sensorL"); //I2C 2
-        sensorR = hwMap.get(NormalizedColorSensor.class, "sensorR"); //I2C 3
+        sensorL = hwMap.get(RevColorSensorV3.class, "sensorL"); //I2C 2
+        sensorR = hwMap.get(RevColorSensorV3.class, "sensorR"); //I2C 3
         camera = hwMap.get(WebcamName.class, "Webcam 1");
 
         setMotorDirections();

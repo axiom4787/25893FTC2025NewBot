@@ -14,6 +14,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robot.MechController;
 import org.firstinspires.ftc.teamcode.robot.MechState;
 import org.firstinspires.ftc.teamcode.robot.RobotHardware;
+import org.firstinspires.ftc.teamcode.robot.VisionController;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
@@ -26,6 +27,7 @@ public class TeleopAprilTag extends OpMode {
 
     RobotHardware robot;
     MechController mechController;
+    VisionController visionController;
     private AprilTagProcessor aprilTag;
     private VisionPortal visionPortal;
     private Follower follower;
@@ -40,12 +42,13 @@ public class TeleopAprilTag extends OpMode {
     public void init() {
         robot = new RobotHardware(hardwareMap, telemetry);
         mechController = new MechController(robot);
+        visionController = new VisionController(robot);
 
-        mechController.initAprilTag();
+        visionController.initAprilTag();
         mechController.handleMechState(MechState.IDLE);
 
-        aprilTag = mechController.getAprilTag();
-        visionPortal = mechController.getVisionPortal();
+        aprilTag = visionController.getAprilTag();
+        visionPortal = visionController.getVisionPortal();
 
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(startPose);
@@ -100,18 +103,21 @@ public class TeleopAprilTag extends OpMode {
     }
 
     private Pose getRobotPoseFromCamera() {
-        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
-        for (AprilTagDetection detection : currentDetections) {
-            if (detection.metadata != null) {
-                if (!detection.metadata.name.contains("Obelisk")) {
-                    double x = ((detection.robotPose.getPosition().y)+72);
-                    double y =((-detection.robotPose.getPosition().x)+72);
-                    double heading = detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES);
-                    return new Pose(x, y, Math.toRadians(heading));
+        if (aprilTag == null || aprilTag.getDetections().isEmpty()) return null;
+        else {
+            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+            for (AprilTagDetection detection : currentDetections) {
+                if (detection.metadata != null) {
+                    if (!detection.metadata.name.contains("Obelisk")) {
+                        double x = ((detection.robotPose.getPosition().y) + 72);
+                        double y = ((-detection.robotPose.getPosition().x) + 72);
+                        double heading = detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES);
+                        return new Pose(x, y, Math.toRadians(heading));
+                    }
                 }
             }
+            return null;
         }
-        return null;
     }
 
     private void telemetryAprilTag() {

@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.robot.MechController;
 import org.firstinspires.ftc.teamcode.robot.MechState;
 import org.firstinspires.ftc.teamcode.robot.RobotHardware;
+import org.firstinspires.ftc.teamcode.robot.VisionController;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
@@ -13,6 +14,7 @@ public class TeleopMech extends OpMode {
 
     RobotHardware robot;
     MechController mechController;
+    VisionController visionController;
     private AprilTagProcessor aprilTag;
     private VisionPortal visionPortal;
 
@@ -23,12 +25,13 @@ public class TeleopMech extends OpMode {
     public void init() {
         robot = new RobotHardware(hardwareMap, telemetry);
         mechController = new MechController(robot);
+        visionController = new VisionController(robot);
 
-        mechController.initAprilTag();
+        visionController.initAprilTag();
         mechController.handleMechState(MechState.IDLE);
 
-        aprilTag = mechController.getAprilTag();
-        visionPortal = mechController.getVisionPortal();
+        aprilTag = visionController.getAprilTag();
+        visionPortal = visionController.getVisionPortal();
 
         telemetry.addData("Status", "Initialized. Press START.");
         telemetry.update();
@@ -36,7 +39,7 @@ public class TeleopMech extends OpMode {
 
     @Override
     public void loop() {
-        int tagID = mechController.findTagID(aprilTag);
+        int tagID = visionController.findTagID(aprilTag);
 
         switch (tagID) {
             case 1:
@@ -63,9 +66,9 @@ public class TeleopMech extends OpMode {
 
         prevDpadDown = gamepad1.dpad_down;
         prevDpadUp = gamepad1.dpad_up;
-
-        telemetry.addData("Detected Tag", tagID);
         mechController.allTelemetry();
+        telemetry.addData("Detected Tag", tagID);
+        telemetry.update();
     }
 
     @Override
