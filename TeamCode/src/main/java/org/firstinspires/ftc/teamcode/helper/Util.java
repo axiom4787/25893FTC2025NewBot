@@ -48,6 +48,7 @@ public class Util {
     }
 
     public static void printOdoPositionTelemetry( GoBildaPinpointDriver odo, Telemetry telemetry ){
+        odo.update();
 
         Pose2D pose = odo.getPosition();
 

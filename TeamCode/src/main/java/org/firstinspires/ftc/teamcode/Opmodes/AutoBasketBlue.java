@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Helper.Kicker;
 import org.firstinspires.ftc.teamcode.Helper.Util;
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 
-@Autonomous(name = "Auto Blue Near 0.7", group = "Autonomous")
+@Autonomous(name = "Auto Blue Near 1.4", group = "Autonomous")
 
 public class AutoBasketBlue extends LinearOpMode {
 
@@ -60,7 +60,7 @@ public class AutoBasketBlue extends LinearOpMode {
             flipper.init(hardwareMap);
         }
 
-        chassis.odo.resetPosAndIMU();
+        //chassis.odo.resetPosAndIMU();
         while (opModeInInit()) {
 
             Util.printOdoPositionTelemetry(chassis.odo, telemetry);
@@ -77,13 +77,14 @@ public class AutoBasketBlue extends LinearOpMode {
 
         while (opModeIsActive()) {
             Double robotDistanceFromAprilTag = 0.0;
-
             AprilTagPoseFtc aprilTagPoseFtc = null;
 
-            if(aprilTag.findAprilTag(DecodeAprilTag.BLUE_APRIL_TAG)){
-                aprilTagPoseFtc = aprilTag.getCoordinate(DecodeAprilTag.BLUE_APRIL_TAG);
-                if(aprilTagPoseFtc !=null) {
-                    robotDistanceFromAprilTag = aprilTagPoseFtc.range;
+            if(robotType == RobotType.VORTEX_DECODE_1) {
+                if (aprilTag.findAprilTag(DecodeAprilTag.BLUE_APRIL_TAG)) {
+                    aprilTagPoseFtc = aprilTag.getCoordinate(DecodeAprilTag.BLUE_APRIL_TAG);
+                    if (aprilTagPoseFtc != null) {
+                        robotDistanceFromAprilTag = aprilTagPoseFtc.range;
+                    }
                 }
             }
 
@@ -94,7 +95,7 @@ public class AutoBasketBlue extends LinearOpMode {
                 case BACK_UP:
                     //chassis.moveWithProportionalDeceleration(Chassis.Direction.FORWARD, 0.3, 60);
                     //chassis.moveWithProportionalDecelerationAndHeading(Chassis.Direction.FORWARD, 0.8, 48,0.0);
-                    //chassis.moveToPosition(10,0,0);
+                    //chassis.moveToPosition(1,0,0);
                     //currentStage = AutoStages.SHOOT;
                     break;
 
