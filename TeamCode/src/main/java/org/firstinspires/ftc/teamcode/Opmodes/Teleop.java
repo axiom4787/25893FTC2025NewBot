@@ -191,7 +191,7 @@ public class Teleop extends LinearOpMode {
                 while(!gamepad2.left_bumper && loopCounter<4) {
 
                     // wait flywheel to get the desired speed
-                    Util.startShooting(flyWheel, kicker, flipper, intake, channelSensor, robotDistanceFromAprilTag, telemetry);
+                    Util.prepareForShooting(flyWheel, kicker, flipper, intake, robotDistanceFromAprilTag, telemetry);
 
                     kicker.setPosition(Kicker.gateShoot);
                     sleep(300);

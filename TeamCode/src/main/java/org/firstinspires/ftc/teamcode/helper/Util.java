@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 public class Util {
@@ -47,6 +48,13 @@ public class Util {
     }
 
     public static void printOdoPositionTelemetry( GoBildaPinpointDriver odo, Telemetry telemetry ){
+
+        Pose2D pose = odo.getPosition();
+
+        telemetry.addData("Odo Encoder X : ", odo.getEncoderX());
+        telemetry.addData("Odo Encoder Y : ", odo.getEncoderY());
+        telemetry.addData("Odo Pose X (cms): ", pose.getX(DistanceUnit.CM));
+        telemetry.addData("Odo Pose Y (cms): ", pose.getY(DistanceUnit.CM));
         telemetry.addData("Odo Position X (cms): ", odo.getPosX(DistanceUnit.CM));
         telemetry.addData("Odo Position Y (cms): ", odo.getPosY(DistanceUnit.CM));
         telemetry.addData("Odo Heading (degrees): ", odo.getHeading(AngleUnit.DEGREES));
@@ -335,8 +343,8 @@ public class Util {
     }
 
 
-    public static void startShooting(FlyWheel flyWheel, Kicker kicker, Flipper flipper, Intake intake, DistanceSensor channelDistanceSensor, Double distanceInInchFromAprilTag, Telemetry telemetry){
-        Double requiredFlyWheelPower = Util.getRequiredFlyWheelPower(distanceInInchFromAprilTag);
+    public static void prepareForShooting(FlyWheel flyWheel, Kicker kicker, Flipper flipper, Intake intake, Double distanceInInchFromAprilTag, Telemetry telemetry){
+        //Double requiredFlyWheelPower = Util.getRequiredFlyWheelPower(distanceInInchFromAprilTag);
         Integer requiredFlyWheelVelocity = Util.getRequiredFlyWheelVelocity(distanceInInchFromAprilTag);
 
         Long timeToReachRequiredFlyWheelVelocity = Util.waitForFlyWheelShootingVelocity(flyWheel,requiredFlyWheelVelocity,3000, telemetry);
@@ -460,4 +468,43 @@ public class Util {
         }
     }
 
+    public static void shoot(FlyWheel flyWheel, Kicker kicker, Flipper flipper, Intake intake, Double robotDistanceFromAprilTag, Telemetry telemetry){
+
+        prepareFlyWheelToShoot(flyWheel, kicker, intake, robotDistanceFromAprilTag, telemetry);
+
+        // intake.setIntakePower(0.5);
+
+        int loopCounter = 0;
+        double flipperangle = 120;
+
+        while(loopCounter<4) {
+
+            // wait flywheel to get the desired speed
+            Util.prepareForShooting(flyWheel, kicker, flipper, intake, robotDistanceFromAprilTag, telemetry);
+
+            kicker.setPosition(Kicker.gateShoot);
+            threadSleep(300);
+
+            flipper.turnFlipper(flipperangle+loopCounter*30);
+            threadSleep(150 + loopCounter*50);
+            kicker.setGatePosition(Kicker.GATE_CLOSE);
+            flipper.resetFlipper();
+            threadSleep(200);
+
+
+            loopCounter = loopCounter+1;
+
+            //  sleep(200);
+
+        }
+        telemetry.addData( "loopCounter - ",loopCounter);
+        telemetry.update();
+
+        //flipper.resetFlipper();
+
+
+        Util.prepareFlyWheelToIntake(flyWheel,kicker,intake,flipper, telemetry);
+
+
+    }
     }

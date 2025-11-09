@@ -3,14 +3,17 @@ package org.firstinspires.ftc.teamcode.Opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Helper.Chassis;
 import org.firstinspires.ftc.teamcode.Helper.DecodeAprilTag;
+import org.firstinspires.ftc.teamcode.Helper.Flipper;
 import org.firstinspires.ftc.teamcode.Helper.FlyWheel;
 import org.firstinspires.ftc.teamcode.Helper.Intake;
 import org.firstinspires.ftc.teamcode.Helper.Kicker;
 import org.firstinspires.ftc.teamcode.Helper.Util;
+import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 
-@Autonomous(name = "Auto Basket", group = "Autonomous")
+@Autonomous(name = "Auto Blue Near 0.4", group = "Autonomous")
 
 public class AutoBasketBlue extends LinearOpMode {
 
@@ -28,7 +31,6 @@ public class AutoBasketBlue extends LinearOpMode {
 
     enum AutoStages {
         BACK_UP,
-        ADJUST_POSITION,
         SHOOT,
         GET_MORE_BALLS,
     }
@@ -44,6 +46,9 @@ public class AutoBasketBlue extends LinearOpMode {
         DecodeAprilTag aprilTag = new DecodeAprilTag(this);
         aprilTag.initCamera();
 
+        Flipper flipper = new Flipper();
+        flipper.init(hardwareMap);
+
         while (opModeInInit()) {
             chassis.odo.resetPosAndIMU();
             Util.printOdoPositionTelemetry(chassis.odo, telemetry);
@@ -51,25 +56,38 @@ public class AutoBasketBlue extends LinearOpMode {
 
         waitForStart();
 
+        chassis.drive(1,0,0);
 
         AutoStages currentStage = AutoStages.BACK_UP;
 
         while (opModeIsActive()) {
+            Double robotDistanceFromAprilTag = 0.0;
+
+            AprilTagPoseFtc aprilTagPoseFtc = null;
+
+            if(aprilTag.findAprilTag(DecodeAprilTag.BLUE_APRIL_TAG)){
+                aprilTagPoseFtc = aprilTag.getCoordinate(DecodeAprilTag.BLUE_APRIL_TAG);
+                if(aprilTagPoseFtc !=null) {
+                    robotDistanceFromAprilTag = aprilTagPoseFtc.range;
+                }
+            }
+
+
+
 
             switch (currentStage) {
                 case BACK_UP:
                     //chassis.moveWithProportionalDeceleration(Chassis.Direction.FORWARD, 0.3, 60);
-                    currentStage = AutoStages.ADJUST_POSITION;
-                    break;
-
-                case ADJUST_POSITION:
-                    currentStage = AutoStages.SHOOT;
+                    //chassis.moveWithProportionalDecelerationAndHeading(Chassis.Direction.FORWARD, 0.8, 48,0.0);
+                    //chassis.moveToPosition(10,0,0);
+                    //currentStage = AutoStages.SHOOT;
                     break;
 
                 case SHOOT:
-                    shoot();
-                    flyWheel.stop();
-                    intake.stopIntake();
+                   //Util.shoot(flyWheel, kicker, flipper, intake, robotDistanceFromAprilTag, telemetry);
+                    //flyWheel.stop();
+                    //intake.stopIntake();
+                    break;
 
                 //case GET_MORE_BALLS:
                     

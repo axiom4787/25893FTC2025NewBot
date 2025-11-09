@@ -354,7 +354,7 @@ public class Chassis {
         // Assuming "imu" is com.qualcomm.hardware.bosch.BNO055IMU or the newer IMU interface and already initialized.
         // Choose degrees for angle un` it when you init IMU elsewhere.
         imu.resetYaw();
-        double yaw0 = -odo.getHeading(AngleUnit.DEGREES); // your helper that reads yaw in degrees
+        double yaw0 =  -odo.getHeading(AngleUnit.DEGREES); // your helper that reads yaw in degrees
         double headingSetpoint = (holdHeadingDeg != null) ? holdHeadingDeg : yaw0;
 
 
