@@ -58,8 +58,10 @@ public class RobotHardware {
 
     private void setMotorDirections() {
         intakeMot.setDirection(DcMotor.Direction.REVERSE);
-        shootingMot.setDirection(DcMotor.Direction.REVERSE);
+        intakeMot.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intakeMot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        shootingMot.setDirection(DcMotor.Direction.REVERSE);
         shootingMot.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 }

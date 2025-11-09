@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.robot;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.robot.VisionController;
-
 
 public class MechController {
 
@@ -14,12 +14,23 @@ public class MechController {
     private MechState currentState;
 
     // Hardware constants
-    private static final double MAX_SERVO_ROTATION = 300.0; // degrees
+    private static final double MAX_SERVO_ROTATION = 300.0; // Degrees
+    public static final double INTAKE_TICKS_PER_FULL_ROTATION = 537.7;// Encoder Resolution PPR for RPM 312
+    public static final double[] INTAKE= {0, 120, 240}; // Indexer 0, 1, 2 @ Intake Post degrees
+    public static final double[] SHOOT = {180, 300, 60}; // Indexer 0, 1, 2 @ Shooting Post degrees
 
     // Limit constants
-    private double lastIndexer = 1;
+    public static final int lifterDown = 21;
+    public static final int lifterUp = 56;
+
+
     // Offset constants
-    private static final double INDEXER_OFFSET = 150;
+
+    // Variables
+    public int[] tagPattern = {0, 0, 0, 0}; // Tag ID & Pattern
+    public int[] indexer = {2, 1, 1}; // GPP - Color of artifact in Indexer 0, 1, 2
+    private double lastIndexer = 1;
+    private double lastLifter = 0;
 
     // Constructor
     public MechController(RobotHardware RoboRoar) {
@@ -37,28 +48,28 @@ public class MechController {
                 currentState = MechState.IDLE;
                 break;
 
-            case SHOOTING:
+            case SHOOT_STATE:
                 setIndexer(0);
-                currentState = MechState.SHOOTING;
+                currentState = MechState.SHOOT_STATE;
                 break;
 
-            case INTAKE:
+            case INTAKE_STATE:
                 setIndexer(0);
-                currentState = MechState.INTAKE;
+                currentState = MechState.INTAKE_STATE;
                 break;
 
-            case PURPLE_SORTING:
+            case SORT_PURPLE:
                 setIndexer(0);
-                currentState = MechState.PURPLE_SORTING;
+                currentState = MechState.SORT_PURPLE;
                 break;
 
-            case GREEN_SORTING:
+            case SORT_GREEN:
                 setIndexer(0);
-                currentState = MechState.GREEN_SORTING;
+                currentState = MechState.SORT_GREEN;
                 break;
 
             case APRIL_TAG:
-                setIndexer(0);
+                tagPattern = visionController.findTagPattern(visionController.getAprilTag());
                 currentState = MechState.APRIL_TAG;
                 break;
 
@@ -72,16 +83,77 @@ public class MechController {
     // State machine methods
     public void setIndexer(double targetDegrees) {
         if (lastIndexer != targetDegrees) {
-            double pos = (targetDegrees + INDEXER_OFFSET) / MAX_SERVO_ROTATION;
+            double pos = targetDegrees / MAX_SERVO_ROTATION;
             pos = Math.max(0, Math.min(1, pos));
             robot.indexer.setPosition(pos);
             lastIndexer = targetDegrees;
         }
     }
 
+    public void runIntakeMot(double power) {
+        if (Math.abs(power) > 0.01) {
+            robot.intakeMot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            robot.intakeMot.setPower(power);
+        } else {
+            robot.intakeMot.setPower(0);
+            robot.intakeMot.setTargetPosition(0);
+            robot.intakeMot.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.intakeMot.setPower(0.5);
+        }
+    }
+
+    public void runShootingMot(double power) {
+        robot.shootingMot.setPower(power);
+    }
+
+    public void setLifter(int down0up1) {
+        if (lastLifter != down0up1) {
+            if (down0up1 == 1) {
+                robot.lifter.setPosition(lifterUp / MAX_SERVO_ROTATION);
+                lastLifter = 1;
+            } else {
+                robot.lifter.setPosition(lifterDown / MAX_SERVO_ROTATION);
+                lastLifter = 0;
+            }
+        }
+    }
+    public double getEmptyIndex() {
+        int zeroPos = getZeroPos();
+        if (zeroPos != -1) {
+            return INTAKE[zeroPos];
+        }
+        return -1;
+    }
+    public int getZeroPos() {
+        for (int i = 0; i < indexer.length; i++) {
+            if (indexer[i] == 0) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public int getGreenIndex() {
+        for (int i = 0; i < indexer.length; i++) {
+            if (indexer[i] == 2) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public int getPurpleIndex() {
+        for (int i = 0; i < indexer.length; i++) {
+            if (indexer[i] == 1) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     // Status
     public double statusIndexer(){
-        return (robot.indexer.getPosition() * MAX_SERVO_ROTATION) - INDEXER_OFFSET;
+        return robot.indexer.getPosition() * MAX_SERVO_ROTATION;
     }
     public boolean isBusy() {
         return robot.intakeMot.isBusy() || robot.shootingMot.isBusy();

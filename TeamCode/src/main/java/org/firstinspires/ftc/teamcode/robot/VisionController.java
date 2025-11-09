@@ -43,18 +43,20 @@ public class VisionController {
         return visionPortal;
     }
 
-    public int findTagID(AprilTagProcessor aprilTag) {
-        if (aprilTag == null || aprilTag.getDetections().isEmpty()) return 0;
-
+    public int[] findTagPattern(AprilTagProcessor aprilTag) {
+        if (aprilTag == null || aprilTag.getDetections().isEmpty()) {
+            return new int[]{0, 0, 0, 0};
+        }
         for (AprilTagDetection detection : aprilTag.getDetections()) {
             switch (detection.id) {
-                case 21: return 1;
-                case 22: return 2;
-                case 23: return 3;
+                case 21: return new int[]{21, 2, 1, 1}; // ID 21: GPP
+                case 22: return new int[]{22, 1, 2, 1}; // ID 22: PGP
+                case 23: return new int[]{23, 1, 1, 2}; // ID 23: PPG
             }
         }
-        return 0;
+        return new int[]{0, 0, 0, 0};
     }
+
     public void aprilTagTelemetry() {
         if (aprilTag != null && !aprilTag.getDetections().isEmpty()) {
             AprilTagDetection tag = aprilTag.getDetections().get(0);
@@ -68,17 +70,15 @@ public class VisionController {
     }
     private int isFinalColor(int ls, int rs){
         int finalColor = 0;
-        if (ls == 0 && rs == 0) {
-            finalColor = 0;
+        if (ls == 1 || rs == 1){
+            finalColor = 1; // Purple
         } else if (ls == 2 || rs == 2) {
             finalColor = 2; // Green
-        } else if (ls == 1 || rs == 1){
-            finalColor = 1; // Purple
         }
         return finalColor;
     }
     private int isColor(RevColorSensorV3 colorSensor){
-        float hsvValues[] = new float[3];
+        float[] hsvValues = new float[3];
         int r = colorSensor.red();
         int g = colorSensor.green();
         int b = colorSensor.blue();

@@ -39,8 +39,8 @@ public class TeleopMech extends OpMode {
 
     @Override
     public void loop() {
-        int tagID = visionController.findTagID(aprilTag);
-
+        int[] tagPattern = visionController.findTagPattern(aprilTag);
+/*
         switch (tagID) {
             case 1:
                 mechController.setIndexer(-120);
@@ -54,7 +54,7 @@ public class TeleopMech extends OpMode {
             default:
                 // keep servo still if no tag
                 break;
-        }
+        }*/
 
         if (visionPortal != null) {
             if (gamepad1.dpad_down && !prevDpadDown) {
@@ -67,7 +67,7 @@ public class TeleopMech extends OpMode {
         prevDpadDown = gamepad1.dpad_down;
         prevDpadUp = gamepad1.dpad_up;
         mechController.allTelemetry();
-        telemetry.addData("Detected Tag", tagID);
+        telemetry.addData("Detected Tag Pattern", tagPattern);
         telemetry.update();
     }
 
