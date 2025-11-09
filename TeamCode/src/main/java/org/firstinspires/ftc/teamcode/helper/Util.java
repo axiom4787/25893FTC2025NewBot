@@ -43,7 +43,8 @@ public class Util {
         telemetry.addData("Odo Device Status: ", odo.getDeviceStatus());
         telemetry.addData("Odo Position X (cms): ", odo.getPosX(DistanceUnit.CM));
         telemetry.addData("Odo Position Y (cms): ", odo.getPosY(DistanceUnit.CM));
-        telemetry.addData("Odo Heading (degrees): ", odo.getHeading(AngleUnit.DEGREES));
+//        telemetry.addData("Odo Heading (degrees): ", odo.getHeading(AngleUnit.DEGREES));
+        telemetry.addData("Odo Heading (radians): ", odo.getHeading(AngleUnit.RADIANS));
         telemetry.update();
     }
 

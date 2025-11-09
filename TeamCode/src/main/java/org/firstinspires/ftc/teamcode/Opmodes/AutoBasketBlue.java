@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Helper.Kicker;
 import org.firstinspires.ftc.teamcode.Helper.Util;
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 
-@Autonomous(name = "Auto Blue Near 1.4", group = "Autonomous")
+@Autonomous(name = "Auto Blue Near 1.5", group = "Autonomous")
 
 public class AutoBasketBlue extends LinearOpMode {
 
