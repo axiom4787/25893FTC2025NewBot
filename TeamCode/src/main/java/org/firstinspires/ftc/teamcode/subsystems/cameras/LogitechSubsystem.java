@@ -84,7 +84,7 @@ public class LogitechSubsystem {
         }
     }
 
-    public void telemetryAprilTag(Telemetry ) {
+    public void telemetryAprilTag(Telemetry telemetry) {
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         telemetry.addData("# AprilTags Detected", currentDetections.size());
 
