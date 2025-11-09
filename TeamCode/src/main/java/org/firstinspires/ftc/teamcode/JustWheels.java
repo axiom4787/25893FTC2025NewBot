@@ -5,6 +5,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
+//Used for the list of buttons
+
+import java.util.ArrayList;
+import java.util.List;
+
+
+
 @TeleOp
 public class JustWheels extends OpMode {
     private DcMotor leftDrive;
@@ -28,15 +35,15 @@ public class JustWheels extends OpMode {
         telemetry.addLine(String.valueOf(maxSpeed));
         telemetry.update();
 
-        y = -gamepad1.right_stick_x;
+        y = gamepad1.right_stick_x;
         x = gamepad1.left_stick_y;
         leftDrive.setPower(y - x);
         rightDrive.setPower(Range.clip(y + x, -maxSpeed, maxSpeed));
     }
     float sign(float value) {
-        if(value > 0) {
+        if (value > 0) {
             return 1;
-        } else if(value == 0) {
+        } else if (value == 0) {
             return 0;
         } else {
             return -1;

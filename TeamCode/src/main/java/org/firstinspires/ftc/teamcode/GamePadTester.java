@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 
 @TeleOp
 public class GamePadTester extends LinearOpMode {
-
     @Override
     public void runOpMode() {
         waitForStart();
@@ -19,3 +18,4 @@ public class GamePadTester extends LinearOpMode {
         }
     }
 }
+
