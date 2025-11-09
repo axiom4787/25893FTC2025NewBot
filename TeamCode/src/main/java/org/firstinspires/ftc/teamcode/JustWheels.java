@@ -5,10 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
-//Used for the list of buttons
 
-import java.util.ArrayList;
-import java.util.List;
 
 
 
@@ -34,7 +31,7 @@ public class JustWheels extends OpMode {
         }*/
         telemetry.addLine(String.valueOf(maxSpeed));
         telemetry.update();
-
+        
         y = gamepad1.right_stick_x;
         x = gamepad1.left_stick_y;
         leftDrive.setPower(y - x);
