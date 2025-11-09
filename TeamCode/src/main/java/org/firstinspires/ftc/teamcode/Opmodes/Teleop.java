@@ -179,11 +179,14 @@ public class Teleop extends LinearOpMode {
             //Shooting
             if (gamepad2.right_bumper) {
 
+                // if robotDistanceFromAprilTag is null, tunr robot to get it
+
                 Util.prepareFlyWheelToShoot(flyWheel, kicker, intake, robotDistanceFromAprilTag, telemetry);
 
-                intake.setIntakePower(0.5);
+               // intake.setIntakePower(0.5);
 
                 int loopCounter = 0;
+                double flipperangle = 120;
 
                 while(!gamepad2.left_bumper && loopCounter<4) {
 
@@ -191,10 +194,10 @@ public class Teleop extends LinearOpMode {
                     Util.startShooting(flyWheel, kicker, flipper, intake, channelSensor, robotDistanceFromAprilTag, telemetry);
 
                     kicker.setPosition(Kicker.gateShoot);
-                    sleep(200);
+                    sleep(300);
 
-                    flipper.turnFlipper();
-                    sleep(200);
+                    flipper.turnFlipper(flipperangle+loopCounter*30);
+                    sleep(150 + loopCounter*50);
                     kicker.setGatePosition(Kicker.GATE_CLOSE);
                     flipper.resetFlipper();
                     sleep(200);

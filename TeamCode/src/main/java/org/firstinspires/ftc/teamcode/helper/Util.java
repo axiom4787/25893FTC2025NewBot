@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -187,15 +186,30 @@ public class Util {
         long intermidiateTime =  System.currentTimeMillis();
         long durationInMillis = intermidiateTime - startTime;
         int loopCounter = 0;
-        while (flyWheel.getVelocity() < 0.9*velocity){          //90% is good
+
+        double shootPower = flyWheel.getPower();
+        flyWheel.setPower(1.0); // ramp up at full power
+
+        while (flyWheel.getVelocity() < 0.98*velocity){
             loopCounter++;
             intermidiateTime =  System.currentTimeMillis();
             durationInMillis = intermidiateTime - startTime;
-            sleepThread(250);
+            sleepThread(50);
+
             if(durationInMillis > maxWaitTime){
                 return durationInMillis;
             }
         }
+
+        while (flyWheel.getVelocity() > 1.02*velocity){
+            flyWheel.setPower(-1);
+            sleepThread(50);
+        }
+
+        flyWheel.setPower((0.45 + (velocity-1200)/1000)*1.2); //20% more for shooting power
+
+     //   flyWheel.setPower(shootPower); // back to shooting power
+
         telemetry.addData("waitForFlyWheelShootingVelocity - loopCounter - ",loopCounter);
         return durationInMillis;
     }
@@ -208,12 +222,18 @@ public class Util {
 
         telemetry.addData("Start FlyWheel Velocity - " , startFlyWheelVelocity);
 
+        //flyWheel.setPower(-1); // was -0.1
+        //sleepThread(500);
+        //flyWheel.setPower(0.0);
+
         while (currentFlyWheelVelocity > velocity){
-            flyWheel.setPower(-0.1);
-            sleepThread(500);
-            flyWheel.setPower(0.0);
+            flyWheel.setPower(-1); // was -0.1
+            sleepThread(50);
+           // flyWheel.setPower(0.0);
             currentFlyWheelVelocity = flyWheel.getVelocity();
         }
+
+        flyWheel.setPower(0.0);
 
         long endTime = System.currentTimeMillis();
 
@@ -288,14 +308,20 @@ public class Util {
     }
 
     public static void prepareFlyWheelToShoot(FlyWheel flyWheel, Kicker kicker, Intake intake, Double distance, Telemetry telemetry){
-        kicker.setPosition(Kicker.gateClose);
 
         intake.setIntakePower(0.5); //reduce intake power to avoid jam
+        kicker.setPosition(Kicker.gateClose);
+        threadSleep(200);
 
-        threadSleep(800);
+        //threadSleep(800);
         //Replace the timer with distance sensor
         //When the ball is moved out, start the flywheel
-        flyWheel.start(Util.getRequiredFlyWheelPower(distance));
+
+
+       // flyWheel.start(0.5); // start at low power
+
+
+        // flyWheel.start(Util.getRequiredFlyWheelPower(distance));
         //threadSleep(800);
     }
 
@@ -371,8 +397,21 @@ public class Util {
     }
 
     public static Integer getRequiredFlyWheelVelocity(Double distanceInInchFromAprilTag){
-        Integer integerDesiredFlyWheelVelocity = 1200;
+        Integer integerDesiredFlyWheelVelocity;
 
+        /* measurement data (velocity_rpm vs distance_inch)
+        [950 1000 1100 1200 1300 1400] rpm
+        [37  43.5    51 54.5 67.5 77] - inch
+
+        velocity = 10.25*distance + 587.4, R^2=0.992
+
+        minmum shooting distance is 37 inch
+         */
+
+        integerDesiredFlyWheelVelocity = (int) Math.max(950, Math.ceil(10.25*distanceInInchFromAprilTag + 587.4));
+
+
+        /*
         if (distanceInInchFromAprilTag >= 25 && distanceInInchFromAprilTag <= 50){
             integerDesiredFlyWheelVelocity = 1200;
         }
@@ -383,6 +422,7 @@ public class Util {
             integerDesiredFlyWheelVelocity = 1400;
         }
 
+         */
         return integerDesiredFlyWheelVelocity;
     }
 

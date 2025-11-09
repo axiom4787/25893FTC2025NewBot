@@ -26,9 +26,9 @@ public class Flipper {
         setPosition(flipperStart);
     }
 
-    public void turnFlipper() {
+    public void turnFlipper(double angle) {
 
-       setPosition( 1 + flipperIncrement*135/360); // 1/3 turn
+       setPosition( 1 + flipperIncrement*angle/360); // 1/3 turn
        // setPosition( Math.max(getPosition() + flipperIncrement, -flipperIncrement/2) );
     }
     public double getPosition(){
