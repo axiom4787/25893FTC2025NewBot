@@ -51,7 +51,7 @@ public class AprilTagTester extends LinearOpMode {
                     double bearing = aprilTag.getBearing();
 
                     if (Double.isNaN(bearing)) {
-                        lastTurnCorrection = 0;
+                        lastTurnCorrection = 0; 
                     } else {
                         lastTurnCorrection = aprilAimer.calculateTurnPowerToBearing(bearing);
                     }
