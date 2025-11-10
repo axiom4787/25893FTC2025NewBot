@@ -1,53 +1,60 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.util.ElapsedTime;
-// TODO: this is vibe coded so probably needs testing and adjustments
+
 public class CRServoPositionControl {
-    private CRServo crServo;
-    private double kp = 1.0; // Proportional gain
-    private double ki = 0.0; // Integral gain
-    private double kd = 0.1; // Derivative gain
-    private double kf = 0.1; // Feedforward gain
+    private final CRServo crServo;
+    private final AnalogInput encoder; // Analog input for position from 4th wire
+
+    private double kp = 1.0;
+    private double ki = 0.0;
+    private double kd = 0.1;
+    private double kf = 0.1;
 
     private double integral = 0.0;
     private double lastError = 0.0;
     private ElapsedTime timer = new ElapsedTime();
 
-    public CRServoPositionControl(CRServo servo) {
+    public CRServoPositionControl(CRServo servo, AnalogInput encoder) {
         this.crServo = servo;
+        this.encoder = encoder;
         timer.reset();
     }
 
-    // Read encoder voltage from hardware (0 to 3.3V)
+    private double getCurrentPositionVoltage() {
+        return encoder.getVoltage(); // Read analog voltage from 4th wire
+    }
 
-
-    // Convert angle (0 to 360 degrees) to voltage (0 to 3.3V)
     private double angleToVoltage(double angleDegrees) {
-        angleDegrees = Math.max(0, Math.min(360, angleDegrees)); // Clamp angle
+        angleDegrees = Math.max(0, Math.min(360, angleDegrees)); // Clamp
         return (angleDegrees / 360.0) * 3.3;
     }
 
-    // Move to target angle in degrees using PIDF control
+    private double voltageToAngle(double voltage) {
+        voltage = Math.max(0, Math.min(3.3, voltage));
+        return (voltage / 3.3) * 360.0;
+    }
+
     public void moveToAngle(double targetAngleDegrees) {
         double targetVoltage = angleToVoltage(targetAngleDegrees);
-        double currentVoltage = crServo.getPower();
+        double currentVoltage = getCurrentPositionVoltage();
 
         double error = targetVoltage - currentVoltage;
 
+        // Shortest path wrap handling, for continuous rotation (optional)
+        if (error > 1.65) { error -= 3.3; }
+        if (error < -1.65) { error += 3.3; }
+
         double deltaTime = timer.seconds();
         timer.reset();
-
         integral += error * deltaTime;
         double derivative = (error - lastError) / deltaTime;
 
-        // PIDF output for power command [-1, 1]
         double output = kp * error + ki * integral + kd * derivative + kf * targetVoltage;
         output = Math.max(-1.0, Math.min(1.0, output));
-
         crServo.setPower(output);
 
         lastError = error;
     }
-
-
 }
