@@ -29,10 +29,10 @@ public class Chassis {
     double WHEEL_DIAMETER_INCHES = 4.0;
     double COUNTS_PER_INCH;
 
-    private DcMotor frontLeftDrive;
-    private DcMotor backLeftDrive;
-    private DcMotor frontRightDrive;
-    private DcMotor backRightDrive;
+    public DcMotor frontLeftDrive;
+    public DcMotor backLeftDrive;
+    public DcMotor frontRightDrive;
+    public DcMotor backRightDrive;
     public IMU imu;
 
     private OpMode opMode;

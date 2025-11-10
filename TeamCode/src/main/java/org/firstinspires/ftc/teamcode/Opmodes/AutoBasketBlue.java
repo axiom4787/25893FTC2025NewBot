@@ -60,6 +60,9 @@ public class AutoBasketBlue extends LinearOpMode {
             flipper.init(hardwareMap);
         }
 
+        if(robotType == RobotType.VORTEX_DECODE_2) {
+            Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.FORWARD, 10, 0, telemetry);
+        }
         //chassis.odo.resetPosAndIMU();
         /*
         while (opModeInInit()) {

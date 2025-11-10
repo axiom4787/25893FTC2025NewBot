@@ -518,8 +518,8 @@ public class Util {
     }
 
     public static void moveRobot(
-            DcMotorEx leftFront, DcMotorEx leftBack,
-            DcMotorEx rightFront, DcMotorEx rightBack,
+            DcMotor leftFront, DcMotor leftBack,
+            DcMotor rightFront, DcMotor rightBack,
             GoBildaPinpointDriver odo,
             IMU imu,
             MovementDirection direction,
