@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.Helper;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.IMU;
+//import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.robotcore.hardware.*;
+import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -509,4 +509,139 @@ public class Util {
 
 
     }
+
+    public enum MovementDirection {
+        FORWARD,
+        BACKWARD,
+        STRAFE_LEFT,
+        STRAFE_RIGHT
+    }
+
+    public static void moveRobot(
+            DcMotorEx leftFront, DcMotorEx leftBack,
+            DcMotorEx rightFront, DcMotorEx rightBack,
+            GoBildaPinpointDriver odo,
+            IMU imu,
+            MovementDirection direction,
+            double distance,
+            double targetHeadingRadians,
+            Telemetry telemetry) {
+
+
+        Double MAX_SPEED = 0.8;
+        Double P_DRIVE_GAIN = 0.07;
+        Double TOLERANCE_INCHES = 0.5;
+        Double P_YAW_GAIN = 0.04;
+        Integer TIMEOUT_MS = 5000;
+
+
+        // --- 1. Initialization ---
+        odo.update(); // Get the latest odometry readings
+        double startX = odo.getPosX(DistanceUnit.INCH);
+        double startY = odo.getPosY(DistanceUnit.INCH);
+
+        double targetX = startX;
+        double targetY = startY;
+
+        switch (direction) {
+            case FORWARD:
+                targetX = startX + distance; // Forward is on X-axis
+                break;
+            case BACKWARD:
+                targetX = startX - distance; // Backward is on X-axis
+                break;
+            case STRAFE_LEFT:
+                targetY = startY - distance; // Strafe Left is on Y-axis
+                break;
+            case STRAFE_RIGHT:
+                targetY = startY + distance; // Strafe Right is on Y-axis
+                break;
+        }
+
+        // --- 2. Control Loop ---
+        ElapsedTime timer = new ElapsedTime();
+        double errorX = targetX - startX;
+        double errorY = targetY - startY;
+
+        // Loop while the robot is outside the tolerance AND not timed out
+        while ((Math.abs(errorX) > TOLERANCE_INCHES || Math.abs(errorY) > TOLERANCE_INCHES)
+                && timer.milliseconds() < TIMEOUT_MS) {
+
+            // --- a. Update State ---
+            odo.update();
+            double currentX = odo.getPosX(DistanceUnit.INCH);
+            double currentY = odo.getPosY(DistanceUnit.INCH);
+
+            // --- b. Calculate Error ---
+            // Error is the remaining distance to the target
+            errorX = targetX - currentX; // Forward/Back error
+            errorY = targetY - currentY; // Strafe error
+
+            // --- c. P-Controller (Calculate Power) ---
+            // Calculate the robot-centric power needed.
+            // **AXES ARE SWAPPED HERE**
+            double axialPower = Range.clip(errorX * P_DRIVE_GAIN, -MAX_SPEED, MAX_SPEED);  // Axial (fwd/bck) power is from X-error
+            double lateralPower = Range.clip(errorY * P_DRIVE_GAIN, -MAX_SPEED, MAX_SPEED); // Lateral (strafe) power is from Y-error
+
+            // --- d. Gyro Accommodation (Stubbed) ---
+            YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+            double currentHeading = orientation.getYaw(AngleUnit.RADIANS);
+
+            // This error calculation will be used in the next iteration
+            double yawError = targetHeadingRadians - currentHeading;
+            // Handle wraparound (e.g., target 0, current 359)
+            while (yawError > Math.PI) yawError -= 2 * Math.PI;
+            while (yawError < -Math.PI) yawError += 2 * Math.PI;
+
+            // **Gyro power is OFF for now**
+            double yawPower = 0;
+            // TODO: Implement gyro P-controller
+            // yawPower = Range.clip(yawError * P_YAW_GAIN, -MAX_SPEED, MAX_SPEED);
+
+            // --- e. Mecanum Wheel Math (Robot-Centric) ---
+            // This formula remains the same.
+            double leftFrontPower = axialPower + lateralPower + yawPower;
+            double rightFrontPower = axialPower - lateralPower - yawPower;
+            double leftBackPower = axialPower - lateralPower + yawPower;
+            double rightBackPower = axialPower + lateralPower - yawPower;
+
+            // --- f. Normalize Power ---
+            double max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
+            max = Math.max(max, Math.abs(leftBackPower));
+            max = Math.max(max, Math.abs(rightBackPower));
+
+            if (max > 1.0) {
+                leftFrontPower /= max;
+                rightFrontPower /= max;
+                leftBackPower /= max;
+                rightBackPower /= max;
+            }
+
+            // --- g. Set Motor Power ---
+            leftFront.setPower(leftFrontPower);
+            rightFront.setPower(rightFrontPower);
+            leftBack.setPower(leftBackPower);
+            rightBack.setPower(rightBackPower);
+
+            // --- h. Telemetry ---
+            telemetry.addData("Direction", direction);
+            telemetry.addData("Target", "X: %.2f (fwd), Y: %.2f (strafe)", targetX, targetY);
+            telemetry.addData("Current", "X: %.2f, Y: %.2f", currentX, currentY);
+            telemetry.addData("Error", "X: %.2f, Y: %.2f", errorX, errorY);
+            telemetry.addData("Power", "Ax: %.2f, Lat: %.2f, Yaw: %.2f", axialPower, lateralPower, yawPower);
+            telemetry.addData("Heading", "Tgt: %.2f, Curr: %.2f", targetHeadingRadians, currentHeading);
+            telemetry.update();
+        }
+
+        // --- 3. Stop Motors ---
+        leftFront.setPower(0);
+        rightFront.setPower(0);
+        leftBack.setPower(0);
+        rightBack.setPower(0);
+
+        telemetry.addData("Status", "Movement Complete");
+        telemetry.update();
+    }
+
+
     }

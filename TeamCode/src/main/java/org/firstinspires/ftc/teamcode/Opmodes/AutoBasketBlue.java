@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Helper.Kicker;
 import org.firstinspires.ftc.teamcode.Helper.Util;
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 
-@Autonomous(name = "Auto Blue Near 1.5", group = "Autonomous")
+@Autonomous(name = "Auto Blue Near 1.6", group = "Autonomous")
 
 public class AutoBasketBlue extends LinearOpMode {
 
@@ -61,6 +61,7 @@ public class AutoBasketBlue extends LinearOpMode {
         }
 
         //chassis.odo.resetPosAndIMU();
+        /*
         while (opModeInInit()) {
 
             Util.printOdoPositionTelemetry(chassis.odo, telemetry);
@@ -68,6 +69,7 @@ public class AutoBasketBlue extends LinearOpMode {
             telemetry.update();
 
         }
+        */
 
         waitForStart();
 
