@@ -520,6 +520,8 @@ public class Util {
         STRAFE_RIGHT
     }
 
+
+
     public static void moveRobot(
             DcMotor leftFront, DcMotor leftBack,
             DcMotor rightFront, DcMotor rightBack,
@@ -532,118 +534,246 @@ public class Util {
 
 
         Double MAX_SPEED = 0.8;
-        Double P_DRIVE_GAIN = 0.07;
+        Double MIN_SPEED = 0.1;
+        Double P_DRIVE_GAIN = 0.03;
         Double TOLERANCE_INCHES = 0.5;
         Double P_YAW_GAIN = 0.04;
-        Integer TIMEOUT_MS = 5000;
-
+        Integer TIMEOUT_MS = 20000;
 
         // --- 1. Initialization ---
-        odo.update(); // Get the latest odometry readings
-        double startX = odo.getPosX(DistanceUnit.INCH);
-        double startY = odo.getPosY(DistanceUnit.INCH);
+        odo.resetPosAndIMU();
+        odo.setPosX(0.0,DistanceUnit.INCH);
+        odo.setPosY(0.0,DistanceUnit.INCH);
+        threadSleep(100);
+        odo.update();
+        Double startX = odo.getPosX(DistanceUnit.INCH);
+        Double startY = odo.getPosY(DistanceUnit.INCH);
 
-        double targetX = startX;
-        double targetY = startY;
+        ElapsedTime timer = new ElapsedTime();
+
+        // --- We will use different variables depending on direction ---
+        double targetPosition;
+        double currentPosition;
+        Double currentHeading;
+        Double error;
+        Double axialPower;
+        Double lateralPower;
+        Double yawPower;
+
+        // --- 2. ISOLATED Control Loop ---
+        // We run a DIFFERENT loop based on the direction.
+        // This prevents the robot from trying to do two things at once.
 
         switch (direction) {
             case FORWARD:
-                targetX = startX + distance; // Forward is on X-axis
+                targetPosition = startX + distance;
+                currentPosition = odo.getPosX(DistanceUnit.INCH);
+                currentHeading = odo.getHeading(AngleUnit.RADIANS);
+
+                // --- TELEMETRY 1: BEFORE THE LOOP ---
+                // (Checks starting values and calculation)
+                odo.update();
+                Double odoPosX = odo.getPosX(DistanceUnit.INCH);
+                Double odoPosY = odo.getPosY(DistanceUnit.INCH);
+
+                telemetry.addData("--- DEBUG: PRE-RUN ---", "");
+                telemetry.addData("Direction", direction);
+                telemetry.addData("Start X", "%.2f", startX);
+                telemetry.addData("Target X", "%.2f", targetPosition);
+                telemetry.addData("Distance", "%.2f", distance);
+                telemetry.addData("currentPosition", "%.2f", currentPosition);
+                telemetry.addData("odoPosX", "%.2f", odoPosX);
+                telemetry.addData("odoPosY", "%.2f", odoPosY);
+                telemetry.addData("Tgt Heading", "%.2f", targetHeadingRadians);
+                telemetry.addData("Start Heading", "%.2f", currentHeading);
+
+
+                telemetry.update();
+                threadSleep(5000);
+                timer = new ElapsedTime();
+                int loopCounter = 0;
+                // Keep looping until we pass the target
+                while (odo.getPosX(DistanceUnit.INCH) < targetPosition && timer.milliseconds() < TIMEOUT_MS) {
+                    loopCounter++;
+                    odo.update();
+
+                    // --- A. Drive (Axial) Calculation ---
+                    currentPosition = odo.getPosX(DistanceUnit.INCH);
+                    error = targetPosition - currentPosition;
+
+                    // P-Controller for Axial
+                    axialPower = Range.clip(error * P_DRIVE_GAIN, MIN_SPEED, MAX_SPEED);
+
+
+                    // --- B. Heading (Yaw) Calculation ---
+                    currentHeading = odo.getHeading(AngleUnit.RADIANS);
+                    double headingError = targetHeadingRadians - currentHeading;
+
+                    // Handle wraparound (e.g., target 1°, current 359°)
+                    while (headingError > Math.PI)  headingError -= 2 * Math.PI;
+                    while (headingError < -Math.PI) headingError += 2 * Math.PI;
+
+                    // P-Controller for Yaw
+                    yawPower = Range.clip(headingError * P_YAW_GAIN, -MAX_SPEED, MAX_SPEED);
+
+                    // Apply *only* axial (forward) power
+                    setMotorPower(leftFront, leftBack, rightFront, rightBack, axialPower, 0, yawPower);
+
+
+                    // --- TELEMETRY 2: INSIDE THE LOOP ---
+                    // (This is existing, correct telemetry)
+
+                    odo.update();
+                    odoPosX = odo.getPosX(DistanceUnit.INCH);
+                    odoPosY = odo.getPosY(DistanceUnit.INCH);
+
+                    telemetry.addData("--- DEBUG: RUNNING ---", "");
+                    telemetry.addData("Target X", "%.2f", targetPosition);
+                    telemetry.addData("Error", "%.2f", error);  // <--- ADD THIS
+                    telemetry.addData("Power", "%.2f", axialPower);
+                    telemetry.addData("currentPosition", "%.2f", currentPosition);
+                    telemetry.addData("odoPosX", "%.2f", odoPosX);
+                    telemetry.addData("odoPosY", "%.2f", odoPosY);
+                    telemetry.addData("Timer", "%.0f ms", timer.milliseconds());
+                    telemetry.addData("---", "---"); // Separator
+                    telemetry.addData("Tgt Hdg", "%.2f", targetHeadingRadians);
+                    telemetry.addData("Curr Hdg", "%.2f", currentHeading);
+                    telemetry.addData("Hdg Error", "%.2f", headingError);
+                    telemetry.addData("Yaw Power", "%.2f", yawPower);
+                    telemetry.addData("Loop", loopCounter);
+                    telemetry.update();
+                    odo.update();
+                }
+                setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, 0, 0);
+                threadSleep(5000);
+
+                odo.update();
+                odoPosX = odo.getPosX(DistanceUnit.INCH);
+                odoPosY = odo.getPosY(DistanceUnit.INCH);
+
+                telemetry.addData("--- DEBUG: Post RUNNING ---", loopCounter);
+                telemetry.addData("odoPosX", "%.2f", odoPosX);
+                telemetry.addData("odoPosY", "%.2f", odoPosY);
+                telemetry.addData("Timer", "%.0f ms", timer.milliseconds());
+                telemetry.update();
+
+                threadSleep(10000);
                 break;
+
             case BACKWARD:
-                targetX = startX - distance; // Backward is on X-axis
+                targetPosition = startX - distance;
+
+                // Keep looping until we pass the target
+                while (odo.getPosX(DistanceUnit.INCH) > targetPosition && timer.milliseconds() < TIMEOUT_MS) {
+                    odo.update();
+                    currentPosition = odo.getPosX(DistanceUnit.INCH);
+                    error = targetPosition - currentPosition; // Error will be negative
+
+                    // Simple P-Controller. Note: error * gain will be negative.
+                    axialPower = Range.clip(error * P_DRIVE_GAIN, -MAX_SPEED, -MIN_SPEED);
+
+                    // Apply *only* axial (backward) power
+                    setMotorPower(leftFront, leftBack, rightFront, rightBack, axialPower, 0, 0);
+
+                    telemetry.addData("Moving", direction);
+                    telemetry.addData("Target", "%.2f", targetPosition);
+                    telemetry.addData("Current", "%.2f", currentPosition);
+                    telemetry.addData("Power", "%.2f", axialPower);
+                    telemetry.update();
+                    odo.update();
+                }
                 break;
-            case STRAFE_LEFT:
-                targetY = startY - distance; // Strafe Left is on Y-axis
-                break;
+
             case STRAFE_RIGHT:
-                targetY = startY + distance; // Strafe Right is on Y-axis
+                targetPosition = startY + distance;
+
+                // Keep looping until we pass the target
+                while (odo.getPosY(DistanceUnit.INCH)< targetPosition && timer.milliseconds() < TIMEOUT_MS) {
+                    odo.update();
+                    currentPosition = odo.getPosY(DistanceUnit.INCH);
+                    error = targetPosition - currentPosition;
+
+                    // Simple P-Controller
+                    lateralPower = Range.clip(error * P_DRIVE_GAIN, MIN_SPEED, MAX_SPEED);
+
+                    // Apply *only* lateral (strafe) power
+                    setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, lateralPower, 0);
+
+                    telemetry.addData("Moving", direction);
+                    telemetry.addData("Target", "%.2f", targetPosition);
+                    telemetry.addData("Current", "%.2f", currentPosition);
+                    telemetry.addData("Power", "%.2f", lateralPower);
+                    telemetry.update();
+                }
                 break;
-        }
 
-        // --- 2. Control Loop ---
-        ElapsedTime timer = new ElapsedTime();
-        double errorX = targetX - startX;
-        double errorY = targetY - startY;
+            case STRAFE_LEFT:
+                targetPosition = startY - distance;
 
-        // Loop while the robot is outside the tolerance AND not timed out
-        while ((Math.abs(errorX) > TOLERANCE_INCHES || Math.abs(errorY) > TOLERANCE_INCHES)
-                && timer.milliseconds() < TIMEOUT_MS) {
+                // Keep looping until we pass the target
+                while (odo.getPosY(DistanceUnit.INCH) > targetPosition && timer.milliseconds() < TIMEOUT_MS) {
+                    odo.update();
+                    currentPosition = odo.getPosY(DistanceUnit.INCH);
+                    error = targetPosition - currentPosition; // Error will be negative
 
-            // --- a. Update State ---
-            odo.update();
-            double currentX = odo.getPosX(DistanceUnit.INCH);
-            double currentY = odo.getPosY(DistanceUnit.INCH);
+                    // Simple P-Controller
+                    lateralPower = Range.clip(error * P_DRIVE_GAIN, -MAX_SPEED, -MIN_SPEED);
 
-            // --- b. Calculate Error ---
-            // Error is the remaining distance to the target
-            errorX = targetX - currentX; // Forward/Back error
-            errorY = targetY - currentY; // Strafe error
+                    // Apply *only* lateral (strafe) power
+                    setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, lateralPower, 0);
 
-            // --- c. P-Controller (Calculate Power) ---
-            // Calculate the robot-centric power needed.
-            // **AXES ARE SWAPPED HERE**
-            double axialPower = Range.clip(errorX * P_DRIVE_GAIN, -MAX_SPEED, MAX_SPEED);  // Axial (fwd/bck) power is from X-error
-            double lateralPower = Range.clip(errorY * P_DRIVE_GAIN, -MAX_SPEED, MAX_SPEED); // Lateral (strafe) power is from Y-error
-
-            // --- d. Gyro Accommodation (Stubbed) ---
-            YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
-            double currentHeading = orientation.getYaw(AngleUnit.RADIANS);
-
-            // This error calculation will be used in the next iteration
-            double yawError = targetHeadingRadians - currentHeading;
-            // Handle wraparound (e.g., target 0, current 359)
-            while (yawError > Math.PI) yawError -= 2 * Math.PI;
-            while (yawError < -Math.PI) yawError += 2 * Math.PI;
-
-            // **Gyro power is OFF for now**
-            double yawPower = 0;
-            // TODO: Implement gyro P-controller
-            // yawPower = Range.clip(yawError * P_YAW_GAIN, -MAX_SPEED, MAX_SPEED);
-
-            // --- e. Mecanum Wheel Math (Robot-Centric) ---
-            // This formula remains the same.
-            double leftFrontPower = axialPower + lateralPower + yawPower;
-            double rightFrontPower = axialPower - lateralPower - yawPower;
-            double leftBackPower = axialPower - lateralPower + yawPower;
-            double rightBackPower = axialPower + lateralPower - yawPower;
-
-            // --- f. Normalize Power ---
-            double max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
-            max = Math.max(max, Math.abs(leftBackPower));
-            max = Math.max(max, Math.abs(rightBackPower));
-
-            if (max > 1.0) {
-                leftFrontPower /= max;
-                rightFrontPower /= max;
-                leftBackPower /= max;
-                rightBackPower /= max;
-            }
-
-            // --- g. Set Motor Power ---
-            leftFront.setPower(leftFrontPower);
-            rightFront.setPower(rightFrontPower);
-            leftBack.setPower(leftBackPower);
-            rightBack.setPower(rightBackPower);
-
-            // --- h. Telemetry ---
-            telemetry.addData("Direction", direction);
-            telemetry.addData("Target", "X: %.2f (fwd), Y: %.2f (strafe)", targetX, targetY);
-            telemetry.addData("Current", "X: %.2f, Y: %.2f", currentX, currentY);
-            telemetry.addData("Error", "X: %.2f, Y: %.2f", errorX, errorY);
-            telemetry.addData("Power", "Ax: %.2f, Lat: %.2f, Yaw: %.2f", axialPower, lateralPower, yawPower);
-            telemetry.addData("Heading", "Tgt: %.2f, Curr: %.2f", targetHeadingRadians, currentHeading);
-            telemetry.update();
+                    telemetry.addData("Moving", direction);
+                    telemetry.addData("Target", "%.2f", targetPosition);
+                    telemetry.addData("Current", "%.2f", currentPosition);
+                    telemetry.addData("Power", "%.2f", lateralPower);
+                    telemetry.update();
+                }
+                break;
         }
 
         // --- 3. Stop Motors ---
-        leftFront.setPower(0);
-        rightFront.setPower(0);
-        leftBack.setPower(0);
-        rightBack.setPower(0);
+        setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, 0, 0);
 
         telemetry.addData("Status", "Movement Complete");
+        telemetry.addData("Final X", "%.2f", odo.getPosX(DistanceUnit.INCH));
+        telemetry.addData("Final Y", "%.2f", odo.getPosY(DistanceUnit.INCH));
         telemetry.update();
+    }
+
+    /**
+     * Helper method to apply power to all four motors using Mecanum logic.
+     * (This is your original 'drive' logic, simplified)
+     *
+     * @param axialPower   Forward/Backward power (+/-)
+     * @param lateralPower Strafe Left/Right power (+/-)
+     * @param yawPower     Rotation power (+/-)
+     */
+    private static void setMotorPower(
+            DcMotor leftFront, DcMotor leftBack,
+            DcMotor rightFront, DcMotor rightBack,
+            double axialPower, double lateralPower, double yawPower) {
+
+        double leftFrontPower = axialPower + lateralPower + yawPower;
+        double rightFrontPower = axialPower - lateralPower - yawPower;
+        double leftBackPower = axialPower - lateralPower + yawPower;
+        double rightBackPower = axialPower + lateralPower - yawPower;
+
+        // Normalize (same as before)
+        double max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
+        max = Math.max(max, Math.abs(leftBackPower));
+        max = Math.max(max, Math.abs(rightBackPower));
+
+        if (max > 1.0) {
+            leftFrontPower /= max;
+            rightFrontPower /= max;
+            leftBackPower /= max;
+            rightBackPower /= max;
+        }
+
+        leftFront.setPower(leftFrontPower);
+        rightFront.setPower(rightFrontPower);
+        leftBack.setPower(leftBackPower);
+        rightBack.setPower(rightBackPower);
     }
 
 

@@ -86,7 +86,7 @@ public class Chassis {
         //Make these values more accurate to make our heading more accurate
         odo.setOffsets(-4.5, 8, DistanceUnit.INCH);
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
         odo.resetPosAndIMU();
 
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -102,7 +102,7 @@ public class Chassis {
 
     }
 
-    public void resetIMU() {
+    public void resetODOPosAndIMU() {
         odo.resetPosAndIMU();
     }
 

@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Helper.Kicker;
 import org.firstinspires.ftc.teamcode.Helper.Util;
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 
-@Autonomous(name = "Auto Blue Near 1.6", group = "Autonomous")
+@Autonomous(name = "Auto Blue Near 3.7", group = "Autonomous")
 
 public class AutoBasketBlue extends LinearOpMode {
 
@@ -63,9 +63,12 @@ public class AutoBasketBlue extends LinearOpMode {
         }
 
         if(robotType == RobotType.VORTEX_DECODE_2) {
-            Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.FORWARD, 10, 0, telemetry);
+            chassis.resetODOPosAndIMU();
+            Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.FORWARD, 40, 0, telemetry);
         }
+
         //chassis.odo.resetPosAndIMU();
+
         /*
         while (opModeInInit()) {
 
@@ -74,7 +77,8 @@ public class AutoBasketBlue extends LinearOpMode {
             telemetry.update();
 
         }
-        */
+
+         */
 
         waitForStart();
 
@@ -103,17 +107,17 @@ public class AutoBasketBlue extends LinearOpMode {
                     //chassis.moveWithProportionalDeceleration(Chassis.Direction.FORWARD, 0.3, 60);
 //                    chassis.moveWithProportionalDecelerationAndHeading(Chassis.Direction.FORWARD, 0.8, 48,0.0);
                     //chassis.moveWithProportionalDeceleration(Chassis.Direction.FORWARD, 0.3, 10);
-                    chassis.Drive(-10,0.3);
-                    sleep(500);
+                    //chassis.Drive(-10,0.3);
+                    //sleep(1000);
                     chassis.Drive(10, 0.3);
-                    sleep(500);
-                    chassis.Strafe(-10,0.3);
-                    sleep(500);
-                    chassis.Strafe(10,0.3);
-                    sleep(500);
+                    sleep(1000);
+                    //chassis.Strafe(-10,0.3);
+                    //sleep(500);
+                    //chassis.Strafe(10,0.3);
+                    //sleep(500);
                     chassis.turnToAngle(-90);
-                    sleep(500);
-                    chassis.turnToAngle(-270);
+                    sleep(1000);
+                    chassis.turnToAngle(90);
                     currentStage = AutoStages.SHOOT;
                     break;
 
