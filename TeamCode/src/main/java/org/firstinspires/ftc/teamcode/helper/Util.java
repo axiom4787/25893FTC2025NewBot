@@ -518,7 +518,8 @@ public class Util {
         BACKWARD,
         STRAFE_LEFT,
         STRAFE_RIGHT,
-        TURN
+        TURN_LEFT,
+        TURN_RIGHT
     }
 
 
@@ -537,9 +538,9 @@ public class Util {
         Double MAX_SPEED = 0.8;
         Double MIN_SPEED = 0.2;
         Double P_DRIVE_GAIN = 0.03;
-        Double TOLERANCE_INCHES = 0.5;
+        Double ERROR_RANGE__INCHES = 0.5;
         Double P_YAW_GAIN = 0.10;
-        Double ERROR_RANGE_DEGREE = 3.0;
+        Double ERROR_RANGE_DEGREE = 2.0;
         Integer TIMEOUT_MS = 5000;
 
         // --- 1. Initialization ---
@@ -547,20 +548,31 @@ public class Util {
         odo.setPosX(0.0,DistanceUnit.INCH);
         odo.setPosY(0.0,DistanceUnit.INCH);
         threadSleep(100);
+
         odo.update();
         Double startX = odo.getPosX(DistanceUnit.INCH);
         Double startY = odo.getPosY(DistanceUnit.INCH);
+        Double startYaw = Math.toDegrees(AngleUnit.normalizeRadians(odo.getHeading(AngleUnit.RADIANS)));
+        //Double currentAngleRAD = odo.getHeading(AngleUnit.RADIANS);
 
         ElapsedTime timer = new ElapsedTime();
 
         // --- We will use different variables depending on direction ---
-        double targetPosition;
-        double currentPosition;
+        Double targetPosition;
+        Double currentPosition;
         Double currentHeading;
-        Double error;
+        Double currentAngle;
+
+        Double errorDistance;
+        Double errorAngle;
+
         Double axialPower;
         Double lateralPower;
         Double yawPower;
+
+
+
+
 
         // --- 2. ISOLATED Control Loop ---
         // We run a DIFFERENT loop based on the direction.
@@ -601,10 +613,10 @@ public class Util {
 
                     // --- A. Drive (Axial) Calculation ---
                     currentPosition = odo.getPosY(DistanceUnit.INCH);
-                    error = targetPosition - currentPosition;
+                    errorDistance = targetPosition - currentPosition;
 
                     // P-Controller for Axial
-                    axialPower = Range.clip(error * P_DRIVE_GAIN, MIN_SPEED, MAX_SPEED);
+                    axialPower = Range.clip(errorDistance * P_DRIVE_GAIN, MIN_SPEED, MAX_SPEED);
 
 
                     // --- B. Heading (Yaw) Calculation ---
@@ -639,10 +651,10 @@ public class Util {
                 while (odo.getPosY(DistanceUnit.INCH) > targetPosition && timer.milliseconds() < TIMEOUT_MS) {
                     odo.update();
                     currentPosition = odo.getPosX(DistanceUnit.INCH);
-                    error = targetPosition - currentPosition; // Error will be negative
+                    errorDistance = targetPosition - currentPosition; // Error will be negative
 
-                    // Simple P-Controller. Note: error * gain will be negative.
-                    axialPower = Range.clip(error * P_DRIVE_GAIN, -MAX_SPEED, -MIN_SPEED);
+                    // Simple P-Controller. Note: errorDistance * gain will be negative.
+                    axialPower = Range.clip(errorDistance * P_DRIVE_GAIN, -MAX_SPEED, -MIN_SPEED);
 
                     // Apply *only* axial (backward) power
                     setMotorPower(leftFront, leftBack, rightFront, rightBack, axialPower, 0, 0);
@@ -663,10 +675,10 @@ public class Util {
                 while (odo.getPosX(DistanceUnit.INCH)< targetPosition && timer.milliseconds() < TIMEOUT_MS) {
                     odo.update();
                     currentPosition = odo.getPosX(DistanceUnit.INCH);
-                    error = targetPosition - currentPosition;
+                    errorDistance = targetPosition - currentPosition;
 
                     // Simple P-Controller
-                    lateralPower = Range.clip(error * P_DRIVE_GAIN, MIN_SPEED, MAX_SPEED);
+                    lateralPower = Range.clip(errorDistance * P_DRIVE_GAIN, MIN_SPEED, MAX_SPEED);
 
                     // Apply *only* lateral (strafe) power
                     setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, -lateralPower, 0);
@@ -687,10 +699,10 @@ public class Util {
                 while (odo.getPosX(DistanceUnit.INCH) > targetPosition && timer.milliseconds() < TIMEOUT_MS) {
                     odo.update();
                     currentPosition = odo.getPosX(DistanceUnit.INCH);
-                    error = targetPosition - currentPosition; // Error will be negative
+                    errorDistance = targetPosition - currentPosition; // Error will be negative
 
                     // Simple P-Controller
-                    lateralPower = Range.clip(error * P_DRIVE_GAIN, -MAX_SPEED, -MIN_SPEED);
+                    lateralPower = Range.clip(errorDistance * P_DRIVE_GAIN, -MAX_SPEED, -MIN_SPEED);
 
                     // Apply *only* lateral (strafe) power
                     setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, -lateralPower, 0);
@@ -704,11 +716,10 @@ public class Util {
                     odo.update();
                 }
                 break;
-            case TURN:
+            case TURN_LEFT:
                 odo.update();
-                Double currentAngleRAD = odo.getHeading(AngleUnit.RADIANS);
-                Double currentAngle = Math.toDegrees(AngleUnit.normalizeRadians(currentAngleRAD));
-                Double errorAngle = AngleUnit.normalizeDegrees(targetAngle - currentAngle);
+                currentAngle = Math.toDegrees(AngleUnit.normalizeRadians(odo.getHeading(AngleUnit.RADIANS)));
+                errorAngle = AngleUnit.normalizeDegrees(targetAngle - currentAngle);
 
                 telemetry.addData("Target Angle","%.2f", targetAngle);
                 telemetry.addData("Current Angle","%.2f", currentAngle);
@@ -732,8 +743,8 @@ public class Util {
                     setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, 0, -turnPower);
 
                     odo.update();
-                    currentAngleRAD = odo.getHeading(AngleUnit.RADIANS);
-                    currentAngle = Math.toDegrees(AngleUnit.normalizeRadians(currentAngleRAD));
+                    //currentAngleRAD = odo.getHeading(AngleUnit.RADIANS);
+                    currentAngle = Math.toDegrees(AngleUnit.normalizeRadians(odo.getHeading(AngleUnit.RADIANS)));
                     errorAngle = AngleUnit.normalizeDegrees(targetAngle - currentAngle);
 
                     if( Math.abs(errorAngle) < ERROR_RANGE_DEGREE ) {
@@ -742,7 +753,44 @@ public class Util {
                     }
                 }
                 break;
-                
+            case TURN_RIGHT:
+                odo.update();
+                currentAngle = Math.toDegrees(AngleUnit.normalizeRadians(odo.getHeading(AngleUnit.RADIANS)));
+                errorAngle = AngleUnit.normalizeDegrees(targetAngle - currentAngle);
+
+                telemetry.addData("Target Angle","%.2f", targetAngle);
+                telemetry.addData("Current Angle","%.2f", currentAngle);
+                telemetry.addData("Error Angle", "%.2f",errorAngle);
+                telemetry.update();
+                sleepThread(1000);
+
+                //while(Math.abs(errorAngle) < ERROR_RANGE_DEGREE && timer.milliseconds() < TIMEOUT_MS) {
+
+                while(currentAngle > targetAngle && timer.milliseconds() < TIMEOUT_MS) {
+
+                    Double turnPower = ((Math.abs(errorAngle) / 180) * (MAX_SPEED - MIN_SPEED) + MIN_SPEED) * Math.signum(errorAngle) * -1;
+
+                    telemetry.addData("Target Angle","%.2f", targetAngle);
+                    telemetry.addData("Current Angle","%.2f", currentAngle);
+                    telemetry.addData("Error Angle", "%.2f",errorAngle);
+                    telemetry.addData("Turn Power", "%.2f",turnPower);
+                    telemetry.update();
+
+                    //Half turn speed
+                    setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, 0, -turnPower);
+
+                    odo.update();
+                    //currentAngleRAD = odo.getHeading(AngleUnit.RADIANS);
+                    currentAngle = Math.toDegrees(AngleUnit.normalizeRadians(odo.getHeading(AngleUnit.RADIANS)));
+                    errorAngle = AngleUnit.normalizeDegrees(targetAngle - currentAngle);
+
+                    if( Math.abs(errorAngle) < ERROR_RANGE_DEGREE ) {
+                        Util.setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, 0, 0);
+                        break;
+                    }
+                }
+                break;
+
         }
 
         // --- 3. Stop Motors ---

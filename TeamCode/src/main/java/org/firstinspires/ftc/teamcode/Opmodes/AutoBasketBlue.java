@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Helper.Kicker;
 import org.firstinspires.ftc.teamcode.Helper.Util;
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 
-@Autonomous(name = "Auto Blue Near 4.35", group = "Autonomous")
+@Autonomous(name = "Auto Blue Near 4.39", group = "Autonomous")
 
 public class AutoBasketBlue extends LinearOpMode {
 
@@ -95,7 +95,7 @@ public class AutoBasketBlue extends LinearOpMode {
 //            Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.STRAFE_LEFT, 20, 0, telemetry);
 //            sleep(2000);
 
-            Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.TURN, 0, Math.PI/2.0, telemetry);
+            Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.TURN_RIGHT, 0, -90, telemetry);
             sleep(2000);
 
         }
