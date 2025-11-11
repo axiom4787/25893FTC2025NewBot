@@ -19,7 +19,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
 
-@TeleOp(name = "DecodeTeleopV4.11 Alaqmar", group = "TeleOp")
+@TeleOp(name = "DecodeTeleopV4.12 Alaqmar", group = "TeleOp")
 
 public class Teleop extends LinearOpMode {
 
@@ -244,7 +244,7 @@ public class Teleop extends LinearOpMode {
                 // Read gamepad input and set drive motor power
                 float axial = -gamepad1.left_stick_y;
                 float lateral = -gamepad1.left_stick_x;
-                float yaw = -gamepad1.right_stick_x;
+                float yaw = gamepad1.right_stick_x;
                 chassis.moveRobot(axial, lateral, yaw);
 
                 sleep(10);
