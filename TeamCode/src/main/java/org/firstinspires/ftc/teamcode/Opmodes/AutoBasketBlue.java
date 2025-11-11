@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Helper.Kicker;
 import org.firstinspires.ftc.teamcode.Helper.Util;
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 
-@Autonomous(name = "Auto Blue Near 3.7", group = "Autonomous")
+@Autonomous(name = "Auto Blue Near 4.35", group = "Autonomous")
 
 public class AutoBasketBlue extends LinearOpMode {
 
@@ -22,7 +22,7 @@ public class AutoBasketBlue extends LinearOpMode {
         VORTEX_DECODE_2
     }
 
-    RobotType robotType = RobotType.VORTEX_DECODE_2;
+    RobotType robotType = RobotType.VORTEX_DECODE_1;
 
     Chassis chassis = new Chassis();
 
@@ -52,6 +52,8 @@ public class AutoBasketBlue extends LinearOpMode {
         kicker.init(hardwareMap);
         intake.init(this);
 
+        chassis.resetODOPosAndIMU();
+
         DecodeAprilTag aprilTag = new DecodeAprilTag(this);
 
         if(robotType == RobotType.VORTEX_DECODE_1) {
@@ -62,12 +64,10 @@ public class AutoBasketBlue extends LinearOpMode {
             flipper.init(hardwareMap);
         }
 
-        if(robotType == RobotType.VORTEX_DECODE_2) {
-            chassis.resetODOPosAndIMU();
-            Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.FORWARD, 40, 0, telemetry);
-        }
+
 
         //chassis.odo.resetPosAndIMU();
+
 
         /*
         while (opModeInInit()) {
@@ -80,9 +80,26 @@ public class AutoBasketBlue extends LinearOpMode {
 
          */
 
+
+
         waitForStart();
 
         //chassis.drive(1,0,0);
+        if(robotType == RobotType.VORTEX_DECODE_1) {
+//            Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.FORWARD, 20, 0, telemetry);
+//            sleep(2000);
+//            Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.BACKWARD, 20, 0, telemetry);
+//            sleep(2000);
+//            Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.STRAFE_RIGHT, 20, 0, telemetry);
+//            sleep(2000);
+//            Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.STRAFE_LEFT, 20, 0, telemetry);
+//            sleep(2000);
+
+            Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.TURN, 0, Math.PI/2.0, telemetry);
+            sleep(2000);
+
+        }
+
 
         AutoStages currentStage = AutoStages.BACK_UP;
 
@@ -109,15 +126,15 @@ public class AutoBasketBlue extends LinearOpMode {
                     //chassis.moveWithProportionalDeceleration(Chassis.Direction.FORWARD, 0.3, 10);
                     //chassis.Drive(-10,0.3);
                     //sleep(1000);
-                    chassis.Drive(10, 0.3);
-                    sleep(1000);
+                    //chassis.Drive(10, 0.3);
+                    //sleep(1000);
                     //chassis.Strafe(-10,0.3);
                     //sleep(500);
                     //chassis.Strafe(10,0.3);
                     //sleep(500);
-                    chassis.turnToAngle(-90);
-                    sleep(1000);
-                    chassis.turnToAngle(90);
+                    //chassis.turnToAngle(-90);
+                    //sleep(1000);
+                    //chassis.turnToAngle(90);
                     currentStage = AutoStages.SHOOT;
                     break;
 

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Helper;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -83,16 +84,17 @@ public class Chassis {
         linearOpMode = (LinearOpMode)opMode;
         COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION)/(WHEEL_DIAMETER_INCHES * Math.PI);
 
-        //Make these values more accurate to make our heading more accurate
-        odo.setOffsets(-4.5, 8, DistanceUnit.INCH);
-        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
-        odo.resetPosAndIMU();
-
         frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        //Make these values more accurate to make our heading more accurate
+        odo.setOffsets(-4.5, 8, DistanceUnit.INCH);
+        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.REVERSED, GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        odo.resetPosAndIMU();
+
 
     }
 
@@ -119,6 +121,7 @@ public class Chassis {
 
     }
 
+    /*
     public void Drive(double distance, double speed) {
         odo.update();
 
@@ -173,6 +176,7 @@ public class Chassis {
         moveRobot(0,0,0);
     }
 
+
     public void moveRobot(double x, double y, double yaw) {
         // Calculate wheel powers.
         double frontLeftPower = x + y + yaw;
@@ -198,6 +202,8 @@ public class Chassis {
         backLeftDrive.setPower(backLeftPower);
         backRightDrive.setPower(backRightPower);
     }
+
+     */
 
     // Returns the current pose from odometry in mm and radians
     public Pose2D getPoseEstimate() {
@@ -225,9 +231,9 @@ public class Chassis {
 
     public void turnToAngle(double targetAngle) {
 
-        final double MIN_TURN_PWR = 0.6;
+        final double MIN_TURN_PWR = 0.2;
         final double MAX_TURN_PWR = 0.8;
-        final double ERROR_RANGE_DEGREE = 1;
+        final double ERROR_RANGE_DEGREE = 3;
 
         while (((LinearOpMode) opMode).opModeIsActive()) {
             odo.update();
@@ -243,7 +249,7 @@ public class Chassis {
             opMode.telemetry.update();
 
             if( Math.abs(errorAngle) < ERROR_RANGE_DEGREE ) {
-                moveRobot(0,0,0);
+                Util.setMotorPower(frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive, 0, 0, 0);
                 break;
             }
 
@@ -253,7 +259,7 @@ public class Chassis {
             double turnPower = ( (Math.abs(errorAngle) / 180) * (MAX_TURN_PWR - MIN_TURN_PWR) + MIN_TURN_PWR ) * Math.signum(errorAngle) * -1;
 
             //Half turn speed
-            moveRobot(0, 0, turnPower);
+            Util.setMotorPower(frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive, 0, 0, turnPower);
         }
     }
 

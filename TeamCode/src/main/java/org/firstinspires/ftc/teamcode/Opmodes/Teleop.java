@@ -19,7 +19,7 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
 
-@TeleOp(name = "DecodeTeleopV4.12 Alaqmar", group = "TeleOp")
+@TeleOp(name = "DecodeTeleopV4.14 Alaqmar", group = "TeleOp")
 
 public class Teleop extends LinearOpMode {
 
@@ -223,6 +223,7 @@ public class Teleop extends LinearOpMode {
 
         }
 
+
         // Clean up the thread
         threadIsRunning = false;
         sleep(2000);
@@ -239,13 +240,21 @@ public class Teleop extends LinearOpMode {
 
         @Override
         public void run() {
+            chassis.odo.resetPosAndIMU();
             while ( threadIsRunning && !Thread.currentThread().isInterrupted()) {
 
                 // Read gamepad input and set drive motor power
-                float axial = -gamepad1.left_stick_y;
-                float lateral = -gamepad1.left_stick_x;
-                float yaw = gamepad1.right_stick_x;
-                chassis.moveRobot(axial, lateral, yaw);
+                float axialPower = -gamepad1.left_stick_y; //Gamepad inputs are opposite of the direction of joystick
+                float lateralPower = -gamepad1.left_stick_x;
+                float yawPower = -gamepad1.right_stick_x;
+//                telemetry.addData("axialPower", axialPower);
+//                telemetry.addData("lateralPower", lateralPower);
+//                telemetry.addData("yawPower", yawPower);
+                Util.setMotorPower(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, axialPower, lateralPower, yawPower);
+//                chassis.moveRobot(axial, lateral, yaw);
+              //  Util.printOdoPositionTelemetry(chassis.odo, telemetry);
+
+
 
                 sleep(10);
             }

@@ -517,7 +517,8 @@ public class Util {
         FORWARD,
         BACKWARD,
         STRAFE_LEFT,
-        STRAFE_RIGHT
+        STRAFE_RIGHT,
+        TURN
     }
 
 
@@ -529,16 +530,17 @@ public class Util {
             IMU imu,
             MovementDirection direction,
             double distance,
-            double targetHeadingRadians,
+            double targetAngle,
             Telemetry telemetry) {
 
 
         Double MAX_SPEED = 0.8;
-        Double MIN_SPEED = 0.1;
+        Double MIN_SPEED = 0.2;
         Double P_DRIVE_GAIN = 0.03;
         Double TOLERANCE_INCHES = 0.5;
-        Double P_YAW_GAIN = 0.04;
-        Integer TIMEOUT_MS = 20000;
+        Double P_YAW_GAIN = 0.10;
+        Double ERROR_RANGE_DEGREE = 3.0;
+        Integer TIMEOUT_MS = 5000;
 
         // --- 1. Initialization ---
         odo.resetPosAndIMU();
@@ -566,16 +568,15 @@ public class Util {
 
         switch (direction) {
             case FORWARD:
-                targetPosition = startX + distance;
-                currentPosition = odo.getPosX(DistanceUnit.INCH);
-                currentHeading = odo.getHeading(AngleUnit.RADIANS);
+                targetPosition = startY + distance;
 
                 // --- TELEMETRY 1: BEFORE THE LOOP ---
                 // (Checks starting values and calculation)
-                odo.update();
-                Double odoPosX = odo.getPosX(DistanceUnit.INCH);
-                Double odoPosY = odo.getPosY(DistanceUnit.INCH);
+                // odo.updat();
+//                Double odoPosX = odo.getPosX(DistanceUnit.INCH);
+//                Double odoPosY = odo.getPosY(DistanceUnit.INCH);
 
+                /*
                 telemetry.addData("--- DEBUG: PRE-RUN ---", "");
                 telemetry.addData("Direction", direction);
                 telemetry.addData("Start X", "%.2f", startX);
@@ -586,19 +587,20 @@ public class Util {
                 telemetry.addData("odoPosY", "%.2f", odoPosY);
                 telemetry.addData("Tgt Heading", "%.2f", targetHeadingRadians);
                 telemetry.addData("Start Heading", "%.2f", currentHeading);
-
-
                 telemetry.update();
-                threadSleep(5000);
+                threadSleep(3000);
+                */
+
                 timer = new ElapsedTime();
                 int loopCounter = 0;
                 // Keep looping until we pass the target
-                while (odo.getPosX(DistanceUnit.INCH) < targetPosition && timer.milliseconds() < TIMEOUT_MS) {
+                odo.update();
+                while (odo.getPosY(DistanceUnit.INCH) < targetPosition && timer.milliseconds() < TIMEOUT_MS) {
                     loopCounter++;
                     odo.update();
 
                     // --- A. Drive (Axial) Calculation ---
-                    currentPosition = odo.getPosX(DistanceUnit.INCH);
+                    currentPosition = odo.getPosY(DistanceUnit.INCH);
                     error = targetPosition - currentPosition;
 
                     // P-Controller for Axial
@@ -607,7 +609,7 @@ public class Util {
 
                     // --- B. Heading (Yaw) Calculation ---
                     currentHeading = odo.getHeading(AngleUnit.RADIANS);
-                    double headingError = targetHeadingRadians - currentHeading;
+                    double headingError = targetAngle - currentHeading;
 
                     // Handle wraparound (e.g., target 1°, current 359°)
                     while (headingError > Math.PI)  headingError -= 2 * Math.PI;
@@ -622,49 +624,19 @@ public class Util {
 
                     // --- TELEMETRY 2: INSIDE THE LOOP ---
                     // (This is existing, correct telemetry)
-
                     odo.update();
-                    odoPosX = odo.getPosX(DistanceUnit.INCH);
-                    odoPosY = odo.getPosY(DistanceUnit.INCH);
 
-                    telemetry.addData("--- DEBUG: RUNNING ---", "");
-                    telemetry.addData("Target X", "%.2f", targetPosition);
-                    telemetry.addData("Error", "%.2f", error);  // <--- ADD THIS
-                    telemetry.addData("Power", "%.2f", axialPower);
-                    telemetry.addData("currentPosition", "%.2f", currentPosition);
-                    telemetry.addData("odoPosX", "%.2f", odoPosX);
-                    telemetry.addData("odoPosY", "%.2f", odoPosY);
-                    telemetry.addData("Timer", "%.0f ms", timer.milliseconds());
-                    telemetry.addData("---", "---"); // Separator
-                    telemetry.addData("Tgt Hdg", "%.2f", targetHeadingRadians);
-                    telemetry.addData("Curr Hdg", "%.2f", currentHeading);
-                    telemetry.addData("Hdg Error", "%.2f", headingError);
-                    telemetry.addData("Yaw Power", "%.2f", yawPower);
-                    telemetry.addData("Loop", loopCounter);
-                    telemetry.update();
-                    odo.update();
                 }
+                //Break after the movement.
                 setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, 0, 0);
-                threadSleep(5000);
-
-                odo.update();
-                odoPosX = odo.getPosX(DistanceUnit.INCH);
-                odoPosY = odo.getPosY(DistanceUnit.INCH);
-
-                telemetry.addData("--- DEBUG: Post RUNNING ---", loopCounter);
-                telemetry.addData("odoPosX", "%.2f", odoPosX);
-                telemetry.addData("odoPosY", "%.2f", odoPosY);
-                telemetry.addData("Timer", "%.0f ms", timer.milliseconds());
-                telemetry.update();
-
-                threadSleep(10000);
+                //threadSleep(5000);
                 break;
 
             case BACKWARD:
-                targetPosition = startX - distance;
+                targetPosition = startY - distance;
 
                 // Keep looping until we pass the target
-                while (odo.getPosX(DistanceUnit.INCH) > targetPosition && timer.milliseconds() < TIMEOUT_MS) {
+                while (odo.getPosY(DistanceUnit.INCH) > targetPosition && timer.milliseconds() < TIMEOUT_MS) {
                     odo.update();
                     currentPosition = odo.getPosX(DistanceUnit.INCH);
                     error = targetPosition - currentPosition; // Error will be negative
@@ -685,59 +657,101 @@ public class Util {
                 break;
 
             case STRAFE_RIGHT:
-                targetPosition = startY + distance;
+                targetPosition = startX + distance;
 
                 // Keep looping until we pass the target
-                while (odo.getPosY(DistanceUnit.INCH)< targetPosition && timer.milliseconds() < TIMEOUT_MS) {
+                while (odo.getPosX(DistanceUnit.INCH)< targetPosition && timer.milliseconds() < TIMEOUT_MS) {
                     odo.update();
-                    currentPosition = odo.getPosY(DistanceUnit.INCH);
+                    currentPosition = odo.getPosX(DistanceUnit.INCH);
                     error = targetPosition - currentPosition;
 
                     // Simple P-Controller
                     lateralPower = Range.clip(error * P_DRIVE_GAIN, MIN_SPEED, MAX_SPEED);
 
                     // Apply *only* lateral (strafe) power
-                    setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, lateralPower, 0);
+                    setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, -lateralPower, 0);
 
                     telemetry.addData("Moving", direction);
                     telemetry.addData("Target", "%.2f", targetPosition);
                     telemetry.addData("Current", "%.2f", currentPosition);
                     telemetry.addData("Power", "%.2f", lateralPower);
                     telemetry.update();
+                    odo.update();
                 }
                 break;
 
             case STRAFE_LEFT:
-                targetPosition = startY - distance;
+                targetPosition = startX - distance;
 
                 // Keep looping until we pass the target
-                while (odo.getPosY(DistanceUnit.INCH) > targetPosition && timer.milliseconds() < TIMEOUT_MS) {
+                while (odo.getPosX(DistanceUnit.INCH) > targetPosition && timer.milliseconds() < TIMEOUT_MS) {
                     odo.update();
-                    currentPosition = odo.getPosY(DistanceUnit.INCH);
+                    currentPosition = odo.getPosX(DistanceUnit.INCH);
                     error = targetPosition - currentPosition; // Error will be negative
 
                     // Simple P-Controller
                     lateralPower = Range.clip(error * P_DRIVE_GAIN, -MAX_SPEED, -MIN_SPEED);
 
                     // Apply *only* lateral (strafe) power
-                    setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, lateralPower, 0);
+                    setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, -lateralPower, 0);
 
                     telemetry.addData("Moving", direction);
                     telemetry.addData("Target", "%.2f", targetPosition);
                     telemetry.addData("Current", "%.2f", currentPosition);
                     telemetry.addData("Power", "%.2f", lateralPower);
                     telemetry.update();
+
+                    odo.update();
                 }
                 break;
+            case TURN:
+                odo.update();
+                Double currentAngleRAD = odo.getHeading(AngleUnit.RADIANS);
+                Double currentAngle = Math.toDegrees(AngleUnit.normalizeRadians(currentAngleRAD));
+                Double errorAngle = AngleUnit.normalizeDegrees(targetAngle - currentAngle);
+
+                telemetry.addData("Target Angle","%.2f", targetAngle);
+                telemetry.addData("Current Angle","%.2f", currentAngle);
+                telemetry.addData("Error Angle", "%.2f",errorAngle);
+                telemetry.update();
+                sleepThread(1000);
+
+                //while(Math.abs(errorAngle) < ERROR_RANGE_DEGREE && timer.milliseconds() < TIMEOUT_MS) {
+
+                while(currentAngle < targetAngle && timer.milliseconds() < TIMEOUT_MS) {
+
+                    Double turnPower = ((Math.abs(errorAngle) / 180) * (MAX_SPEED - MIN_SPEED) + MIN_SPEED) * Math.signum(errorAngle) * -1;
+
+                    telemetry.addData("Target Angle","%.2f", targetAngle);
+                    telemetry.addData("Current Angle","%.2f", currentAngle);
+                    telemetry.addData("Error Angle", "%.2f",errorAngle);
+                    telemetry.addData("Turn Power", "%.2f",turnPower);
+                    telemetry.update();
+
+                    //Half turn speed
+                    setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, 0, -turnPower);
+
+                    odo.update();
+                    currentAngleRAD = odo.getHeading(AngleUnit.RADIANS);
+                    currentAngle = Math.toDegrees(AngleUnit.normalizeRadians(currentAngleRAD));
+                    errorAngle = AngleUnit.normalizeDegrees(targetAngle - currentAngle);
+
+                    if( Math.abs(errorAngle) < ERROR_RANGE_DEGREE ) {
+                        Util.setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, 0, 0);
+                        break;
+                    }
+                }
+                break;
+                
         }
 
         // --- 3. Stop Motors ---
         setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, 0, 0);
 
-        telemetry.addData("Status", "Movement Complete");
-        telemetry.addData("Final X", "%.2f", odo.getPosX(DistanceUnit.INCH));
-        telemetry.addData("Final Y", "%.2f", odo.getPosY(DistanceUnit.INCH));
-        telemetry.update();
+//        telemetry.addData("Status", "Movement Complete");
+//        telemetry.addData("Final X", "%.2f", odo.getPosX(DistanceUnit.INCH));
+//        telemetry.addData("Final Y", "%.2f", odo.getPosY(DistanceUnit.INCH));
+//        telemetry.update();
     }
 
     /**
@@ -748,15 +762,15 @@ public class Util {
      * @param lateralPower Strafe Left/Right power (+/-)
      * @param yawPower     Rotation power (+/-)
      */
-    private static void setMotorPower(
+    public static void setMotorPower(
             DcMotor leftFront, DcMotor leftBack,
             DcMotor rightFront, DcMotor rightBack,
             double axialPower, double lateralPower, double yawPower) {
 
-        double leftFrontPower = axialPower + lateralPower + yawPower;
-        double rightFrontPower = axialPower - lateralPower - yawPower;
-        double leftBackPower = axialPower - lateralPower + yawPower;
-        double rightBackPower = axialPower + lateralPower - yawPower;
+        double leftFrontPower = axialPower - lateralPower - yawPower;
+        double rightFrontPower = axialPower + lateralPower + yawPower;
+        double leftBackPower = axialPower + lateralPower - yawPower;
+        double rightBackPower = axialPower - lateralPower + yawPower;
 
         // Normalize (same as before)
         double max = Math.max(Math.abs(leftFrontPower), Math.abs(rightFrontPower));
@@ -775,6 +789,5 @@ public class Util {
         leftBack.setPower(leftBackPower);
         rightBack.setPower(rightBackPower);
     }
-
 
     }
