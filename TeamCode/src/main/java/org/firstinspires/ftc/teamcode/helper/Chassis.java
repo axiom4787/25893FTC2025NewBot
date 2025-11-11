@@ -121,89 +121,30 @@ public class Chassis {
 
     }
 
-    /*
-    public void Drive(double distance, double speed) {
-        odo.update();
-
-        double currentX = odo.getPosX(DistanceUnit.INCH);
-
-        double error = distance-currentX;
-
-        if (distance < 0) {
-            speed*=-1;
+    public void drive(double distance) {
+        if(distance < 0) {
+            Util.moveRobot(frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive, odo, imu, Util.MovementDirection.BACKWARD, distance, 0, opMode.telemetry);
+        } else {
+            Util.moveRobot(frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive, odo, imu, Util.MovementDirection.FORWARD, distance, 0, opMode.telemetry);
         }
-
-        //The error condition needs to be flipped if distance is negative
-        //(Distance - current) will have different signs depending on sign of distance
-        while ((distance < 0 && error <= 0) || (distance >= 0 && error >= 0)) {
-            odo.update();
-            currentX = odo.getPosX(DistanceUnit.INCH);
-            error = distance - currentX;
-
-            moveRobot(speed, 0, 0);
-            opMode.telemetry.addData("CurrentPos", currentX);
-            opMode.telemetry.addData("Error", error);
-            opMode.telemetry.update();
-        }
-
-        moveRobot(0,0,0);
     }
 
-    public void Strafe(double distance, double speed) {
-        odo.update();
-
-        double currentY = odo.getPosY(DistanceUnit.INCH);
-
-        double error = distance-currentY;
-
-        if (distance < 0) {
-            speed*=-1;
+    public void strafe(double distance) {
+        if(distance < 0) {
+            Util.moveRobot(frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive, odo, imu, Util.MovementDirection.STRAFE_LEFT, distance, 0, opMode.telemetry);
+        } else {
+            Util.moveRobot(frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive, odo, imu, Util.MovementDirection.STRAFE_RIGHT, distance, 0, opMode.telemetry);
         }
-
-        //The error condition needs to be flipped if distance is negative
-        //(Distance - current) will have different signs depending on sign of distance
-        while ((distance < 0 && error <= 0) || (distance >= 0 && error >= 0)) {
-            odo.update();
-            currentY = odo.getPosY(DistanceUnit.INCH);
-            error = distance - currentY;
-
-            moveRobot(0, speed, 0);
-            opMode.telemetry.addData("CurrentPos", currentY);
-            opMode.telemetry.addData("Error", error);
-            opMode.telemetry.update();
-        }
-
-        moveRobot(0,0,0);
     }
 
-
-    public void moveRobot(double x, double y, double yaw) {
-        // Calculate wheel powers.
-        double frontLeftPower = x + y + yaw;
-        double frontRightPower = x - y - yaw;
-        double backLeftPower = x - y + yaw;
-        double backRightPower = x + y - yaw;
-
-        // Normalize wheel powers to be less than 1.0
-        double max = Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower));
-        max = Math.max(max, Math.abs(backLeftPower));
-        max = Math.max(max, Math.abs(backRightPower));
-
-        if (max > 1.0) {
-            frontLeftPower /= max;
-            frontRightPower /= max;
-            backLeftPower /= max;
-            backRightPower /= max;
+    public void turn(double angle) {
+        if(angle < 0) {
+            Util.moveRobot(frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive, odo, imu, Util.MovementDirection.TURN_LEFT, 0, -angle, opMode.telemetry);
+        } else {
+            Util.moveRobot(frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive, odo, imu, Util.MovementDirection.TURN_RIGHT, 0, -angle, opMode.telemetry);
         }
-
-        // Send powers to the wheels.
-        frontLeftDrive.setPower(frontLeftPower);
-        frontRightDrive.setPower(frontRightPower);
-        backLeftDrive.setPower(backLeftPower);
-        backRightDrive.setPower(backRightPower);
     }
 
-     */
 
     // Returns the current pose from odometry in mm and radians
     public Pose2D getPoseEstimate() {
@@ -228,46 +169,4 @@ public class Chassis {
     public void printIMUTelemetry(){
         Util.printIMUTelemetry(imu, opMode.telemetry);
     }
-
-    public void turnToAngle(double targetAngle) {
-
-        final double MIN_TURN_PWR = 0.2;
-        final double MAX_TURN_PWR = 0.8;
-        final double ERROR_RANGE_DEGREE = 3;
-
-        while (((LinearOpMode) opMode).opModeIsActive()) {
-            odo.update();
-            double currentAngleRAD = odo.getHeading(AngleUnit.RADIANS);
-
-            double currentAngle = Math.toDegrees(AngleUnit.normalizeRadians(currentAngleRAD));
-            double errorAngle = AngleUnit.normalizeDegrees(targetAngle - currentAngle);
-
-
-            opMode.telemetry.addData("Target Angle", targetAngle);
-            opMode.telemetry.addData("Current Angle", currentAngle);
-            opMode.telemetry.addData("Error Angle", errorAngle);
-            opMode.telemetry.update();
-
-            if( Math.abs(errorAngle) < ERROR_RANGE_DEGREE ) {
-                Util.setMotorPower(frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive, 0, 0, 0);
-                break;
-            }
-
-            //double turnPower = 0.01 * error;
-            //turnPower = Math.max(-0.5, Math.min(turnPower, 0.5));
-
-            double turnPower = ( (Math.abs(errorAngle) / 180) * (MAX_TURN_PWR - MIN_TURN_PWR) + MIN_TURN_PWR ) * Math.signum(errorAngle) * -1;
-
-            //Half turn speed
-            Util.setMotorPower(frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive, 0, 0, turnPower);
-        }
-    }
-
-
-
-
-
-
-
-
 }

@@ -95,8 +95,24 @@ public class AutoBasketBlue extends LinearOpMode {
 //            Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.STRAFE_LEFT, 20, 0, telemetry);
 //            sleep(2000);
 
+            //Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.TURN_LEFT, 0, 90, telemetry);
+            //sleep(2000);
             //Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.TURN_RIGHT, 0, -90, telemetry);
             //sleep(2000);
+
+            chassis.drive(10);
+            sleep(1000);
+            chassis.drive(-10);
+            sleep(1000);
+            chassis.strafe(10);
+            sleep(1000);
+            chassis.strafe(-10);
+            sleep(1000);
+            chassis.turn(90);
+            sleep(1000);
+            chassis.turn(-90);
+            sleep(1000);
+            chassis.turn(1000);
 
         }
 
@@ -121,29 +137,13 @@ public class AutoBasketBlue extends LinearOpMode {
 
             switch (currentStage) {
                 case BACK_UP:
-                    Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.FORWARD, 50, 0, telemetry);
-                    Util.shoot(flyWheel,kicker,flipper,intake,robotDistanceFromAprilTag,telemetry);
-                    //chassis.moveWithProportionalDeceleration(Chassis.Direction.FORWARD, 0.3, 60);
-//                    chassis.moveWithProportionalDecelerationAndHeading(Chassis.Direction.FORWARD, 0.8, 48,0.0);
-                    //chassis.moveWithProportionalDeceleration(Chassis.Direction.FORWARD, 0.3, 10);
-                    //chassis.Drive(-10,0.3);
-                    //sleep(1000);
-                    //chassis.Drive(10, 0.3);
-                    //sleep(1000);
-                    //chassis.Strafe(-10,0.3);
-                    //sleep(500);
-                    //chassis.Strafe(10,0.3);
-                    //sleep(500);
-                    //chassis.turnToAngle(-90);
-                    //sleep(1000);
-                    //chassis.turnToAngle(90);
+                    chassis.drive(40);
+                    sleep(650);
                     currentStage = AutoStages.SHOOT;
                     break;
 
                 case SHOOT:
-//                   Util.shoot(flyWheel, kicker, flipper, intake, robotDistanceFromAprilTag, telemetry);
-//                    flyWheel.stop();
-//                    intake.stopIntake();
+                    Util.shoot(flyWheel, kicker, flipper, intake, robotDistanceFromAprilTag, telemetry);
                     break;
 
                 //case GET_MORE_BALLS:
