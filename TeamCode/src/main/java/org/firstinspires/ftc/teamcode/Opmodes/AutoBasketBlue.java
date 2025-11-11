@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Helper.Kicker;
 import org.firstinspires.ftc.teamcode.Helper.Util;
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 
-@Autonomous(name = "Auto Blue Near 4.39", group = "Autonomous")
+@Autonomous(name = "Auto Blue Near 4.42", group = "Autonomous")
 
 public class AutoBasketBlue extends LinearOpMode {
 
@@ -42,6 +42,8 @@ public class AutoBasketBlue extends LinearOpMode {
         BACK_UP,
         SHOOT,
         GET_MORE_BALLS,
+        GO_BACK_TO_SHOOT,
+        END
     }
 
     @Override
@@ -100,20 +102,6 @@ public class AutoBasketBlue extends LinearOpMode {
             //Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.TURN_RIGHT, 0, -90, telemetry);
             //sleep(2000);
 
-            chassis.drive(10);
-            sleep(1000);
-            chassis.drive(-10);
-            sleep(1000);
-            chassis.strafe(10);
-            sleep(1000);
-            chassis.strafe(-10);
-            sleep(1000);
-            chassis.turn(90);
-            sleep(1000);
-            chassis.turn(-90);
-            sleep(1000);
-            chassis.turn(1000);
-
         }
 
 
@@ -137,17 +125,39 @@ public class AutoBasketBlue extends LinearOpMode {
 
             switch (currentStage) {
                 case BACK_UP:
-                    chassis.drive(40);
-                    sleep(650);
+                    chassis.drive(44);
+                    sleep(750);
                     currentStage = AutoStages.SHOOT;
                     break;
 
                 case SHOOT:
                     Util.shoot(flyWheel, kicker, flipper, intake, robotDistanceFromAprilTag, telemetry);
+                    currentStage = AutoStages.END;
                     break;
 
-                //case GET_MORE_BALLS:
-                    
+                case GET_MORE_BALLS:
+
+                    chassis.turn(130);
+                    sleep(300);
+                    chassis.strafe(-12);
+                    sleep(300);
+                    intake.startIntake();
+                    chassis.drive(26);
+                    currentStage = AutoStages.GO_BACK_TO_SHOOT;
+                    break;
+
+                case GO_BACK_TO_SHOOT:
+                    sleep(300);
+                    chassis.drive(-26);
+                    sleep(300);
+                    chassis.strafe(12);
+                    sleep(300);
+                    chassis.turn(-130);
+                    sleep(300);
+                    Util.shoot(flyWheel, kicker, flipper, intake, robotDistanceFromAprilTag, telemetry);
+
+                case END:
+                    break;
 
             }
 

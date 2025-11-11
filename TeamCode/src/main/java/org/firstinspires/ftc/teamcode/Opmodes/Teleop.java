@@ -4,22 +4,16 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Helper.*;
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
+
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 //Imports LimeLight
-import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
-
-@TeleOp(name = "DecodeTeleopV4.14 Alaqmar", group = "TeleOp")
+@TeleOp(name = "DecodeTeleopV4.18 Alaqmar", group = "TeleOp")
 
 public class Teleop extends LinearOpMode {
 
@@ -29,8 +23,7 @@ public class Teleop extends LinearOpMode {
     double flyWheelVelocity = 0.0;
     long maxLoopTimeout = 2000;
     private Thread driveThread;
-    DistanceSensor channelSensor;
-    DistanceSensor frontDistanceSensor;
+
 
     WebcamName webcamName;
     private Limelight3A limelight;
@@ -43,7 +36,7 @@ public class Teleop extends LinearOpMode {
         chassis.init(this);
 
         //voltageSensor = hardwareMap.voltageSensor.get("Motor Controller 1");
-//   chassis.setDriveMode(Chassis.DriveMode.ROBOT_CENTRIC);
+        //   chassis.setDriveMode(Chassis.DriveMode.ROBOT_CENTRIC);
 
         FlyWheel flyWheel = new FlyWheel();
         flyWheel.init(this);
@@ -60,8 +53,6 @@ public class Teleop extends LinearOpMode {
         Flipper flipper = new Flipper();
         flipper.init(hardwareMap);
 
-        channelSensor = hardwareMap.get(DistanceSensor.class, "channelSensor");
-        frontDistanceSensor = hardwareMap.get(DistanceSensor.class, "front_distance_sensor");
 
         chassis.odo.resetPosAndIMU();
 
@@ -94,7 +85,7 @@ public class Teleop extends LinearOpMode {
             Integer flyWheelVelocityRequired =  FlyWheel.FLYWHEEL_SHOOTING_VELOCITY;
             Double robotDistanceFromAprilTagUsingCamera = 0.0;
             Double robotDistanceUsingFrontDistanceSensor = 0.0;
-            Double distanceSensor = 0.0;
+//            Double distanceSensor = 0.0;
 
             AprilTagPoseFtc aprilTagPoseFtc = null;
 
@@ -104,27 +95,26 @@ public class Teleop extends LinearOpMode {
                     robotDistanceFromAprilTagUsingCamera = aprilTagPoseFtc.range;
                 }
             }
-            robotDistanceUsingFrontDistanceSensor = frontDistanceSensor.getDistance(DistanceUnit.INCH);
-            Double robotDistanceFromAprilTag = 0.0;
+
+//            robotDistanceUsingFrontDistanceSensor = frontDistanceSensor.getDistance(DistanceUnit.INCH);
+            Double robotDistanceFromAprilTag = 45.0;
+
 
             if(robotDistanceFromAprilTagUsingCamera != null && robotDistanceFromAprilTagUsingCamera < 180){
                 robotDistanceFromAprilTag = robotDistanceFromAprilTagUsingCamera;
-            } else if(robotDistanceUsingFrontDistanceSensor != null && robotDistanceUsingFrontDistanceSensor < 80){
-                robotDistanceFromAprilTag = robotDistanceUsingFrontDistanceSensor;
-            } else {
-                robotDistanceFromAprilTag = 45.0;
             }
+
 
             flyWheelPowerRequired = Util.getRequiredFlyWheelPower(robotDistanceFromAprilTag);
             flyWheelVelocityRequired = Util.getRequiredFlyWheelVelocity(robotDistanceFromAprilTag);
-            distanceSensor = Util.getDistance(channelSensor, telemetry);
+//            distanceSensor = Util.getDistance(channelSensor, telemetry);
 
             telemetry.addData("Robot dist 4m AprilTag - ", String.valueOf(robotDistanceFromAprilTag));
             telemetry.addData("Robot dist 4m Camera - ", String.valueOf(robotDistanceFromAprilTagUsingCamera));
             telemetry.addData("Robot dist 4m Front Sensor - ", String.valueOf(robotDistanceUsingFrontDistanceSensor));
             telemetry.addData("flyWheelVelocityRequired - ", flyWheelVelocityRequired);
             telemetry.addData("flyWheelPowerRequired - ", flyWheelPowerRequired);
-            telemetry.addData("Distance From Channel Sensor - ",distanceSensor);
+//            telemetry.addData("Distance From Channel Sensor - ",distanceSensor);
             telemetry.update();
 
             // Kicker
@@ -159,7 +149,10 @@ public class Teleop extends LinearOpMode {
 
                 // if robotDistanceFromAprilTag is null, tunr robot to get it
 
-                Util.prepareFlyWheelToShoot(flyWheel, kicker, intake, robotDistanceFromAprilTag, telemetry);
+                Util.prepareKickerAndIntakeToShoot(flyWheel, kicker, intake, robotDistanceFromAprilTag, telemetry);
+                //Util.prepareForShooting(flyWheel, kicker, flipper, intake, robotDistanceFromAprilTag, telemetry);
+
+                Util.prepareForShooting(flyWheel, kicker, flipper, intake, robotDistanceFromAprilTag, telemetry);
 
                // intake.setIntakePower(0.5);
 
@@ -169,7 +162,7 @@ public class Teleop extends LinearOpMode {
                 while(!gamepad2.left_bumper && loopCounter<4) {
 
                     // wait flywheel to get the desired speed
-                    Util.prepareForShooting(flyWheel, kicker, flipper, intake, robotDistanceFromAprilTag, telemetry);
+                    Util.prepareForShooting(flyWheel, kicker, flipper, intake, robotDistanceFromAprilTag , telemetry);
 
                     kicker.setPosition(Kicker.gateShoot);
                     sleep(300);
@@ -206,7 +199,8 @@ public class Teleop extends LinearOpMode {
             }
 
             if (gamepad2.a){
-                Util.prepareFlyWheelToShoot(flyWheel,kicker, intake, robotDistanceFromAprilTag, telemetry);
+                Util.prepareKickerAndIntakeToShoot(flyWheel, kicker, intake, robotDistanceFromAprilTag, telemetry);
+                Util.prepareForShooting(flyWheel, kicker, flipper, intake, 30.0, telemetry);
             }
 
             if (gamepad2.b) {

@@ -320,11 +320,11 @@ public class Util {
         return dDistance;
     }
 
-    public static void prepareFlyWheelToShoot(FlyWheel flyWheel, Kicker kicker, Intake intake, Double distance, Telemetry telemetry){
+    public static void prepareKickerAndIntakeToShoot(FlyWheel flyWheel, Kicker kicker, Intake intake, Double distance, Telemetry telemetry){
 
         intake.setIntakePower(0.5); //reduce intake power to avoid jam
         kicker.setPosition(Kicker.gateClose);
-        threadSleep(200);
+        threadSleep(400);
 
         //threadSleep(800);
         //Replace the timer with distance sensor
@@ -410,6 +410,7 @@ public class Util {
     }
 
     public static Integer getRequiredFlyWheelVelocity(Double distanceInInchFromAprilTag){
+        Integer flyWheelVelocityTunning = 100;
         Integer integerDesiredFlyWheelVelocity;
 
         /* measurement data (velocity_rpm vs distance_inch)
@@ -421,7 +422,7 @@ public class Util {
         minmum shooting distance is 37 inch
          */
 
-        integerDesiredFlyWheelVelocity = (int) Math.max(950, Math.ceil(10.25*distanceInInchFromAprilTag + 587.4));
+        integerDesiredFlyWheelVelocity = (int) Math.max(950 +flyWheelVelocityTunning, Math.ceil(10.25*distanceInInchFromAprilTag + 587.4));
 
 
         /*
@@ -475,7 +476,7 @@ public class Util {
 
     public static void shoot(FlyWheel flyWheel, Kicker kicker, Flipper flipper, Intake intake, Double robotDistanceFromAprilTag, Telemetry telemetry){
 
-        prepareFlyWheelToShoot(flyWheel, kicker, intake, robotDistanceFromAprilTag, telemetry);
+        prepareKickerAndIntakeToShoot(flyWheel, kicker, intake, robotDistanceFromAprilTag, telemetry);
 
         // intake.setIntakePower(0.5);
 
