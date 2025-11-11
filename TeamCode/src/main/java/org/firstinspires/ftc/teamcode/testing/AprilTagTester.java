@@ -16,6 +16,7 @@ public class AprilTagTester extends LinearOpMode {
     OpenCvCamera camera;
     private long lastAimUpdateTime = 0;
     private double lastTurnCorrection = 0;
+    private boolean fieldCentric = false;
     private static final long AIM_UPDATE_INTERVAL_MS = 50;  // update every 50 ms (~20 Hz)
 
     @Override
@@ -63,7 +64,19 @@ public class AprilTagTester extends LinearOpMode {
                 turnCorrection = 0;
             }
 
-            movement.teleopTick(gamePadOne.getLeftX(), gamePadOne.getLeftY(), gamePadOne.getRightX(), turnCorrection);
+            if (fieldCentric) {
+                movement.teleopTickFieldCentric(gamePadOne.getLeftX(), gamePadOne.getLeftY(), gamePadOne.getRightX(), turnCorrection, true);
+            }
+            else {
+                movement.teleopTick(gamePadOne.getLeftX(), gamePadOne.getLeftY(), gamePadOne.getRightX(), turnCorrection);
+            }
+
+            if (gamePadOne.getButton(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
+                fieldCentric = true;
+            }
+            if (gamePadOne.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON)) {
+                fieldCentric = false;
+            }
 
             if (gamePadTwo.wasJustPressed(GamepadKeys.Button.Y)) {
                 aprilTag.scanObeliskTag();
