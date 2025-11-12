@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 
-@TeleOp(name = "DecodeTeleopV4.18 Alaqmar", group = "TeleOp")
+@TeleOp(name = "DecodeTeleopV4.20 Alaqmar", group = "TeleOp")
 
 public class Teleop extends LinearOpMode {
 
@@ -111,6 +111,7 @@ public class Teleop extends LinearOpMode {
             telemetry.addData("Required FlyWheel Velocity (RPM)", requiredFlyWheelVelocity);
             telemetry.update();
 
+            /*
             // Kicker
             if(gamepad2.dpad_up) {
                 kicker.setPosition(Kicker.gateClose);
@@ -138,6 +139,8 @@ public class Teleop extends LinearOpMode {
                 Util.addKickerTelemetry(kicker, telemetry);
                 telemetry.update();
             }
+
+             */
 
             // Shooting - Execute complete 4-shot sequence when right bumper is pressed
             // Distance is updated from AprilTag before each shot for accuracy
@@ -208,7 +211,7 @@ public class Teleop extends LinearOpMode {
                 // Read gamepad input and set drive motor power
                 float axial = -Teleop.this.gamepad1.left_stick_y;
                 float lateral = -Teleop.this.gamepad1.left_stick_x;
-                float yaw = Teleop.this.gamepad1.right_stick_x; // Note: positive yaw is clockwise, previously was negative
+                float yaw = -Teleop.this.gamepad1.right_stick_x;
                 Util.setMotorPower(chassis.frontLeftDrive, chassis.backLeftDrive,
                                     chassis.frontRightDrive, chassis.backRightDrive,
                                     axial, lateral, yaw);
