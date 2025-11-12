@@ -40,6 +40,8 @@ public class TeleopMech extends OpMode {
 
     @Override
     public void loop() {
+        mechController.handleMechState(mechController.getCurrentState());
+
         // ----- APRIL_TAG handling -----
         if (gamepad2.a) {
             mechController.handleMechState(MechState.APRIL_TAG);
@@ -70,18 +72,16 @@ public class TeleopMech extends OpMode {
         }
 
         // Vision Portal controls
-        if (visionPortal != null) {
+        /*if (visionPortal != null) {
             if (gamepad1.dpad_down && !prevDpadDown) visionPortal.stopStreaming();
             else if (gamepad1.dpad_up && !prevDpadUp) visionPortal.resumeStreaming();
         }
 
         prevDpadDown = gamepad1.dpad_down;
-        prevDpadUp = gamepad1.dpad_up;
+        prevDpadUp = gamepad1.dpad_up;*/
 
         // Telemetry
         mechController.allTelemetry();
-        telemetry.addData("Detected Tag Pattern", mechController.tagPattern[0]);
-        telemetry.update();
     }
 
     @Override

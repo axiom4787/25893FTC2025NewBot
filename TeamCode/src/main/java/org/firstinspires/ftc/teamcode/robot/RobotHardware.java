@@ -40,8 +40,8 @@ public class RobotHardware {
     public RobotHardware(HardwareMap hwMap, Telemetry telemetry) {
         this.telemetry = telemetry;
 
-        intakeMot = hwMap.get(DcMotor.class, "intakeMot"); //C0
-        shootingMot = hwMap.get(DcMotor.class, "shootingMot"); //C1
+        shootingMot = hwMap.get(DcMotor.class, "shootingMot"); //C0
+        intakeMot = hwMap.get(DcMotor.class, "intakeMot"); //C1
 
         indexer = hwMap.get(Servo.class, "indexer"); //C0
         lifter = hwMap.get(Servo.class, "lifter"); //C1
