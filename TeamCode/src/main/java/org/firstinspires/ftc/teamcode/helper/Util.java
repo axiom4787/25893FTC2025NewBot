@@ -47,9 +47,8 @@ public class Util {
      * Waits for the flywheel to reach the target shooting velocity with configurable tolerance.
      * Ramps up at full power, then fine-tunes down if overshooting, and finally sets to shooting power.
      * Total time for both phases combined will not exceed maxWaitTime.
-     *
      */
-    public static FlyWheelSpinUpResult waitForFlyWheelShootingVelocity(FlyWheel flyWheel, long velocity, double maxWaitTime, Telemetry telemetry){
+    public static FlyWheelSpinUpResult waitForFlyWheelShootingVelocity(FlyWheel flyWheel, long velocity, double maxWaitTime, Telemetry telemetry) {
         // Configuration constants
         final double VELOCITY_TOLERANCE_PERCENT = 2.0;  // Default 2% tolerance
         final double SHOOTING_POWER_BOOST_PERCENT = 20.0;  // Default 20% boost for shooting
@@ -73,12 +72,12 @@ public class Util {
         // Phase 1: Ramp up to target velocity (lower threshold)
         flyWheel.setPower(1.0); // Ramp up at full power
 
-        while (flyWheel.getVelocity() < lowerThreshold){
+        while (flyWheel.getVelocity() < lowerThreshold) {
             loopCounter++;
             sleepThread(50);
 
             durationInMillis = System.currentTimeMillis() - startTime;
-            if(durationInMillis > maxWaitTime){
+            if (durationInMillis > maxWaitTime) {
                 telemetry.addData("Warning", "Timeout during ramp-up");
                 double achievedVelocity = flyWheel.getVelocity();
                 boolean success = achievedVelocity >= jamThreshold;
@@ -88,9 +87,9 @@ public class Util {
         }
 
         // Phase 2: Fine-tune down if overshooting (above upper threshold)
-        while (flyWheel.getVelocity() > upperThreshold){
+        while (flyWheel.getVelocity() > upperThreshold) {
             durationInMillis = System.currentTimeMillis() - startTime;
-            if(durationInMillis > maxWaitTime){
+            if (durationInMillis > maxWaitTime) {
                 telemetry.addData("Warning", "Timeout during fine-tuning");
                 break;
             }
@@ -119,7 +118,7 @@ public class Util {
      * Applies reverse power to actively brake the flywheel until it slows down.
      * Total time will not exceed maxWaitTime.
      */
-    public static long waitForFlyWheelStopVelocity(FlyWheel flyWheel, long velocity, double maxWaitTime, Telemetry telemetry){
+    public static long waitForFlyWheelStopVelocity(FlyWheel flyWheel, long velocity, double maxWaitTime, Telemetry telemetry) {
         long startTime = System.currentTimeMillis();
         double startFlyWheelVelocity = flyWheel.getVelocity();
         double currentFlyWheelVelocity = flyWheel.getVelocity();
@@ -128,14 +127,14 @@ public class Util {
         telemetry.addData("Start FlyWheel Velocity", startFlyWheelVelocity);
 
         // Apply reverse power to actively brake the flywheel
-        while (currentFlyWheelVelocity > velocity){
+        while (currentFlyWheelVelocity > velocity) {
             flyWheel.setPower(-1); // Full reverse power for braking
             sleepThread(50);
             currentFlyWheelVelocity = flyWheel.getVelocity();
 
             // Check for timeout
             durationInMillis = System.currentTimeMillis() - startTime;
-            if(durationInMillis > maxWaitTime){
+            if (durationInMillis > maxWaitTime) {
                 telemetry.addData("Warning", "Timeout waiting for flywheel to stop");
                 break;
             }
@@ -154,14 +153,14 @@ public class Util {
     }
 
 
-    public static void sleepThread(int millis){
+    public static void sleepThread(int millis) {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
         }
     }
 
-    public static void printAllOdoTelemetry(GoBildaPinpointDriver odo, Telemetry telemetry ){
+    public static void printAllOdoTelemetry(GoBildaPinpointDriver odo, Telemetry telemetry) {
         telemetry.addData("Odo Device Name: ", odo.getDeviceName());
         telemetry.addData("Odo Device Version: ", odo.getDeviceVersion());
         telemetry.addData("Odo Connection Info: ", odo.getConnectionInfo());
@@ -172,7 +171,7 @@ public class Util {
         telemetry.update();
     }
 
-    public static void printOdoPositionTelemetry( GoBildaPinpointDriver odo, Telemetry telemetry ){
+    public static void printOdoPositionTelemetry(GoBildaPinpointDriver odo, Telemetry telemetry) {
         odo.update();
 
         Pose2D pose = odo.getPosition();
@@ -189,7 +188,7 @@ public class Util {
 
     }
 
-    public static void printIMUTelemetry(IMU imu, Telemetry telemetry ){
+    public static void printIMUTelemetry(IMU imu, Telemetry telemetry) {
         //telemetry.addData("IMU Device Name: ", imu.getDeviceName());
         //telemetry.addData("IMU Device Version: ", imu.getVersion());
         //telemetry.addData("IMU Connection Info: ", imu.getConnectionInfo());
@@ -198,7 +197,6 @@ public class Util {
         telemetry.addData("IMU Pitch: ", imu.getRobotYawPitchRollAngles().getPitch(AngleUnit.DEGREES));
         telemetry.addData("IMU Roll: ", imu.getRobotYawPitchRollAngles().getRoll(AngleUnit.DEGREES));
     }
-
 
 
     /**
@@ -216,9 +214,9 @@ public class Util {
      * @param telemetry   The telemetry object for displaying debug information.
      */
     public static void turnToAngleIMU(double targetAngle, double turnPower,
-                             DcMotor leftFront, DcMotor leftBack,
-                             DcMotor rightFront, DcMotor rightBack,
-                             IMU imu, LinearOpMode opMode, Telemetry telemetry) {
+                                      DcMotor leftFront, DcMotor leftBack,
+                                      DcMotor rightFront, DcMotor rightBack,
+                                      IMU imu, LinearOpMode opMode, Telemetry telemetry) {
 
         // Ensure the opMode is still active before starting.
         if (!opMode.opModeIsActive()) {
@@ -285,16 +283,17 @@ public class Util {
         rightFront.setPower(0);
         rightBack.setPower(0);
     }
-    public static void addKickerTelemetry(Kicker kicker, Telemetry telemetry){
-        telemetry.addData("kicker.getPosition() - ",kicker.getPosition());
-        telemetry.addData("kicker.getGatePosition() - ",kicker.getGatePosition());
+
+    public static void addKickerTelemetry(Kicker kicker, Telemetry telemetry) {
+        telemetry.addData("kicker.getPosition() - ", kicker.getPosition());
+        telemetry.addData("kicker.getGatePosition() - ", kicker.getGatePosition());
     }
 
-    public static void telemetryFlyWheelVelocity(FlyWheel flyWheel, double flyWheelPower, DistanceSensor frontDistanceSensor,  int runForMS, Telemetry telemetry){
+    public static void telemetryFlyWheelVelocity(FlyWheel flyWheel, double flyWheelPower, DistanceSensor frontDistanceSensor, int runForMS, Telemetry telemetry) {
 
-        telemetry.addData("Power - "+ flyWheelPower, "Distance - " + Util.getDistance(frontDistanceSensor, telemetry));
+        telemetry.addData("Power - " + flyWheelPower, "Distance - " + Util.getDistance(frontDistanceSensor, telemetry));
         long startTime = System.currentTimeMillis();
-        long intermidiateTime =  System.currentTimeMillis();
+        long intermidiateTime = System.currentTimeMillis();
         long endTime = 0;
         long durationInMillis = intermidiateTime - startTime;
 
@@ -302,12 +301,12 @@ public class Util {
 
         flyWheel.setPower(flyWheelPower);
         //telemetry.addData("Flywheel StartTime: ", startTime);
-        while(durationInMillis <= runForMS){
-            intermidiateTime =  System.currentTimeMillis();
+        while (durationInMillis <= runForMS) {
+            intermidiateTime = System.currentTimeMillis();
             durationInMillis = intermidiateTime - startTime;
             flyWheelVelocity = flyWheel.getVelocity();
             //telemetry.addData("Flywheel Intermidiate Time (ms): ", durationInMillis);
-            telemetry.addData("Flywheel Velocity: " + flyWheelVelocity +" in time(ms): ", durationInMillis);
+            telemetry.addData("Flywheel Velocity: " + flyWheelVelocity + " in time(ms): ", durationInMillis);
             sleepThread(1000);
         }
         endTime = System.currentTimeMillis();
@@ -338,6 +337,7 @@ public class Util {
 
         return ret;
     }
+
     public static boolean isObjectDetected(DistanceSensor channelSensor, Telemetry telemetry) {
         boolean ret = false;
 
@@ -346,7 +346,7 @@ public class Util {
         //telemetry.addData("distanceSensor - ",dDistance);
         //telemetry.update();
         // Check if distance is less than 10 cm
-        if (dDistance < 14/2.54 ) ret = true;
+        if (dDistance < 14 / 2.54) ret = true;
 
         return ret;
     }
@@ -359,23 +359,21 @@ public class Util {
     }
 
 
-    public static Double getRequiredFlyWheelPower(double distanceInInchFromAprilTag){
+    public static Double getRequiredFlyWheelPower(double distanceInInchFromAprilTag) {
         Double doubleDesiredFlyWheelPower = 0.45;
 
-        if (distanceInInchFromAprilTag >= 25 && distanceInInchFromAprilTag <= 50){
+        if (distanceInInchFromAprilTag >= 25 && distanceInInchFromAprilTag <= 50) {
             doubleDesiredFlyWheelPower = 0.45;
-        }
-        else if (distanceInInchFromAprilTag>50 && distanceInInchFromAprilTag<=70){
+        } else if (distanceInInchFromAprilTag > 50 && distanceInInchFromAprilTag <= 70) {
             doubleDesiredFlyWheelPower = 0.55;
-        }
-        else if (distanceInInchFromAprilTag>70 && distanceInInchFromAprilTag<=85){
+        } else if (distanceInInchFromAprilTag > 70 && distanceInInchFromAprilTag <= 85) {
             doubleDesiredFlyWheelPower = 0.65;
         }
 
         return doubleDesiredFlyWheelPower;
     }
 
-    public static Integer getRequiredFlyWheelVelocity(Double distanceInInchFromAprilTag){
+    public static Integer getRequiredFlyWheelVelocity(Double distanceInInchFromAprilTag) {
         Integer flyWheelVelocityTunning = 100;
         Integer integerDesiredFlyWheelVelocity;
 
@@ -388,7 +386,7 @@ public class Util {
         minmum shooting distance is 37 inch
          */
 
-        integerDesiredFlyWheelVelocity = (int) Math.max(1050 +flyWheelVelocityTunning, Math.ceil(10.25*distanceInInchFromAprilTag + 587.4));
+        integerDesiredFlyWheelVelocity = (int) Math.max(1050 + flyWheelVelocityTunning, Math.ceil(10.25 * distanceInInchFromAprilTag + 587.4));
 
 
         /*
@@ -433,7 +431,7 @@ public class Util {
         }
     }
 
-    public static void prepareFlyWheelToShoot(FlyWheel flyWheel, Kicker kicker, Intake intake, Double distance, Telemetry telemetry){
+    public static void prepareFlyWheelToShoot(FlyWheel flyWheel, Kicker kicker, Intake intake, Double distance, Telemetry telemetry) {
 
         intake.setIntakePower(0.5); //reduce intake power to avoid jam
         kicker.setPosition(Kicker.gateClose); // close gate to clear ball for ramping up flywheel
@@ -441,11 +439,11 @@ public class Util {
 
     }
 
-    public static void prepareFlyWheelToIntake(FlyWheel flyWheel, Kicker kicker, Intake intake, Flipper flipper, Telemetry telemetry){
+    public static void prepareFlyWheelToIntake(FlyWheel flyWheel, Kicker kicker, Intake intake, Flipper flipper, Telemetry telemetry) {
         flyWheel.stop();
         kicker.setGatePosition(Kicker.GATE_CLOSE);
         flipper.resetFlipper();
-        Util.waitForFlyWheelStopVelocity(flyWheel,200,3000, telemetry);
+        Util.waitForFlyWheelStopVelocity(flyWheel, 200, 3000, telemetry);
         kicker.setPosition(Kicker.gateIntake);
         intake.startIntake();
     }
@@ -454,7 +452,6 @@ public class Util {
      * Attempts to clear a jam by cycling the kicker gate rapidly.
      * Moves kicker between intake and close positions to dislodge stuck game pieces.
      * Also stops the flywheel during clearing to prevent further jamming.
-     *
      */
     public static void clearJam(FlyWheel flyWheel, Kicker kicker, int numCycles, Telemetry telemetry) {
         final int CYCLE_DELAY_MS = 200;  // Time for each position change
@@ -485,7 +482,7 @@ public class Util {
     }
 
     // Prepares the flywheel and related mechanisms for shooting based on distance to target.
-    public static FlyWheelSpinUpResult prepareForShooting(FlyWheel flyWheel, Kicker kicker, Flipper flipper, Intake intake, Double distanceInInchFromAprilTag, Telemetry telemetry){
+    public static FlyWheelSpinUpResult prepareForShooting(FlyWheel flyWheel, Kicker kicker, Flipper flipper, Intake intake, Double distanceInInchFromAprilTag, Telemetry telemetry) {
         Integer requiredFlyWheelVelocity = Util.getRequiredFlyWheelVelocity(distanceInInchFromAprilTag);
         FlyWheelSpinUpResult result = Util.waitForFlyWheelShootingVelocity(flyWheel, requiredFlyWheelVelocity, 3000, telemetry);
 
@@ -495,7 +492,7 @@ public class Util {
         return result;
     }
 
-    public static void shoot(FlyWheel flyWheel, Kicker kicker, Flipper flipper, Intake intake, Double robotDistanceFromAprilTag, DecodeAprilTag aprilTag, String aprilTagName, Telemetry telemetry){
+    public static void shoot(FlyWheel flyWheel, Kicker kicker, Flipper flipper, Intake intake, Double robotDistanceFromAprilTag, DecodeAprilTag aprilTag, String aprilTagName, Telemetry telemetry) {
 
         // Configuration constants
         final int NUM_SHOTS = 4;                    // Shoot 4 times for reliability (only 3 required)
@@ -625,6 +622,7 @@ public class Util {
 
     static Double MAX_SPEED = 0.8;
     static Double MIN_SPEED = 0.2;
+
     public static void moveRobot(
             DcMotor leftFront, DcMotor leftBack,
             DcMotor rightFront, DcMotor rightBack,
@@ -636,7 +634,6 @@ public class Util {
             Telemetry telemetry) {
 
 
-
         Double P_DRIVE_GAIN = 0.03;
         Double ERROR_RANGE__INCHES = 0.5;
         Double P_YAW_GAIN = 0.10;
@@ -645,8 +642,8 @@ public class Util {
 
         // --- 1. Initialization ---
         odo.resetPosAndIMU();
-        odo.setPosX(0.0,DistanceUnit.INCH);
-        odo.setPosY(0.0,DistanceUnit.INCH);
+        odo.setPosX(0.0, DistanceUnit.INCH);
+        odo.setPosY(0.0, DistanceUnit.INCH);
         threadSleep(100);
 
         odo.update();
@@ -669,9 +666,6 @@ public class Util {
         Double axialPower;
         Double lateralPower;
         Double yawPower;
-
-
-
 
 
         // --- 2. ISOLATED Control Loop ---
@@ -724,7 +718,7 @@ public class Util {
                     double headingError = targetAngle - currentHeading;
 
                     // Handle wraparound (e.g., target 1°, current 359°)
-                    while (headingError > Math.PI)  headingError -= 2 * Math.PI;
+                    while (headingError > Math.PI) headingError -= 2 * Math.PI;
                     while (headingError < -Math.PI) headingError += 2 * Math.PI;
 
                     // P-Controller for Yaw
@@ -772,7 +766,7 @@ public class Util {
                 targetPosition = startX + distance;
 
                 // Keep looping until we pass the target
-                while (odo.getPosX(DistanceUnit.INCH)< targetPosition && timer.milliseconds() < TIMEOUT_MS) {
+                while (odo.getPosX(DistanceUnit.INCH) < targetPosition && timer.milliseconds() < TIMEOUT_MS) {
                     odo.update();
                     currentPosition = odo.getPosX(DistanceUnit.INCH);
                     errorDistance = targetPosition - currentPosition;
@@ -821,22 +815,22 @@ public class Util {
                 currentAngle = Math.toDegrees(AngleUnit.normalizeRadians(odo.getHeading(AngleUnit.RADIANS)));
                 errorAngle = AngleUnit.normalizeDegrees(targetAngle - currentAngle);
 
-                telemetry.addData("Target Angle","%.2f", targetAngle);
-                telemetry.addData("Current Angle","%.2f", currentAngle);
-                telemetry.addData("Error Angle", "%.2f",errorAngle);
+                telemetry.addData("Target Angle", "%.2f", targetAngle);
+                telemetry.addData("Current Angle", "%.2f", currentAngle);
+                telemetry.addData("Error Angle", "%.2f", errorAngle);
                 telemetry.update();
                 sleepThread(1000);
 
                 //while(Math.abs(errorAngle) < ERROR_RANGE_DEGREE && timer.milliseconds() < TIMEOUT_MS) {
 
-                while(currentAngle < targetAngle && timer.milliseconds() < TIMEOUT_MS) {
+                while (currentAngle < targetAngle && timer.milliseconds() < TIMEOUT_MS) {
 
                     Double turnPower = ((Math.abs(errorAngle) / 180) * (MAX_SPEED - MIN_SPEED) + MIN_SPEED) * Math.signum(errorAngle) * -1;
 
-                    telemetry.addData("Target Angle","%.2f", targetAngle);
-                    telemetry.addData("Current Angle","%.2f", currentAngle);
-                    telemetry.addData("Error Angle", "%.2f",errorAngle);
-                    telemetry.addData("Turn Power", "%.2f",turnPower);
+                    telemetry.addData("Target Angle", "%.2f", targetAngle);
+                    telemetry.addData("Current Angle", "%.2f", currentAngle);
+                    telemetry.addData("Error Angle", "%.2f", errorAngle);
+                    telemetry.addData("Turn Power", "%.2f", turnPower);
                     telemetry.update();
 
                     //Half turn speed
@@ -847,7 +841,7 @@ public class Util {
                     currentAngle = Math.toDegrees(AngleUnit.normalizeRadians(odo.getHeading(AngleUnit.RADIANS)));
                     errorAngle = AngleUnit.normalizeDegrees(targetAngle - currentAngle);
 
-                    if( Math.abs(errorAngle) < ERROR_RANGE_DEGREE ) {
+                    if (Math.abs(errorAngle) < ERROR_RANGE_DEGREE) {
                         Util.setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, 0, 0);
                         break;
                     }
@@ -858,22 +852,22 @@ public class Util {
                 currentAngle = Math.toDegrees(AngleUnit.normalizeRadians(odo.getHeading(AngleUnit.RADIANS)));
                 errorAngle = AngleUnit.normalizeDegrees(targetAngle - currentAngle);
 
-                telemetry.addData("Target Angle","%.2f", targetAngle);
-                telemetry.addData("Current Angle","%.2f", currentAngle);
-                telemetry.addData("Error Angle", "%.2f",errorAngle);
+                telemetry.addData("Target Angle", "%.2f", targetAngle);
+                telemetry.addData("Current Angle", "%.2f", currentAngle);
+                telemetry.addData("Error Angle", "%.2f", errorAngle);
                 telemetry.update();
                 sleepThread(1000);
 
                 //while(Math.abs(errorAngle) < ERROR_RANGE_DEGREE && timer.milliseconds() < TIMEOUT_MS) {
 
-                while(currentAngle > targetAngle && timer.milliseconds() < TIMEOUT_MS) {
+                while (currentAngle > targetAngle && timer.milliseconds() < TIMEOUT_MS) {
 
                     Double turnPower = ((Math.abs(errorAngle) / 180) * (MAX_SPEED - MIN_SPEED) + MIN_SPEED) * Math.signum(errorAngle) * -1;
 
-                    telemetry.addData("Target Angle","%.2f", targetAngle);
-                    telemetry.addData("Current Angle","%.2f", currentAngle);
-                    telemetry.addData("Error Angle", "%.2f",errorAngle);
-                    telemetry.addData("Turn Power", "%.2f",turnPower);
+                    telemetry.addData("Target Angle", "%.2f", targetAngle);
+                    telemetry.addData("Current Angle", "%.2f", currentAngle);
+                    telemetry.addData("Error Angle", "%.2f", errorAngle);
+                    telemetry.addData("Turn Power", "%.2f", turnPower);
                     telemetry.update();
 
                     //Half turn speed
@@ -884,7 +878,7 @@ public class Util {
                     currentAngle = Math.toDegrees(AngleUnit.normalizeRadians(odo.getHeading(AngleUnit.RADIANS)));
                     errorAngle = AngleUnit.normalizeDegrees(targetAngle - currentAngle);
 
-                    if( Math.abs(errorAngle) < ERROR_RANGE_DEGREE ) {
+                    if (Math.abs(errorAngle) < ERROR_RANGE_DEGREE) {
                         Util.setMotorPower(leftFront, leftBack, rightFront, rightBack, 0, 0, 0);
                         break;
                     }
@@ -955,7 +949,7 @@ public class Util {
         final double STRAFE_POWER = 0.15;             // Power for strafing (yaw correction)
         final double P_TURN_GAIN = 0.02;             // Proportional gain for bearing control (0.02 = 0.6 power at 30° error)
         final double P_STRAFE_GAIN = 0.015;          // Proportional gain for yaw control
-        final double SCAN_TURN_POWER = 0.1;          // Power for scanning turn
+        final double SCAN_TURN_POWER = 0.2;          // Power for scanning turn
         final double FORWARD_SCAN_POWER = 0.15;      // Slow forward movement during scan
         final int CONTROL_LOOP_MS = 50;              // Control loop period
         final int SETTLE_TIME_MS = 150;              // Time to let robot settle after stopping
@@ -995,7 +989,7 @@ public class Util {
 
             scanStartTime = timer.milliseconds();
             setMotorPower(chassisInstance.frontLeftDrive, chassisInstance.backLeftDrive,
-                    chassisInstance.frontRightDrive,chassisInstance.backRightDrive,
+                    chassisInstance.frontRightDrive, chassisInstance.backRightDrive,
                     FORWARD_SCAN_POWER, 0, -SCAN_TURN_POWER); // Slow forward + turn right (negative yaw = turn right)
 
             while (chassis.opModeIsActive() && (timer.milliseconds() - scanStartTime) < SCAN_SWEEP_MS
@@ -1021,7 +1015,7 @@ public class Util {
 
             scanStartTime = timer.milliseconds();
             setMotorPower(chassisInstance.frontLeftDrive, chassisInstance.backLeftDrive,
-                    chassisInstance.frontRightDrive,chassisInstance.backRightDrive,
+                    chassisInstance.frontRightDrive, chassisInstance.backRightDrive,
                     FORWARD_SCAN_POWER, 0, SCAN_TURN_POWER); // Slow forward + turn left (positive yaw = turn left)
 
             while (chassis.opModeIsActive() && (timer.milliseconds() - scanStartTime) < (SCAN_SWEEP_MS * 2)
@@ -1046,146 +1040,152 @@ public class Util {
             telemetry.update();
 
             setMotorPower(chassisInstance.frontLeftDrive, chassisInstance.backLeftDrive,
-                    chassisInstance.frontRightDrive,chassisInstance.backRightDrive,
+                    chassisInstance.frontRightDrive, chassisInstance.backRightDrive,
                     FORWARD_SCAN_POWER, 0, -SCAN_TURN_POWER); // Turn right to return to center
             sleepThread(SCAN_SWEEP_MS);
+
+            if (timer.milliseconds() < DETECTION_TIMEOUT_MS) {
+
+                chassisInstance.stopRobot();
+                sleepThread(100);
+
+                // One more quick check at center position
+                if (aprilTag.findAprilTag(aprilTagName)) {
+                    tagFound = true;
+                    telemetry.addData("Auto Align", "Tag found at center");
+                    telemetry.update();
+                }
+            } else {
+                chassisInstance.stopRobot(); // Stop immediately if timeout
+            }
+        }
+
+
+            if (!tagFound) {
+                telemetry.addData("Auto Align", "FAILED - AprilTag not detected after scanning");
+                telemetry.update();
+                return new AlignmentResult(false, 0, 0, 0);
+            }
+
+            // --- Step 2: Align Bearing (Turn robot to center tag in camera) ---
+            telemetry.addData("Auto Align", "Aligning bearing...");
+            telemetry.update();
+
+            timer.reset();
+            boolean bearingAligned = false;
+
+            while (chassis.opModeIsActive() && timer.milliseconds() < BEARING_ALIGNMENT_TIMEOUT_MS) {
+                AprilTagPoseFtc pose = aprilTag.getCoordinate(aprilTagName);
+
+                if (pose == null) {
+                    telemetry.addData("Auto Align", "Lost AprilTag during bearing alignment");
+                    telemetry.update();
+                    chassisInstance.stopRobot();
+                    return new AlignmentResult(false, 0, 0, 0);
+                }
+
+                double bearing = pose.bearing;
+
+                if (Math.abs(bearing) < BEARING_TOLERANCE_DEG) {
+                    bearingAligned = true;
+                    break;
+                }
+
+                // Turn to correct bearing with proportional control
+                // CAMERA IS REAR-FACING, so bearing is relative to BACK of robot
+                // Positive bearing = tag to the right of camera (left side of robot front)
+                // In mecanum drive: POSITIVE yaw → RIGHT turn (clockwise), NEGATIVE yaw → LEFT turn (counter-clockwise)
+                // Therefore: Positive bearing needs NEGATIVE yaw (turn left), Negative bearing needs POSITIVE yaw (turn right)
+                // Use proportional control to avoid oscillation: turnPower = -bearing * gain
+                double turnPower = -Range.clip(-bearing * P_TURN_GAIN, -TURN_POWER, TURN_POWER);//
+                setMotorPower(chassisInstance.frontLeftDrive, chassisInstance.backLeftDrive,
+                        chassisInstance.frontRightDrive, chassisInstance.backRightDrive,
+                        0, 0, turnPower);
+
+                telemetry.addData("Bearing", "%.1f°", bearing);
+                telemetry.update();
+
+                sleepThread(CONTROL_LOOP_MS);
+            }
+
             chassisInstance.stopRobot();
-            sleepThread(100);
+            sleepThread(SETTLE_TIME_MS); // Allow robot to fully stop before checking success
 
-            // One more quick check at center position
-            if (aprilTag.findAprilTag(aprilTagName)) {
-                tagFound = true;
-                telemetry.addData("Auto Align", "Tag found at center");
+            if (!bearingAligned) {
+                telemetry.addData("Auto Align", "FAILED - Bearing alignment timeout");
                 telemetry.update();
-            }
-        }
-
-        if (!tagFound) {
-            telemetry.addData("Auto Align", "FAILED - AprilTag not detected after scanning");
-            telemetry.update();
-            return new AlignmentResult(false, 0, 0, 0);
-        }
-
-        // --- Step 2: Align Bearing (Turn robot to center tag in camera) ---
-        telemetry.addData("Auto Align", "Aligning bearing...");
-        telemetry.update();
-
-        timer.reset();
-        boolean bearingAligned = false;
-
-        while (chassis.opModeIsActive() && timer.milliseconds() < BEARING_ALIGNMENT_TIMEOUT_MS) {
-            AprilTagPoseFtc pose = aprilTag.getCoordinate(aprilTagName);
-
-            if (pose == null) {
-                telemetry.addData("Auto Align", "Lost AprilTag during bearing alignment");
-                telemetry.update();
-                chassisInstance.stopRobot();
                 return new AlignmentResult(false, 0, 0, 0);
             }
 
-            double bearing = pose.bearing;
+            // --- Step 3: Align Yaw (Strafe to be perpendicular to tag) ---
+            telemetry.addData("Auto Align", "Aligning yaw...");
+            telemetry.update();
 
-            if (Math.abs(bearing) < BEARING_TOLERANCE_DEG) {
-                bearingAligned = true;
-                break;
+            timer.reset();
+            boolean yawAligned = false;
+
+            while (chassis.opModeIsActive() && timer.milliseconds() < YAW_ALIGNMENT_TIMEOUT_MS) {
+                AprilTagPoseFtc pose = aprilTag.getCoordinate(aprilTagName);
+
+                if (pose == null) {
+                    telemetry.addData("Auto Align", "Lost AprilTag during yaw alignment");
+                    telemetry.update();
+                    chassisInstance.stopRobot();
+                    return new AlignmentResult(false, 0, 0, 0);
+                }
+
+                double yaw = pose.yaw;
+
+                if (Math.abs(yaw) < YAW_TOLERANCE_DEG) {
+                    yawAligned = true;
+                    break;
+                }
+
+                // Strafe and turning to correct yaw with proportional control
+                // CAMERA IS REAR-FACING, yaw indicates tag surface angle relative to camera
+                // Positive yaw = tag surface angled, need to strafe LEFT (from robot front perspective)
+                // In mecanum: negative y = strafe left, positive y = strafe right
+                // Use proportional control to avoid oscillation: strafePower = -yaw * gain
+                double strafePower = -Range.clip(-yaw * P_STRAFE_GAIN, -STRAFE_POWER, STRAFE_POWER);
+                setMotorPower(chassisInstance.frontLeftDrive, chassisInstance.backLeftDrive,
+                        chassisInstance.frontRightDrive, chassisInstance.backRightDrive,
+                        0, strafePower, strafePower/2);
+
+                telemetry.addData("Yaw", "%.1f°", yaw);
+                telemetry.update();
+
+                sleepThread(CONTROL_LOOP_MS);
             }
 
-            // Turn to correct bearing with proportional control
-            // CAMERA IS REAR-FACING, so bearing is relative to BACK of robot
-            // Positive bearing = tag to the right of camera (left side of robot front)
-            // In mecanum drive: POSITIVE yaw → RIGHT turn (clockwise), NEGATIVE yaw → LEFT turn (counter-clockwise)
-            // Therefore: Positive bearing needs NEGATIVE yaw (turn left), Negative bearing needs POSITIVE yaw (turn right)
-            // Use proportional control to avoid oscillation: turnPower = -bearing * gain
-            double turnPower = Range.clip(-bearing * P_TURN_GAIN, -TURN_POWER, TURN_POWER);
-            setMotorPower(chassisInstance.frontLeftDrive, chassisInstance.backLeftDrive,
-                    chassisInstance.frontRightDrive,chassisInstance.backRightDrive,
-                    0, 0, turnPower);
+            chassisInstance.stopRobot();
 
+            sleepThread(SETTLE_TIME_MS); // Allow robot to fully stop before checking success
+
+            if (!yawAligned) {
+                telemetry.addData("Auto Align", "FAILED - Yaw alignment timeout");
+                telemetry.update();
+                return new AlignmentResult(false, 0, 0, 0);
+            }
+
+            // --- Step 4: Get Final Distance and Report Success ---
+            AprilTagPoseFtc finalPose = aprilTag.getCoordinate(aprilTagName);
+
+            if (finalPose == null) {
+                telemetry.addData("Auto Align", "Lost AprilTag after alignment");
+                telemetry.update();
+                return new AlignmentResult(false, 0, 0, 0);
+            }
+
+            double distance = finalPose.range;
+            double bearing = finalPose.bearing;
+            double yaw = finalPose.yaw;
+
+            telemetry.addData("Auto Align", "SUCCESS - Ready to shoot!");
+            telemetry.addData("Distance", "%.1f inches", distance);
             telemetry.addData("Bearing", "%.1f°", bearing);
-            telemetry.update();
-
-            sleepThread(CONTROL_LOOP_MS);
-        }
-
-        chassisInstance.stopRobot();
-        sleepThread(SETTLE_TIME_MS); // Allow robot to fully stop before checking success
-
-        if (!bearingAligned) {
-            telemetry.addData("Auto Align", "FAILED - Bearing alignment timeout");
-            telemetry.update();
-            return new AlignmentResult(false, 0, 0, 0);
-        }
-
-        // --- Step 3: Align Yaw (Strafe to be perpendicular to tag) ---
-        telemetry.addData("Auto Align", "Aligning yaw...");
-        telemetry.update();
-
-        timer.reset();
-        boolean yawAligned = false;
-
-        while (chassis.opModeIsActive() && timer.milliseconds() < YAW_ALIGNMENT_TIMEOUT_MS) {
-            AprilTagPoseFtc pose = aprilTag.getCoordinate(aprilTagName);
-
-            if (pose == null) {
-                telemetry.addData("Auto Align", "Lost AprilTag during yaw alignment");
-                telemetry.update();
-                chassisInstance.stopRobot();
-                return new AlignmentResult(false, 0, 0, 0);
-            }
-
-            double yaw = pose.yaw;
-
-            if (Math.abs(yaw) < YAW_TOLERANCE_DEG) {
-                yawAligned = true;
-                break;
-            }
-
-            // Strafe to correct yaw with proportional control
-            // CAMERA IS REAR-FACING, yaw indicates tag surface angle relative to camera
-            // Positive yaw = tag surface angled, need to strafe LEFT (from robot front perspective)
-            // In mecanum: negative y = strafe left, positive y = strafe right
-            // Use proportional control to avoid oscillation: strafePower = -yaw * gain
-            double strafePower = Range.clip(-yaw * P_STRAFE_GAIN, -STRAFE_POWER, STRAFE_POWER);
-            setMotorPower(chassisInstance.frontLeftDrive, chassisInstance.backLeftDrive,
-                          chassisInstance.frontRightDrive,chassisInstance.backRightDrive,
-                    0, strafePower, 0);
-
             telemetry.addData("Yaw", "%.1f°", yaw);
             telemetry.update();
 
-            sleepThread(CONTROL_LOOP_MS);
+            return new AlignmentResult(true, distance, bearing, yaw);
         }
-
-        chassisInstance.stopRobot();
-
-        sleepThread(SETTLE_TIME_MS); // Allow robot to fully stop before checking success
-
-        if (!yawAligned) {
-            telemetry.addData("Auto Align", "FAILED - Yaw alignment timeout");
-            telemetry.update();
-            return new AlignmentResult(false, 0, 0, 0);
-        }
-
-        // --- Step 4: Get Final Distance and Report Success ---
-        AprilTagPoseFtc finalPose = aprilTag.getCoordinate(aprilTagName);
-
-        if (finalPose == null) {
-            telemetry.addData("Auto Align", "Lost AprilTag after alignment");
-            telemetry.update();
-            return new AlignmentResult(false, 0, 0, 0);
-        }
-
-        double distance = finalPose.range;
-        double bearing = finalPose.bearing;
-        double yaw = finalPose.yaw;
-
-        telemetry.addData("Auto Align", "SUCCESS - Ready to shoot!");
-        telemetry.addData("Distance", "%.1f inches", distance);
-        telemetry.addData("Bearing", "%.1f°", bearing);
-        telemetry.addData("Yaw", "%.1f°", yaw);
-        telemetry.update();
-
-        return new AlignmentResult(true, distance, bearing, yaw);
-    }
-
-    }
+}

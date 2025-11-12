@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.Helper.Kicker;
 import org.firstinspires.ftc.teamcode.Helper.Util;
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 
-@Autonomous(name = "Auto Blue Near 4.42", group = "Autonomous")
+@Autonomous(name = "Auto Blue Near 4.55", group = "Autonomous")
 
 public class AutoBasketBlue extends LinearOpMode {
 
@@ -43,6 +43,7 @@ public class AutoBasketBlue extends LinearOpMode {
         SHOOT,
         GET_MORE_BALLS,
         GO_BACK_TO_SHOOT,
+        MOVE_OUT_OF_SHOOTING_ZONE,
         END
     }
 
@@ -81,7 +82,19 @@ public class AutoBasketBlue extends LinearOpMode {
 //            telemetry.update();
 //
 //        }
+        /*
+        Util.printOdoPositionTelemetry(chassis.odo, telemetry);
+        Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.STRAFE_RIGHT, 12, 0, telemetry);
+        Util.printOdoPositionTelemetry(chassis.odo, telemetry);
+        telemetry.update();
+        sleep(10000);
+        Util.printOdoPositionTelemetry(chassis.odo, telemetry);
+        Util.moveRobot(chassis.frontLeftDrive, chassis.backLeftDrive, chassis.frontRightDrive, chassis.backRightDrive, chassis.odo, chassis.imu, Util.MovementDirection.STRAFE_LEFT, 12, 0, telemetry);
+        Util.printOdoPositionTelemetry(chassis.odo, telemetry);
+        telemetry.update();
+        sleep(10000);
 
+         */
 
 
 
@@ -110,6 +123,8 @@ public class AutoBasketBlue extends LinearOpMode {
         AutoStages currentStage = AutoStages.BACK_UP;
 
         while (opModeIsActive()) {
+
+            Util.AlignmentResult alignmentResult;
             Double robotDistanceFromAprilTag = 0.0;
             AprilTagPoseFtc aprilTagPoseFtc = null;
 
@@ -128,46 +143,51 @@ public class AutoBasketBlue extends LinearOpMode {
 
             switch (currentStage) {
                 case BACK_UP:
-                    Util.setSpeed(0.4, 0.9);
+                    Util.setSpeed(0.2, 0.8);
                     intake.setIntakePower(0.5);
                     chassis.drive(30);
-                    telemetry.addData("April Tag", aprilTagPoseFtc);
-                    telemetry.update();
-                    sleep(750);
+                    //telemetry.addData("April Tag", aprilTagPoseFtc);
+                    //telemetry.update();
+                    sleep(200);
                     currentStage = AutoStages.SHOOT;
                     break;
 
                 case SHOOT:
-                    Util.autoAlignWithAprilTag(this, aprilTag, DecodeAprilTag.BLUE_APRIL_TAG, chassis, telemetry);
-                    Util.shoot(flyWheel, kicker, flipper, intake, robotDistanceFromAprilTag, aprilTag, DecodeAprilTag.BLUE_APRIL_TAG, telemetry);
+                    alignmentResult = Util.autoAlignWithAprilTag(this, aprilTag, DecodeAprilTag.BLUE_APRIL_TAG, chassis, telemetry);
+                    Util.shoot(flyWheel, kicker, flipper, intake, alignmentResult.distance, aprilTag, DecodeAprilTag.BLUE_APRIL_TAG, telemetry);
                     currentStage = AutoStages.GET_MORE_BALLS;
                     break;
 
                 case GET_MORE_BALLS:
-                    intake.setIntakePower(1);
                     chassis.turn(120);
-                    sleep(500);
-                    chassis.strafe(-5);
-                    sleep(500);
+                    sleep(100);
+                    chassis.strafe(-12);
+                    sleep(100);
                     intake.startIntake();
                     Util.setSpeed(0.2,0.2);
                     chassis.drive(30);
-                    Util.setSpeed(0.4, 0.9);
-                    chassis.drive(-6);
-                    sleep(500);
+                    Util.setSpeed(0.3, 0.6);
+                    chassis.drive(-20);
+                    sleep(100);
                     currentStage = AutoStages.GO_BACK_TO_SHOOT;
                     break;
 
                 case GO_BACK_TO_SHOOT:
-                    chassis.strafe(34);
-                    chassis.turn(-90);
-                    chassis.drive(30);
-                    sleep(300);
-                    Util.autoAlignWithAprilTag(this, aprilTag, DecodeAprilTag.BLUE_APRIL_TAG, chassis, telemetry);
-                    Util.shoot(flyWheel, kicker, flipper, intake, robotDistanceFromAprilTag, aprilTag, DecodeAprilTag.BLUE_APRIL_TAG, telemetry);
-                    currentStage = AutoStages.END;
+                    chassis.strafe(12);
+                    Util.prepareFlyWheelToShoot(flyWheel, kicker, intake, robotDistanceFromAprilTag, telemetry);
+                    sleep(100);
+                    chassis.turn(-125);
+                    sleep(100);
+                    alignmentResult = Util.autoAlignWithAprilTag(this, aprilTag, DecodeAprilTag.BLUE_APRIL_TAG, chassis, telemetry);
+                    Util.shoot(flyWheel, kicker, flipper, intake, alignmentResult.distance, aprilTag, DecodeAprilTag.BLUE_APRIL_TAG, telemetry);
+                    currentStage = AutoStages.MOVE_OUT_OF_SHOOTING_ZONE;
                     break;
 
+                case MOVE_OUT_OF_SHOOTING_ZONE:
+                    Util.setSpeed(0.3, 0.8);
+                    chassis.strafe(36);
+                    currentStage = AutoStages.END;
+                    break;
                 case END:
                     break;
 

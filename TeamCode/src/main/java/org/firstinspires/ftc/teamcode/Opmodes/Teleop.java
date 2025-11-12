@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 
-@TeleOp(name = "DecodeTeleopV4.20 Alaqmar", group = "TeleOp")
+@TeleOp(name = "DecodeTeleopV4.23 Alaqmar", group = "TeleOp")
 
 public class Teleop extends LinearOpMode {
 
@@ -23,6 +23,7 @@ public class Teleop extends LinearOpMode {
     double flyWheelVelocity = 0.0;
     long maxLoopTimeout = 2000;
     private Thread driveThread;
+    DecodeAprilTag aprilTag;
 
 
     WebcamName webcamName;
@@ -49,7 +50,7 @@ public class Teleop extends LinearOpMode {
         Kicker kicker = new Kicker();
         kicker.init(hardwareMap);
 
-        DecodeAprilTag aprilTag  = new DecodeAprilTag(this);
+        aprilTag  = new DecodeAprilTag(this);
         aprilTag.initCamera();
 
         Flipper flipper = new Flipper();
@@ -185,36 +186,36 @@ public class Teleop extends LinearOpMode {
         public void run() {
             while ( threadIsRunning && !Thread.currentThread().isInterrupted()) {
 
-//                // Check for alignment trigger (gamepad1 right bumper)
-//                if (Teleop.this.gamepad1.right_bumper) {
-//                    // Perform automatic alignment with AprilTag (using selected alliance)
-//                    Util.AlignmentResult result = Util.autoAlignWithAprilTag(
-//                            Teleop.this, Teleop.this.DecodeAprilTag, Teleop.this.currentAprilTagName,
-//                            Teleop.this.chassis, Teleop.this.telemetry);
-//
-//                    if (result.success) {
-//                        Teleop.this.telemetry.addData("Alignment", "SUCCESS - Distance: %.1f inches", result.distance);
-//                    } else {
-//                        Teleop.this.telemetry.addData("Alignment", "FAILED");
-//                    }
-//                    Teleop.this.telemetry.update();
-//
-//                    // Brief pause to prevent multiple triggers
-//                    try {
-//                        Thread.sleep(500);
-//                    } catch (InterruptedException e) {
-//                        Thread.currentThread().interrupt();
-//                        return;
-//                    }
-//                }
+                // Check for alignment trigger (gamepad1 right bumper)
+                if (Teleop.this.gamepad1.right_bumper) {
+                    // Perform automatic alignment with AprilTag (using selected alliance)
+                    Util.AlignmentResult result = Util.autoAlignWithAprilTag(
+                            Teleop.this, Teleop.this.aprilTag, Teleop.this.currentAprilTagName,
+                            Teleop.this.chassis, Teleop.this.telemetry);
+
+                    if (result.success) {
+                        Teleop.this.telemetry.addData("Alignment", "SUCCESS - Distance: %.1f inches", result.distance);
+                    } else {
+                        Teleop.this.telemetry.addData("Alignment", "FAILED");
+                    }
+                    Teleop.this.telemetry.update();
+
+                    // Brief pause to prevent multiple triggers
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
 
                 // Read gamepad input and set drive motor power
                 float axial = -Teleop.this.gamepad1.left_stick_y;
                 float lateral = -Teleop.this.gamepad1.left_stick_x;
-                float yaw = -Teleop.this.gamepad1.right_stick_x;
+                float yaw = -Teleop.this.gamepad1.right_stick_x; // Note: positive yaw is clockwise, previously was negative
                 Util.setMotorPower(chassis.frontLeftDrive, chassis.backLeftDrive,
-                                    chassis.frontRightDrive, chassis.backRightDrive,
-                                    axial, lateral, yaw);
+                        chassis.frontRightDrive, chassis.backRightDrive,
+                        axial, lateral, yaw);
 
                 try {
                     Thread.sleep(10);
