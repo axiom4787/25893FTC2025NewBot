@@ -131,7 +131,8 @@ public class BlueNearAuto extends LinearOpMode {
                         chassis.strafe(36);
                         currentNearAutoStage = NearAutoStages.END;
                         break;
-                    case END:
+
+                        case END:
                         break;
 
                     default:
