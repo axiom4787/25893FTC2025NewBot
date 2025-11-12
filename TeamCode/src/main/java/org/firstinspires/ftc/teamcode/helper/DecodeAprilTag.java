@@ -155,6 +155,7 @@ public class DecodeAprilTag {
     public static final String BLUE_APRIL_TAG = "bluetarget";
     public static final String RED_APRIL_TAG = "redtarget";
 
+
     // blue target = "bluetarget"
     // red targer = "redtarget"
     public AprilTagPoseFtc getCoordinate(String name) {
