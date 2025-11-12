@@ -52,7 +52,7 @@ public class SteeringControls extends OpMode
 {
     /* Declare OpMode members. */
     HardwarePushbot robot       = new HardwarePushbot(); // use the class created to define a Pushbot's hardware
-
+    double speed=0;
     /*
     * Code to run ONCE when the driver hits INIT
     */
@@ -93,5 +93,22 @@ public class SteeringControls extends OpMode
 
 
         robot.driveTrain.drive(forward, strafe, turn);
+        //press the button to start the launcher code
+        if (gamepad1.right_bumper) //if i press the right bumper
+        {
+            //set to full power
+            robot.launcher.setFlywheelSpeed(1);
+            robot.launcher.setAgitatorSpeed(1);
+            robot.launcher.setShooterIntakeSpeed(1);
+        }
+        else if (gamepad1.left_bumper) //if i press the left bumper
+        {
+            //turn off the launching moter
+            robot.launcher.setFlywheelSpeed(0);
+            robot.launcher.setAgitatorSpeed(0);
+            robot.launcher.setShooterIntakeSpeed(0);
+        }
+
+
     }
   }
