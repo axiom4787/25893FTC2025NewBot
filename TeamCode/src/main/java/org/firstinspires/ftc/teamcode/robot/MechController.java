@@ -300,30 +300,29 @@ public class MechController {
 
             case APRIL_TAG:
                 currentState = MechState.APRIL_TAG;
+
                 if (!aprilTagRunning) {
                     aprilTagStageStart = System.currentTimeMillis();
                     aprilTagRunning = true;
-                } else {
-                    long aprilTagElapsed = System.currentTimeMillis() - aprilTagStageStart;
+                }
 
-                    if (tagPattern[0] == 0 && aprilTagElapsed < APRIL_TAG_WAIT_MS) {
-                        int[] detectedPattern = visionController.findTagPattern(visionController.getAprilTag());
-                        if (detectedPattern[0] != 0) {
-                            tagPattern = detectedPattern; // Save detected tag pattern
-                            aprilTagRunning = false;
-                            aprilTagStageStart = 0;
-                            currentState = MechState.IDLE;
-                            break;
-                        }
-                    }
+                long aprilTagElapsed = System.currentTimeMillis() - aprilTagStageStart;
 
-                    if (aprilTagElapsed >= APRIL_TAG_WAIT_MS) {
-                        tagPattern = new int[]{21, 2, 1, 1};  // Default GPP pattern
+                if (tagPattern[0] == 0 && aprilTagElapsed < APRIL_TAG_WAIT_MS) {
+                    int[] detectedPattern = visionController.findTagPattern(visionController.getAprilTag());
+                    if (detectedPattern[0] != 0) {
+                        tagPattern = detectedPattern; // Tag detected
                         aprilTagRunning = false;
                         aprilTagStageStart = 0;
                         currentState = MechState.IDLE;
-                        break;
                     }
+                }
+
+                if (tagPattern[0] == 0 && aprilTagElapsed >= APRIL_TAG_WAIT_MS) {
+                    tagPattern = new int[]{21, 2, 1, 1};  // Default GPP pattern
+                    aprilTagRunning = false;
+                    aprilTagStageStart = 0;
+                    currentState = MechState.IDLE;
                 }
                 break;
 

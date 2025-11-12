@@ -20,6 +20,7 @@ public class TeleopMech extends OpMode {
 
     private boolean prevDpadUp = false;
     private boolean prevDpadDown = false;
+    boolean buttonPressed = false;
 
     @Override
     public void init() {
@@ -39,35 +40,47 @@ public class TeleopMech extends OpMode {
 
     @Override
     public void loop() {
-        int[] tagPattern = visionController.findTagPattern(aprilTag);
-/*
-        switch (tagID) {
-            case 1:
-                mechController.setIndexer(-120);
-                break;
-            case 2:
-                mechController.setIndexer(0);
-                break;
-            case 3:
-                mechController.setIndexer(120);
-                break;
-            default:
-                // keep servo still if no tag
-                break;
-        }*/
+        // ----- APRIL_TAG handling -----
+        if (gamepad2.a) {
+            mechController.handleMechState(MechState.APRIL_TAG);
+        }
+        else if ((gamepad2.right_trigger > 0.2) && !buttonPressed) {
+            buttonPressed = true;
+            mechController.handleMechState(MechState.INTAKE_STATE);
+        } else if ((gamepad2.left_trigger > 0.2) && !buttonPressed) {
+            buttonPressed = true;
+            mechController.handleMechState(MechState.SHOOT_STATE);
+        } else if ((gamepad2.right_bumper) && !buttonPressed) {
+            buttonPressed = true;
+            mechController.handleMechState(MechState.SHOOT_GREEN);
+        } else if ((gamepad2.left_bumper) && !buttonPressed) {
+            buttonPressed = true;
+            mechController.handleMechState(MechState.SHOOT_PURPLE);
+        } else if ((gamepad2.b) && !buttonPressed) {
+            buttonPressed = true;
+            mechController.handleMechState(MechState.HUMAN_STATE);
+        } else if ((gamepad2.x) && !buttonPressed) {
+            buttonPressed = true;
+            mechController.handleMechState(MechState.IDLE);
+        }
 
+        // Reset button press flag when no buttons (except A) are pressed
+        if (!gamepad2.b && !gamepad2.x && gamepad2.left_trigger <= 0.2 && gamepad2.right_trigger <= 0.2) {
+            buttonPressed = false;
+        }
+
+        // Vision Portal controls
         if (visionPortal != null) {
-            if (gamepad1.dpad_down && !prevDpadDown) {
-                visionPortal.stopStreaming();
-            } else if (gamepad1.dpad_up && !prevDpadUp) {
-                visionPortal.resumeStreaming();
-            }
+            if (gamepad1.dpad_down && !prevDpadDown) visionPortal.stopStreaming();
+            else if (gamepad1.dpad_up && !prevDpadUp) visionPortal.resumeStreaming();
         }
 
         prevDpadDown = gamepad1.dpad_down;
         prevDpadUp = gamepad1.dpad_up;
+
+        // Telemetry
         mechController.allTelemetry();
-        telemetry.addData("Detected Tag Pattern", tagPattern);
+        telemetry.addData("Detected Tag Pattern", mechController.tagPattern[0]);
         telemetry.update();
     }
 
