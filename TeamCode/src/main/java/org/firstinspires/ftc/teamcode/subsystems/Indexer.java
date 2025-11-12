@@ -27,11 +27,12 @@ public class Indexer {
     private double lastAngle = 0;
     private double targetAngle = 0;
     Actuator actuator;
+    AnalogInput indexerAnalog;
 
     public Indexer(HardwareMap hardwareMap) {
         state = IndexerState.one;
         CRServo indexerServo = hardwareMap.get(CRServo.class, "index");
-        AnalogInput indexerAnalog = hardwareMap.get(AnalogInput.class, "indexAnalog");
+        indexerAnalog = hardwareMap.get(AnalogInput.class, "indexAnalog");
         actuator = new Actuator(hardwareMap);
         indexerServoControl = new CRServoPositionControl(indexerServo, indexerAnalog);
         colorSensor = new ColorSensorSystem(hardwareMap);
@@ -220,6 +221,10 @@ public class Indexer {
             return IndexerState.oneAlt;
         }
         return state;
+    }
+
+    public double getVoltageAnalog() {
+        return indexerAnalog.getVoltage();
     }
 
     public IndexerState getState() {

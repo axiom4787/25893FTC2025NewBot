@@ -59,6 +59,7 @@ public class SpindexerTester extends LinearOpMode {
 
             // Call update each loop to continuously control the servo position
             indexer.update();
+            telemetry.addData("Indexer Voltage: ", indexer.getVoltageAnalog());
 
             // Update color scanning timing and sensor reading
             //indexer.updateColorScanning();

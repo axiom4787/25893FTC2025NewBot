@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class VoltageTester extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-        AnalogInput signal = hardwareMap.get(AnalogInput.class, "Encoder");
+        AnalogInput signal = hardwareMap.get(AnalogInput.class, "indexAnalog");
         waitForStart();
         while (opModeIsActive())
         {
