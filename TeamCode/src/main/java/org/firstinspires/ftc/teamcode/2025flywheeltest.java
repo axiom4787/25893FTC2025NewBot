@@ -32,14 +32,6 @@ public class _2025Code1 extends OpMode {
 
   @Override
   public void init() {
-    front_left = hardwareMap.get(DcMotor.class, "front_left");
-    front_right = hardwareMap.get(DcMotor.class, "front_right");
-    back_left = hardwareMap.get(DcMotor.class, "back_left");
-    back_right = hardwareMap.get(DcMotor.class, "back_right");
-
-    flywheel1 = hardwareMap.get(DcMotor.class, "flywheel1");
-    flywheel2 = hardwareMap.get(DcMotor.class, "flywheel2");
-
     odo = hardwareMap.get(GoBildaPinpointDriver.class, "odo");
     speedtoggle = true;
     WheelSpeedDivisor = 1.15;
