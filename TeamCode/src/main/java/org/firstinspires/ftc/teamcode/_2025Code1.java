@@ -21,6 +21,7 @@ public class _2025Code1 extends OpMode {
   private DcMotor front_right;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   DcMotor flywheel1;
 
   DcMotor flywheel2;
@@ -34,6 +35,8 @@ public class _2025Code1 extends OpMode {
   @Override
   public void init() {
 =======
+=======
+>>>>>>> Stashed changes
   private DcMotor flywheel1;
 
   private DcMotor flywheel2;
@@ -56,6 +59,14 @@ public class _2025Code1 extends OpMode {
 
     flywheel1 = hardwareMap.get(DcMotor.class, "flywheel1");
     flywheel2 = hardwareMap.get(DcMotor.class, "flywheel2");
+<<<<<<< Updated upstream
+=======
+
+    back_left = hardwareMap.get(DcMotor.class, "back_left");
+    front_left = hardwareMap.get(DcMotor.class, "front_left");
+    back_right = hardwareMap.get(DcMotor.class, "back_right");
+    front_right = hardwareMap.get(DcMotor.class, "front_right");
+>>>>>>> Stashed changes
 
     back_left = hardwareMap.get(DcMotor.class, "back_left");
 >>>>>>> Stashed changes
