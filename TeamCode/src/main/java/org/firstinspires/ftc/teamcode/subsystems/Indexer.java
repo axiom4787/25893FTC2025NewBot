@@ -1,105 +1,192 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import com.arcrobotics.ftclib.hardware.ServoEx;
-import com.arcrobotics.ftclib.hardware.SimpleServo;
+import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
+@Config
 public class Indexer {
-
-    //TODO: Optimize the algorithms, it'll work as is though
-
-    // 0, 120, 240, 360 are the possible angles
-    // since 0 and 360 are the same ball, no matter where you are,
-    // you can "quick spin" to shoot all 3 balls quickly
-
     private IndexerState state;
     private boolean intaking = true;
 
+    private final IndexerState COLOR_SENSOR_POSITION = IndexerState.one;
 
-    public enum IndexerState
-    {
-        //i swear these names are temporary we'll do some color coding or sum
+    private ArtifactColor[] artifacts = {
+            ArtifactColor.unknown,
+            ArtifactColor.unknown,
+            ArtifactColor.unknown
+    };
+    private final ColorSensorSystem colorSensor;
+    private final CRServoPositionControl indexerServoControl;
+    private final ElapsedTime scanTimer = new ElapsedTime();
+    private boolean scanPending = false;
+    private double scanDelay;
+    private final double msPerDegree = 0.6;
+    private final double minWait = 100;
+    private final double maxWait = 300;
+    private double lastAngle = 0;
+    public static double targetAngle = 0;
+    Actuator actuator;
+    AnalogInput indexerAnalog;
+
+    public Indexer(HardwareMap hardwareMap) {
+        state = IndexerState.one;
+        CRServo indexerServo = hardwareMap.get(CRServo.class, "index");
+        indexerAnalog = hardwareMap.get(AnalogInput.class, "indexAnalog");
+        actuator = new Actuator(hardwareMap);
+        indexerServoControl = new CRServoPositionControl(indexerServo, indexerAnalog);
+        colorSensor = new ColorSensorSystem(hardwareMap);
+    }
+
+    public enum ArtifactColor {
+        unknown,
+        purple,
+        green
+    }
+
+    public enum IndexerState {
         one,
         two,
         three,
         oneAlt
     }
-    private final SimpleServo indexerServo;
 
-    public Indexer (HardwareMap hardwareMap)
-    {
-        indexerServo = new SimpleServo(hardwareMap, "index",0,360);
-        state = IndexerState.one;
+    public void setIntaking(boolean isIntaking) {
+        if (this.intaking != isIntaking) {
+            this.intaking = isIntaking;
+            moveTo(nextState());
+        }
     }
 
-    public void setIntaking(boolean isIntaking)
-    {
-        intaking = isIntaking;
-    }
-
-    public void startIntake()
-    {
+    public void startIntake() {
         setIntaking(true);
-        //intakes from a closer container instead of the one currently at outtake
         moveTo(nextState());
     }
 
-    public void startOuttake()
-    {
+    public void startOuttake() {
         setIntaking(false);
-        //moves to a closer state instead of turning the full 180 degrees
         moveTo(nextState());
     }
 
-    public boolean getIntaking()
-    {
+    public boolean getIntaking() {
         return intaking;
-
     }
 
+    public ArtifactColor stateToColor(IndexerState colorState) {
+        int stateNum = stateToNum(colorState);
+        if (stateNum == 4) stateNum = 1;
+        stateNum -= 1;
+        return artifacts[stateNum];
+    }
 
-    public void quickSpin()
-    {
-        switch(state)
-        {
+    public void scanArtifact() {
+        ArtifactColor scannedColor = colorSensor.getColor();
+        int stateNum = stateToNum(COLOR_SENSOR_POSITION);
+        if (stateNum == 4) stateNum = 1;
+        stateNum -= 1;
+        artifacts[stateNum] = scannedColor;
+    }
+
+    public void shiftArtifacts(IndexerState oldState, IndexerState newState) {
+        int oldNum = stateToNum(oldState) - 1;
+        if (oldNum == 3) oldNum = 0;
+        int newNum = stateToNum(newState) - 1;
+        if (newNum == 3) newNum = 0;
+
+        int difference = newNum - oldNum;
+        for (int i = 0; i < Math.abs(difference); i++) {
+            if (difference < 0) {
+                artifacts = new ArtifactColor[]{artifacts[1], artifacts[2], artifacts[0]};
+            } else {
+                artifacts = new ArtifactColor[]{artifacts[2], artifacts[0], artifacts[1]};
+            }
+        }
+        if (actuator.isActivated()) {
+            int stateNum = stateToNum(state);
+            if (stateNum == 4) stateNum = 1;
+            stateNum -= 1;
+            artifacts[stateNum] = ArtifactColor.unknown;
+        }
+    }
+
+    public void moveToColor(ArtifactColor color) {
+        if (stateToColor(IndexerState.one) == color) {
+            moveTo(IndexerState.one);
+            return;
+        }
+        if (stateToColor(IndexerState.three) == color) {
+            moveTo(IndexerState.three);
+            return;
+        }
+        if (stateToColor(IndexerState.two) == color) {
+            moveTo(IndexerState.two);
+        }
+    }
+
+    public void quickSpin() {
+        switch (state) {
             case one:
-                moveInOrder(new int[]{1,2,3});
+                moveInOrder(new int[]{1, 2, 3});
                 break;
             case two:
-                moveInOrder(new int[]{2,3,1});
+                moveInOrder(new int[]{2, 3, 1});
                 break;
             case three:
-                moveInOrder(new int[]{3,2,1});
+                moveInOrder(new int[]{3, 2, 1});
                 break;
             case oneAlt:
-                moveInOrder(new int[]{1,3,2});
+                moveInOrder(new int[]{1, 3, 2});
                 break;
         }
     }
 
     public void moveInOrder(int[] arr) {
-        for(int i : arr){
-            moveTo(numToState(i));
-        }
+        Thread moveThread = new Thread(() -> {
+            for (int i : arr) {
+                moveTo(numToState(i));
+            }
+        });
+        moveThread.start();
     }
 
-    //for state 1: will turn to 0
-    //for state oneAlt: stateToNum returns 4, so turns to 360
-    public void moveTo(IndexerState newState)
-    {
-        if(intaking)
-        {
-            indexerServo.turnToAngle(360%((stateToNum(newState)-1)*120+180));
+    // Only sets targetAngle and updates state and timing
+    public void moveTo(IndexerState newState) {
+        shiftArtifacts(state, newState);
+        double oldAngle = lastAngle;
+        if (intaking) {
+            targetAngle = ((stateToNum(newState) - 1) * 120 + 60) % 360;
+        } else {
+            targetAngle = (stateToNum(newState) - 1) * 120;
         }
-        indexerServo.turnToAngle((stateToNum(newState) - 1) * 120);
+        double angleDelta = Math.abs(targetAngle - oldAngle);
+        if (angleDelta > 180) angleDelta = 360 - angleDelta;
+
+        double waitTime = Math.min(maxWait, Math.max(minWait, angleDelta * msPerDegree));
+        scanTimer.reset();
+        scanDelay = waitTime;
+        scanPending = true;
+
+        lastAngle = targetAngle;
         state = newState;
-        indexerServo.turnToAngle((stateToNum(newState) - 1) * 120);
     }
 
-    public IndexerState numToState(int num)
-    {
-        switch (num)
-        {
+    // Call this repeatedly in OpMode loop
+    public void update() {
+        indexerServoControl.moveToAngle(targetAngle);
+
+        // some stuff the Ai spit out seems right but idk
+        if (scanPending && scanTimer.milliseconds() >= scanDelay) {
+            scanArtifact();
+            scanPending = false;
+        }
+
+
+    }
+
+    public IndexerState numToState(int num) {
+        switch (num) {
             case 1:
                 return closestZero();
             case 2:
@@ -110,11 +197,8 @@ public class Indexer {
         return null;
     }
 
-    //returns 4 for oneAlt (useful for turning functions as you can see in comments)
-    public int stateToNum(IndexerState newState)
-    {
-        switch (newState)
-        {
+    public int stateToNum(IndexerState newState) {
+        switch (newState) {
             case one:
                 return 1;
             case two:
@@ -127,21 +211,29 @@ public class Indexer {
         return 0;
     }
 
-    //im not gonna bother explaining this because ur lowkey cooked if you dont understand this math
-    public IndexerState nextState()
-    {
+    public IndexerState nextState() {
         return numToState((stateToNum(state) % 3) + 1);
     }
 
-    //returns the closest 0 state
-    public IndexerState closestZero()
-    {
-        if(state == IndexerState.two) {
+    public IndexerState closestZero() {
+        if (state == IndexerState.two) {
             return IndexerState.one;
         }
-        if(state == IndexerState.three) {
+        if (state == IndexerState.three) {
             return IndexerState.oneAlt;
         }
         return state;
+    }
+
+    public double getVoltageAnalog() {
+        return indexerAnalog.getVoltage();
+    }
+
+    public IndexerState getState() {
+        return state;
+    }
+
+    public boolean isBusy() {
+        return scanPending;
     }
 }

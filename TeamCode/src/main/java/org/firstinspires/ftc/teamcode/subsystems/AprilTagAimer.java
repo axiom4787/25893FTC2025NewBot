@@ -18,7 +18,7 @@ public class AprilTagAimer {
     private final double kP = 0.01; // Full PID can be done later
     private Double targetAngle = null;
 
-    public AprilTagAimer(HardwareMap hardwareMap, Movement movement, Outtake outtake) { 
+    public AprilTagAimer(HardwareMap hardwareMap, Movement movement, Outtake outtake) {
         leftFront = movement.getLeftFront();
         rightFront = movement.getRightFront();
         leftBack = movement.getLeftBack();
@@ -28,7 +28,7 @@ public class AprilTagAimer {
         power = outtake.getPower();
     }
 
-    public AprilTagAimer(HardwareMap hardwareMap, Movement movement) { 
+    public AprilTagAimer(HardwareMap hardwareMap, Movement movement) {
         leftFront = movement.getLeftFront();
         rightFront = movement.getRightFront();
         leftBack = movement.getLeftBack();
@@ -169,7 +169,7 @@ public class AprilTagAimer {
     // Required initial velocity
     double vInit = Math.sqrt((g * range * range) / denominator);
 
-    // Drag Force and power 
+    // Drag Force and power
     double Fdrag = 0.5 * Cd * rho * A * vInit * vInit;  // drag force at launch
     double Pdrag = Fdrag * vInit;                      // instantaneous drag power loss
 
