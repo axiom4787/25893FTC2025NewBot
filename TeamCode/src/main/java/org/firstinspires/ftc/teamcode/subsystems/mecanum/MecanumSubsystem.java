@@ -314,6 +314,34 @@ class MecanumSubsystem {
         setPowers(rightFrontMotorOutput,leftBackMotorOutput,rightBackMotorOutput,leftFrontMotorOutput);
     }
 
+    public void normalMove(double x, double y, double z, double theta) {
+        // normal mecanum drive function
+        rightFrontMotorOutput = - y + x - z;
+        leftFrontMotorOutput = y + x + z;
+        rightBackMotorOutput = y + x -  z;
+        leftBackMotorOutput = - y + x + z;
+
+        // normalize powers to maintain ratio while staying within the range of -1 to 1
+        double largest = Math.max(
+                Math.max(Math.abs(rightFrontMotorOutput), Math.abs(leftFrontMotorOutput)),
+                Math.max(Math.abs(rightBackMotorOutput), Math.abs(leftBackMotorOutput)));
+
+        if (largest > 1) {
+            rightFrontMotorOutput /= largest;
+            leftFrontMotorOutput /= largest;
+            rightBackMotorOutput /= largest;
+            leftBackMotorOutput /= largest;
+        }
+
+        // apply scaling and set motor powers
+        rightFrontMotorOutput *= POWER_SCALE_FACTOR;
+        leftFrontMotorOutput *= POWER_SCALE_FACTOR;
+        rightBackMotorOutput *= POWER_SCALE_FACTOR;
+        leftBackMotorOutput *= POWER_SCALE_FACTOR;
+
+        setPowers(rightFrontMotorOutput,leftBackMotorOutput,rightBackMotorOutput,leftFrontMotorOutput);
+    }
+
     public void setPowers (double rightFront, double leftFront, double rightBack, double leftBack){
         hw.rf.setPower(rightFront);
         hw.lb.setPower(leftFront);

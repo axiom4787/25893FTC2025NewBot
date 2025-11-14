@@ -158,6 +158,11 @@ public class MecanumCommand {
         return pinPointOdoSubsystem.getHeading();
     }
 
+    public double normalMove(double vertical, double horizontal, double rotational) {
+        mecanumSubsystem.normalMove(vertical, horizontal, rotational, pinPointOdoSubsystem.getHeading());
+        return pinPointOdoSubsystem.getHeading();
+    }
+
     public void motorProcess() {
 
         mecanumSubsystem.motorProcessNoEncoder();
