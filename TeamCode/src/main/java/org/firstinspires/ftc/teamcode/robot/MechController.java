@@ -18,7 +18,8 @@ public class MechController {
     public static final double[] SHOOT = {150, 270, 30}; // Indexer 0, 1, 2 @ Shooting Post degrees
     private static final double MAX_SERVO_ROTATION = 270.0; // Degrees
     public static final double INTAKE_TICKS_PER_FULL_ROTATION = 537.7;//Encoder Resolution PPR for RPM 312
-    private static final long INTAKE_TIMEOUT_MS = 3000; // 3 seconds max per artifact
+    private final long POST_ROTATE_WAIT_MS = 1000;     // After every rotation
+    private final long MIN_INTAKE_SPIN_MS = 300;       // Minimum spin before detecting
     private final long MOTOR_WAIT_MS = 3000; // 3 seconds for Shooting motor to reach full speed
     private final long POST_INDEXER_WAIT_MS = 1000; // 1 second post Indexer rotation
     private final long LIFT_WAIT_MS = 2000; // 2 seconds for Lifter in Up position for shooting
@@ -38,10 +39,10 @@ public class MechController {
     private int artifactCount = 3;
     private double lastIndexer = 1;
     private int lastLifter = 0;
+    private boolean firstIntake = true;
     private int intakeTargetIndex = -1;
-    private boolean intakeRunning = false;
-    private long intakeStartTime = 0;
-    private long intakeElapsed = 0;
+    private int intakeStage = 0;
+    private long intakeStageStart = 0;
     private boolean shootingMotorRunning = false;
     private boolean motorInitialWaitDone = false;
     private int shootPatternIndex = 1;
@@ -68,8 +69,8 @@ public class MechController {
         switch (state) {
             case START:
                 currentState = MechState.START;
-                setIndexer(0);
                 setLifter(0);
+                setIndexer(0);
                 handleMechState(MechState.IDLE);
                 currentState = MechState.IDLE;
                 break;
@@ -176,28 +177,48 @@ public class MechController {
 
             case INTAKE_STATE:
                 currentState = MechState.INTAKE_STATE;
-                if (!intakeRunning) {
-                    intakeTargetIndex = getEmptyIndex(); // Finding slot 0 for intake
-                    if (intakeTargetIndex != -1) { // Checking if all slots are full
-                        setIndexer(INTAKE[intakeTargetIndex]); // Setting indexer to intake position
-                        runIntakeMot(1);
-                        intakeStartTime = System.currentTimeMillis();
-                        intakeRunning = true;
-                    } else {
-                        currentState = MechState.IDLE; // Stop intake stage
-                        break;
-                    }
-                } else {
-                    int color = visionController.artifactColor(); // Reading sensor color
-                    intakeElapsed = System.currentTimeMillis() - intakeStartTime;
-                    if (color != 0 || intakeElapsed >= INTAKE_TIMEOUT_MS) { // Checking if Purple or Green artifact
-                        runIntakeMot(0);
-                        if (color != 0 && intakeTargetIndex != -1) {
-                            indexer[intakeTargetIndex] = color; // Storing the artifact color based on indexer slot filled
-                            artifactCount++;
+
+                switch (intakeStage) {
+
+                    case 0: // ROTATE to next empty slot
+                        intakeTargetIndex = getEmptyIndex();
+                        if (intakeTargetIndex == -1) { // All slots full
+                            currentState = MechState.IDLE;
+                            break;
                         }
-                        intakeRunning = false;
-                    }
+
+                        setIndexer(INTAKE[intakeTargetIndex]); // Rotate indexer immediately
+                        intakeStageStart = System.currentTimeMillis();
+                        intakeStage = 1; // Move to INTAKE stage
+                        break;
+
+                    case 1: // INTAKE motor running
+                        if (System.currentTimeMillis() - intakeStageStart < POST_ROTATE_WAIT_MS)
+                            break; // Wait before starting intake
+
+                        runIntakeMot(1); // Start intake
+                        intakeStageStart = System.currentTimeMillis();
+                        intakeStage = 2; // Check for artifact
+                        break;
+
+                    case 2: // Monitor intake
+                        int color = visionController.artifactColor(); // Detect artifact
+                        boolean detected = color != 0;
+
+                        if (detected) {
+                            runIntakeMot(0); // Stop motor
+                            indexer[intakeTargetIndex] = color; // Store artifact
+                            artifactCount++;
+                            intakeStageStart = System.currentTimeMillis(); // Begin POST_WAIT
+                            intakeStage = 3;
+                        }
+                        break;
+
+                    case 3: // POST_WAIT after intake
+                        if (System.currentTimeMillis() - intakeStageStart >= POST_ROTATE_WAIT_MS) {
+                            intakeStage = 0; // Loop back to ROTATE for next empty slot
+                        }
+                        break;
                 }
                 break;
 
@@ -246,6 +267,10 @@ public class MechController {
                     case 3:
                         shootElapsed = System.currentTimeMillis() - shootStageStart;
                         if (shootElapsed >= DROP_WAIT_MS) {
+                            int purpleIndex = getPurpleIndex();
+                            if (purpleIndex != -1) {
+                                indexer[purpleIndex] = 0;
+                            }
                             shootingMotorRunning = false;
                             motorInitialWaitDone = false;
                             artifactCount--;
@@ -302,6 +327,10 @@ public class MechController {
                     case 3:
                         shootElapsed = System.currentTimeMillis() - shootStageStart;
                         if (shootElapsed >= DROP_WAIT_MS) {
+                            int greenIndex = getGreenIndex();
+                            if (greenIndex != -1) {
+                                indexer[greenIndex] = 0;
+                            }
                             shootingMotorRunning = false;
                             motorInitialWaitDone = false;
                             artifactCount--;
@@ -383,7 +412,7 @@ public class MechController {
         } else {
             robot.intakeMot.setPower(0);
             double currentPos = robot.intakeMot.getCurrentPosition();
-            int targetPos = (int)((Math.ceil(currentPos/INTAKE_TICKS_PER_FULL_ROTATION)*INTAKE_TICKS_PER_FULL_ROTATION)+1);
+            int targetPos = (int)(((Math.ceil(currentPos/INTAKE_TICKS_PER_FULL_ROTATION))+1)*INTAKE_TICKS_PER_FULL_ROTATION);
             robot.intakeMot.setTargetPosition(targetPos);
             robot.intakeMot.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.intakeMot.setPower(0.5);
@@ -459,7 +488,7 @@ public class MechController {
         }
 
         telemetry.addData("Indexer | Lifter",
-                "%s | %s", statusIndexer(), statusLifter());
+                "%.1f° | %.1f°", statusIndexer(), statusLifter());
 
         visionController.sensorTelemetry();
         //visionController.aprilTagTelemetry();
