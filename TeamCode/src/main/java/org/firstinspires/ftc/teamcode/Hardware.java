@@ -45,6 +45,7 @@ public class Hardware {
 
         this.pusher = hwMap.get(Servo.class, Specifications.PUSHER);
         this.limelight = hwMap.get(Limelight3A.class, Specifications.LIME_LIGHT);
+        this.logitech = hwMap.get(WebcamName.class, Specifications.LOGITECH);
 
 
         this.intake = hwMap.get(DcMotorEx.class, Specifications.INTAKE);

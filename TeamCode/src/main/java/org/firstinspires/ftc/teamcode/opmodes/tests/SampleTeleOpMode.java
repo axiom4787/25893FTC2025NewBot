@@ -41,7 +41,7 @@ public class SampleTeleOpMode extends LinearOpMode {
     private boolean isOuttakeMotorOn = false;
 
     // --- Pusher Variables ---
-    private static final double PUSHER_UP = 0.2;
+    private static final double PUSHER_UP = 0.18;
     private static final double PUSHER_DOWN = 0;
     private static final long PUSHER_TIME = 750;
     private final ElapsedTime pusherTimer = new ElapsedTime();
@@ -87,7 +87,6 @@ public class SampleTeleOpMode extends LinearOpMode {
         // Wait for start button to be pressed
         waitForStart();
 
-
         logitechsub = new LogitechSubsystem(hw, ALLIANCE);
 
         logitechsub.pattern();
@@ -106,7 +105,7 @@ public class SampleTeleOpMode extends LinearOpMode {
             mecanumCommand.processOdometry();
             mecanumCommand.fieldOrientedMove(
                     gamepad1.left_stick_y,
-                    -gamepad1.left_stick_x,
+                    gamepad1.left_stick_x,
                     -gamepad1.right_stick_x
             );
 

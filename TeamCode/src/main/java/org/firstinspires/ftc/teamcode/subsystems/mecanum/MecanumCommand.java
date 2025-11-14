@@ -73,11 +73,9 @@ public class MecanumCommand {
 
     public void moveGlobalPartialPinPoint(double vertical, double horizontal, double rotational) {
         double angle = Math.PI / 2 - pinPointOdoSubsystem.getHeading();
-        double localVertical = vertical * Math.cos(pinPointOdoSubsystem.getHeading()) + horizontal * Math.cos(angle);
+        double localVertical = vertical * Math.cos(pinPointOdoSubsystem.getHeading()) - horizontal * Math.cos(angle);
         double localHorizontal = vertical * Math.sin(pinPointOdoSubsystem.getHeading()) + horizontal * Math.sin(angle);
-
         mecanumSubsystem.partialMove(localVertical, localHorizontal, rotational);
-
     }
 
     public void resetPinPointOdometry() {
@@ -156,7 +154,7 @@ public class MecanumCommand {
     }
 
     public double fieldOrientedMove(double vertical, double horizontal, double rotational) {
-        mecanumSubsystem.fieldOrientedMove(vertical, -horizontal, rotational, pinPointOdoSubsystem.getHeading());
+        mecanumSubsystem.fieldOrientedMove(vertical, horizontal, rotational, pinPointOdoSubsystem.getHeading());
         return pinPointOdoSubsystem.getHeading();
     }
 
