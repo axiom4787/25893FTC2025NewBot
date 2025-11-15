@@ -13,6 +13,7 @@ public class VisionController {
     private final Telemetry telemetry;
     private AprilTagProcessor aprilTag;
     private VisionPortal visionPortal;
+    private final double MIN_INTAKE_COLOR_DETECTION_DISTANCE = 8.0; // Minimum distance for detecting color in MM
 
     // Constructor
     public VisionController(RobotHardware RoboRoar) {
@@ -90,7 +91,7 @@ public class VisionController {
         double distance = colorSensor.getDistance(DistanceUnit.MM);
         // Color classification
         int detectedColor;
-        if (distance < 8.0) {
+        if (distance < MIN_INTAKE_COLOR_DETECTION_DISTANCE) {
             if (isGreen(hue, sat, val)) {
                 detectedColor = 2; // Green
             } else if (isPurple(hue, sat, val)) {

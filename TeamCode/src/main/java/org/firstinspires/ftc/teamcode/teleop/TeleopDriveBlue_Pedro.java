@@ -14,17 +14,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.field.Blue;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.robot.MechController;
-import org.firstinspires.ftc.teamcode.robot.MechState;
-import org.firstinspires.ftc.teamcode.robot.RobotHardware;
-import org.firstinspires.ftc.teamcode.robot.VisionController;
-import org.firstinspires.ftc.vision.VisionPortal;
 
 import java.util.function.Supplier;
 
 @Configurable
 @TeleOp(name = "TeleopBlue", group = "Teleop")
-public class TeleopDriveBlue extends OpMode {
+public class TeleopDriveBlue_Pedro extends OpMode {
     private Follower follower;
     private final Pose startingPose = Blue.SCORE_POSE;
     private final Pose scorePose = Blue.SCORE_POSE;
@@ -36,14 +31,6 @@ public class TeleopDriveBlue extends OpMode {
     private TelemetryManager telemetryM;
     private boolean slowMode = false;
     private double slowModeMultiplier = 0.5;
-    RobotHardware robot;
-    MechController mechController;
-    VisionController visionController;
-    private VisionPortal visionPortal;
-
-    private boolean prevDpadUp = false;
-    private boolean prevDpadDown = false;
-    boolean buttonPressed = false;
 
     @Override
     public void init() {
@@ -52,17 +39,10 @@ public class TeleopDriveBlue extends OpMode {
         follower.update();
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
-        robot = new RobotHardware(hardwareMap, telemetry);
-
-        visionController = new VisionController(robot);
-        visionController.initAprilTag();
-        visionPortal = visionController.getVisionPortal();
-
-        mechController = new MechController(robot, visionController);
-        mechController.handleMechState(MechState.APRIL_TAG);
-
-        telemetry.addData("Status", "Initialized. Press START.");
-        telemetry.update();
+        /*pathChain = () -> follower.pathBuilder() //Lazy Curve Generation
+                .addPath(new Path(new BezierLine(follower::getPose, new Pose(38, 33))))
+                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, Math.toRadians(90), 0.8))
+                .build();*/
     }
 
     @Override
