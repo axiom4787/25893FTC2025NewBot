@@ -10,7 +10,7 @@ public class CRServoPositionControl {
     private final AnalogInput encoder; // Analog input for position from 4th wire
 
     public static double kp = 0.6;
-    public static double ki = 0.01;
+    public static double ki = 0.0;
     public static double kd = 0.067;
     public static double kf = 0.0;
     public static double filterAlpha = 0.2;
