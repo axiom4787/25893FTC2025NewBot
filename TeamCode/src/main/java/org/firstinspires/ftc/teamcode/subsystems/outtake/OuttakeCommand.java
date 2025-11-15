@@ -41,6 +41,11 @@ public class OuttakeCommand {
     public void stopShooter(){
         hw.shooter.setVelocity(0);
     }
+
+    public void setMaxRPM(int maxRPM){
+        targetRPM = maxRPM;
+    }
+
 }
 
 

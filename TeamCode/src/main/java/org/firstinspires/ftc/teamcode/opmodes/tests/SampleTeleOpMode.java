@@ -75,6 +75,7 @@ public class SampleTeleOpMode extends LinearOpMode {
         hw.pusher.setPosition(PUSHER_DOWN);
         hw.sorter.setPosition(0);
         hw.shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        outtakeCommand.setMaxRPM(6000);
 
         while (opModeInInit()){
             if (gamepad1.b){
