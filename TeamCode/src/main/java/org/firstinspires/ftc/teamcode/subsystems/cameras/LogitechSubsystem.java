@@ -30,6 +30,7 @@ public class LogitechSubsystem {
     private AprilTagProcessor aprilTag;
 
     private VisionPortal visionPortal;
+    private static double aprilx;
 
     public LogitechSubsystem(Hardware hw, String alliance) {
         this.hw = hw;
@@ -74,16 +75,26 @@ public class LogitechSubsystem {
         return obelisk;
     }
 
-    public void targetApril(Telemetry telemetry) {
+    public double targetApril(Telemetry telemetry) {
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null && detection.id == targetid) {
                 telemetry.addData("April tag height ", detection.ftcPose.z);
                 telemetry.addData("April tag angle ", detection.ftcPose.yaw);
                 telemetry.addData("April tag id ", targetid);
+                aprilx = detection.ftcPose.x;
             }
         }
-
+        return aprilx;
+    }
+    public double targetApril() {
+        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        for (AprilTagDetection detection : currentDetections) {
+            if (detection.metadata != null && detection.id == targetid) {
+                aprilx = detection.ftcPose.x;
+            }
+        }
+        return aprilx;
     }
 
     public void telemetryAprilTag(Telemetry telemetry) {
@@ -93,7 +104,7 @@ public class LogitechSubsystem {
         // Step through the list of detections and display info for each one.
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
-//                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
+                telemetry.addLine(String.format("\n==== (ID %d) %s", detection.id, detection.metadata.name));
                 telemetry.addLine(String.format("%s", detection.metadata.name));
             } else {
                 telemetry.addLine("No detection");

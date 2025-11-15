@@ -36,6 +36,8 @@ public class SampleTeleOpMode extends LinearOpMode {
     private boolean previousXState = false;
     private boolean previousYState = false;
 
+    private boolean previousLBumpState = false;
+
     // --- Intake/Outake Variables---
     private boolean isIntakeMotorOn = false;
     private boolean isOuttakeMotorOn = false;
@@ -90,10 +92,10 @@ public class SampleTeleOpMode extends LinearOpMode {
 
         logitechsub = new LogitechSubsystem(hw, ALLIANCE);
 
-        logitechsub.pattern();
-
         // Loop while OpMode is running
         while (opModeIsActive()) {
+            logitechsub.pattern();
+            logitechsub.telemetryAprilTag(telemetry);
 
 //            if (obelisk == "PPG"){
 //
@@ -116,11 +118,20 @@ public class SampleTeleOpMode extends LinearOpMode {
                 mecanumCommand.resetPinPointOdometry();
             }
 
+            boolean currentLBumpState = gamepad1.left_bumper;
+            if (currentLBumpState && !previousLBumpState){
+                hw.intake.setDirection(DcMotorSimple.Direction.FORWARD);
+                isIntakeMotorOn = !isIntakeMotorOn;
+                hw.intake.setPower(isIntakeMotorOn ? 1.0 : 0.0);
+            }
+            previousLBumpState = currentLBumpState;
+
             // --- Intake toggle on A (edge) ---
             boolean currentAState = gamepad1.a;
             if (currentAState && !previousAState) {
+                hw.intake.setDirection(DcMotorSimple.Direction.REVERSE);
                 isIntakeMotorOn = !isIntakeMotorOn;
-                hw.intake.setPower(isIntakeMotorOn ? 0.8 : 0.0);
+                hw.intake.setPower(isIntakeMotorOn ? 1.0 : 0.0);
             }
             previousAState = currentAState;
 
@@ -176,6 +187,12 @@ public class SampleTeleOpMode extends LinearOpMode {
                 sorterpos = (sorterpos+1)%3;
             }
 
+
+            if (gamepad1.right_bumper){
+                while (Math.abs(0.0 - logitechsub.targetApril()) > 1.0){
+                    mecanumCommand.pivot(0.0 - logitechsub.targetApril());
+                }
+            }
         }
 
     }
