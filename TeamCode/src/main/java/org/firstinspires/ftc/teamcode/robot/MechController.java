@@ -387,6 +387,8 @@ public class MechController {
                             indexer[humanIndex] = color; // Storing the artifact color based on indexer slot filled
                             artifactCount++;
                             humanIntakeRunning = false;
+                            humanIndex = -1;
+                            humanStateStart = 0;   
                         }
                     }
                 break;
@@ -486,12 +488,12 @@ public class MechController {
         telemetry.addData("State", currentState);
 
         telemetry.addData("Tag Pattern",
-                "%d --> %d | %d | %d",
-                tagPattern[0], tagPattern[1], tagPattern[2], tagPattern[3]);
+                "%d --> %s | %s | %s",
+                tagPattern[0], convertColor(tagPattern[1]), convertColor(tagPattern[2]), convertColor(tagPattern[3]));
 
         telemetry.addData("Artifact Count | Indexer",
-                "%d --> %d | %d | %d",
-                artifactCount, indexer[0], indexer[1], indexer[2]);
+                "%d --> %s | %s | %s",
+                artifactCount, convertColor(indexer[0]), convertColor(indexer[1]), convertColor(indexer[2]));
 
         if (robot.pinpoint != null) {
             telemetry.addData("Pinpoint",
