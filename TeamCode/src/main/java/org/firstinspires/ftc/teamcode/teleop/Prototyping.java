@@ -48,9 +48,11 @@ public class Prototyping extends LinearOpMode {
         movement.teleopTick(padOne.getLeftX(),padOne.getLeftY(),padOne.getRightX(), 0);//,padOne.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER),telemetry);
 
         telemetry.addData("Outtake Power: ",outtake.getPower());
-        if(padTwo.wasJustPressed(GamepadKeys.Button.A))
-        {
-            intake.run(!intake.isRunning());
+        if(padTwo.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER)>0.01){
+            intake.run();
+        }
+        else {
+            intake.stop();
         }
         if(padTwo.wasJustPressed(GamepadKeys.Button.B))
         {

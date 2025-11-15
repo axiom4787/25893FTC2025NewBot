@@ -26,8 +26,9 @@ public class Indexer {
     private final double msPerDegree = 0.6;
     private final double minWait = 100;
     private final double maxWait = 300;
-    private double lastAngle = 0;
     public static double targetAngle = 0;
+    public static double offsetAngle = 106.5;
+    private double lastAngle = offsetAngle;
     Actuator actuator;
     AnalogInput indexerAnalog;
 
@@ -160,6 +161,7 @@ public class Indexer {
         } else {
             targetAngle = (stateToNum(newState) - 1) * 120;
         }
+        targetAngle = (targetAngle + offsetAngle) % 360;
         double angleDelta = Math.abs(targetAngle - oldAngle);
         if (angleDelta > 180) angleDelta = 360 - angleDelta;
 

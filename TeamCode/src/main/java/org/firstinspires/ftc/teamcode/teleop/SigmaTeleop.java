@@ -104,30 +104,12 @@ public class SigmaTeleop extends LinearOpMode {
 
 
         // intake control
-        if (g2.wasJustPressed(GamepadKeys.Button.A)) {
-            intake.run(!intake.isRunning());
+        if(g2.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER)>0.01){
+            intake.run();
         }
-
-
-
-        // spindexer control
-        // Advance state
-        if (g2.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
-            if (!indexer.isBusy()) indexer.moveTo(indexer.nextState());
+        else {
+            intake.stop();
         }
-
-        // Set intaking ON
-        if (g2.wasJustPressed(GamepadKeys.Button.B)) {
-            if (!indexer.isBusy()) indexer.setIntaking(true);
-        }
-
-        // Set intaking OFF
-        if (g2.wasJustPressed(GamepadKeys.Button.Y)) {
-            if (!indexer.isBusy()) indexer.setIntaking(false);
-        }
-
-        indexer.update();
-
 
         //outtake control
         if (g2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.01) {
@@ -136,34 +118,51 @@ public class SigmaTeleop extends LinearOpMode {
             outtake.stop();
         }
 
+        // spindexer control
+        // Advance state
+        if (g2.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
+            if (!indexer.isBusy()) indexer.moveTo(indexer.nextState());
+        }
+
+        // Set intaking ON
+        if (g2.wasJustPressed(GamepadKeys.Button.A)) {
+            if (!indexer.isBusy()) indexer.setIntaking(true);
+        }
+
+        // Set intaking OFF
+        if (g2.wasJustPressed(GamepadKeys.Button.B)) {
+            if (!indexer.isBusy()) indexer.setIntaking(false);
+        }
+
+        indexer.update();
 
         //actuator control
-        if (g2.wasJustPressed(GamepadKeys.Button.X)) {
+        if (g2.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
             actuator.set(!actuator.isActivated());
         }
 
         // Scan obelisk
-        if (g2.wasJustPressed(GamepadKeys.Button.Y)) {
+        if (g2.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
             aprilTag.scanObeliskTag();
             telemetry.addData("Obelisk ID", aprilTag.getObeliskId());
         }
 
         // Begin continuous lock
-        if (g2.wasJustPressed(GamepadKeys.Button.A)) {
+        if (g2.wasJustPressed(GamepadKeys.Button.X)) {
             continuousAprilTagLock = true;
             aprilTag.setCurrentCameraScannedId(0);
         }
 
         // Stop continuous lock
-        if (g2.wasJustPressed(GamepadKeys.Button.B)) {
+        if (g2.wasJustPressed(GamepadKeys.Button.Y)) {
             continuousAprilTagLock = false;
         }
 
         // Alliance selection
         if (g2.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER))
-            aprilTag.setGoalTagID(20);
+            aprilTag.setGoalTagID(20); // blue
         if (g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER))
-            aprilTag.setGoalTagID(24);
+            aprilTag.setGoalTagID(24); // red
 
 
 
