@@ -16,7 +16,7 @@ buildscript {
 }
 
 plugins {
-    // id 'com.github.sherter.google-java-format' version '0.9'
+    id 'com.diffplug.spotless' version '6.25.0'
 }
 
 // This is now required because aapt2 has to be downloaded from the
@@ -30,4 +30,11 @@ allprojects {
 
 repositories {
     mavenCentral()
+}
+
+spotless {
+    java {
+        target 'TeamCode/src/main/java/org/firstinspires/ftc/teamcode/**/*.java'
+        googleJavaFormat('1.17.0')
+    }
 }

@@ -57,6 +57,14 @@ Samples Folder: &nbsp;&nbsp; [/FtcRobotController/src/main/java/org/firstinspire
 
 The readme.md file located in the [/TeamCode/src/main/java/org/firstinspires/ftc/teamcode](TeamCode/src/main/java/org/firstinspires/ftc/teamcode) folder contains an explanation of the sample naming convention, and instructions on how to copy them to your own project space.
 
+## Code Formatting
+Java files under `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/` are formatted with Spotless using Google Java Format.
+
+- Format and fix files locally with `./gradlew spotlessApply`.
+- Verify formatting (what CI should run) with `./gradlew spotlessCheck`.
+
+Only that directory is targeted, so the tooling leaves the SDK sources untouched.
+
 # Release Information
 
 ## Version 11.0 (20250827-105138)
