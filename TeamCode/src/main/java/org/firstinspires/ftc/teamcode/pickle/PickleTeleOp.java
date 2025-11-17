@@ -30,7 +30,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.pickle;
 
 import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
 
@@ -69,7 +69,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 
 @TeleOp(name = "StarterBotTeleop", group = "StarterBot")
-public class StarterBotTeleop extends OpMode {
+public class PickleTeleOp extends OpMode {
     final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
     final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
     final double FULL_SPEED = 1.0;
@@ -214,6 +214,14 @@ public class StarterBotTeleop extends OpMode {
          * work to drive the robot forward, and when you move the right joystick left and right
          * both motors work to rotate the robot. Combinations of these inputs can be used to create
          * more complex maneuvers.
+         *
+         * In arcade mode:
+         *   - Left stick Y-axis → forward/backward movement (both motors work together)
+         *   - Right stick X-axis → rotation/turning (motors work in opposition)
+         *
+         * In contrast, tank mode would have:
+         *   - Left stick controls left motors directly
+         *   - Right stick controls right motors directly
          */
         arcadeDrive(-gamepad1.left_stick_y, gamepad1.right_stick_x);
 
