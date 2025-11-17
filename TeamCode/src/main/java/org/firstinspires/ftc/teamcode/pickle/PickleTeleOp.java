@@ -128,6 +128,7 @@ public class PickleTeleOp extends OpMode {
     double leftPower;
     double rightPower;
     boolean slowMode = false;
+    boolean lastLeftBumper = false;  // Track previous bumper state for edge detection
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -274,12 +275,12 @@ public class PickleTeleOp extends OpMode {
         /*
          * Toggle slow mode with left bumper for precision driving
          * This is helpful when you need fine control for alignment or delicate maneuvers
+         * Uses edge detection so you press once to enable, press again to disable
          */
-        if (gamepad1.left_bumper) {
-            slowMode = true;
-        } else {
-            slowMode = false;
+        if (gamepad1.left_bumper && !lastLeftBumper) {
+            slowMode = !slowMode;  // Toggle the mode on button press
         }
+        lastLeftBumper = gamepad1.left_bumper;  // Remember current state for next loop
 
         /*
          * Here we call a function called arcadeDrive. The arcadeDrive function takes the input from
@@ -312,7 +313,7 @@ public class PickleTeleOp extends OpMode {
         /*
          * Show the state and motor powers
          */
-        telemetry.addData("Drive Mode", slowMode ? "SLOW (30%)" : "NORMAL (60%)");
+        telemetry.addData("Drive Mode", slowMode ? "SLOW (30%)" : "NORMAL (70%)");
         telemetry.addData("State", launchState);
 
         // Show launch cooldown status
