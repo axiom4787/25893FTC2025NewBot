@@ -104,18 +104,22 @@ public class SigmaTeleop extends LinearOpMode {
 
 
         // intake control
-        if(g2.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER)>0.01){
-            intake.run();
-        }
-        else {
-            intake.stop();
+        if (indexer.getIntaking()) {
+            if(g2.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER)>0.01){
+                intake.run();
+            }
+            else {
+                intake.stop();
+            }
         }
 
         //outtake control
-        if (g2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.01) {
-            outtake.run();
-        } else {
-            outtake.stop();
+        if (!indexer.getIntaking()) {
+            if (g2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.01) {
+                outtake.run();
+            } else {
+                outtake.stop();
+            }
         }
 
         // spindexer control
@@ -125,11 +129,13 @@ public class SigmaTeleop extends LinearOpMode {
         }
 
         //actuator control
-        if (g2.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
-            actuator.up();
-        }
-        if (g2.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
-            actuator.down();
+        if (!indexer.getIntaking()) {
+            if (g2.wasJustPressed(GamepadKeys.Button.DPAD_UP)) {
+                actuator.up();
+            }
+            if (g2.wasJustPressed(GamepadKeys.Button.DPAD_DOWN)) {
+                actuator.down();
+            }
         }
 
         // Scan obelisk
