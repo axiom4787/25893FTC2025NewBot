@@ -8,21 +8,12 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+
 import org.firstinspires.ftc.teamcode.field.Blue;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.robot.MechController;
-import org.firstinspires.ftc.teamcode.robot.MechState;
-import org.firstinspires.ftc.teamcode.robot.RobotHardware;
-import org.firstinspires.ftc.teamcode.robot.VisionController;
-import org.firstinspires.ftc.vision.VisionPortal;
 
-@Autonomous(name = "AutoBlue", group = "Auto")
-public class AutoBlue extends OpMode {
-
-    RobotHardware robot;
-    MechController mechController;
-    VisionController visionController;
-    private VisionPortal visionPortal;
+@Autonomous(name = "AutoBlue_Pedro", group = "Auto")
+public class AutoBlue_Pedro extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
@@ -111,7 +102,6 @@ public class AutoBlue extends OpMode {
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(alignPickup1,true);
-                    mechController.handleMechState(MechState.INTAKE_STATE);
                     setPathState(2);
                 }
                 break;
@@ -132,7 +122,6 @@ public class AutoBlue extends OpMode {
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(scorePickup1,true);
-                    mechController.handleMechState(MechState.SHOOT_STATE);
                     setPathState(4);
                 }
                 break;
@@ -143,7 +132,6 @@ public class AutoBlue extends OpMode {
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
                     follower.followPath(alignPickup2,true);
-                    mechController.handleMechState(MechState.INTAKE_STATE);
                     setPathState(5);
                 }
                 break;
@@ -164,7 +152,6 @@ public class AutoBlue extends OpMode {
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
                     follower.followPath(scorePickup2, true);
-                    mechController.handleMechState(MechState.SHOOT_STATE);
                     setPathState(7);
                 }
                 break;
@@ -175,7 +162,6 @@ public class AutoBlue extends OpMode {
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
                     follower.followPath(alignPickup3,true);
-                    mechController.handleMechState(MechState.INTAKE_STATE);
                     setPathState(8);
                 }
                 break;
@@ -196,7 +182,6 @@ public class AutoBlue extends OpMode {
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
                     follower.followPath(scorePickup3, true);
-                    mechController.handleMechState(MechState.SHOOT_STATE);
                     setPathState(10);
                 }
                 break;
@@ -223,32 +208,17 @@ public class AutoBlue extends OpMode {
         follower.update();
         autonomousPathUpdate();
 
-        mechController.handleMechState(mechController.getCurrentState()); // Keeps running states till IDLE
-
         // Feedback to Driver Hub for debugging
         telemetry.addData("path state", pathState);
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
-        mechController.allTelemetry();
+        telemetry.update();
     }
 
     /** This method is called once at the init of the OpMode. **/
     @Override
     public void init() {
-        robot = new RobotHardware(hardwareMap, telemetry);
-
-        visionController = new VisionController(robot);
-        visionController.initAprilTag();
-        visionPortal = visionController.getVisionPortal();
-
-        mechController = new MechController(robot, visionController);
-        mechController.handleMechState(MechState.APRIL_TAG);
-        mechController.handleMechState(MechState.START);
-
-        telemetry.addData("Status", "Initialized. Press START.");
-        telemetry.update();
-
         pathTimer = new Timer();
         actionTimer = new Timer();
         opmodeTimer = new Timer();

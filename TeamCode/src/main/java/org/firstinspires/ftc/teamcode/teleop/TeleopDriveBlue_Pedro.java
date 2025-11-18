@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import java.util.function.Supplier;
 
 @Configurable
-@TeleOp(name = "TeleopBlue", group = "Teleop")
+@TeleOp(name = "TeleopBlue_Pedro", group = "Teleop")
 public class TeleopDriveBlue_Pedro extends OpMode {
     private Follower follower;
     private final Pose startingPose = Blue.SCORE_POSE;

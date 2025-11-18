@@ -71,7 +71,6 @@ public class MechController {
                 currentState = MechState.START;
                 setLifter(0);
                 setIndexer(0);
-                handleMechState(MechState.IDLE);
                 currentState = MechState.IDLE;
                 break;
 
@@ -344,23 +343,26 @@ public class MechController {
 
             case APRIL_TAG:
                 currentState = MechState.APRIL_TAG;
-                tagPattern = visionController.findTagPattern(visionController.getAprilTag());
                 if (!aprilTagRunning) {
-                    aprilTagStageStart = System.currentTimeMillis();
                     aprilTagRunning = true;
-                } else {
-                    aprilTagElapsed = System.currentTimeMillis() - aprilTagStageStart;
-                    if (tagPattern[0] == 0 || aprilTagElapsed >= APRIL_TAG_WAIT_MS) { // If no tag detected or timeout reached
-                        tagPattern = visionController.findTagPattern(visionController.getAprilTag());
-                        if (tagPattern[0] == 0) { // If still no tag detected
-                            tagPattern = new int[]{21, 2, 1, 1};  // ID 21: GPP
-                        }
-                    }
-                    handleMechState(MechState.START);
-                    currentState = MechState.START;; // Stop AprilTag stage
-                    aprilTagElapsed = 0;
+                    aprilTagStageStart = System.currentTimeMillis();
+                }
+                aprilTagElapsed = System.currentTimeMillis() - aprilTagStageStart;
+                tagPattern = visionController.findTagPattern(visionController.getAprilTag());
+                if (tagPattern[0] != 0) { // If tag detected
                     aprilTagRunning = false;
                     aprilTagStageStart = 0;
+                    aprilTagElapsed = 0;
+                    currentState = MechState.IDLE; // Stop april tage state
+                    break;
+                }
+                if (aprilTagElapsed >= APRIL_TAG_WAIT_MS) { // If timed out
+                    tagPattern = new int[]{21, 2, 1, 1};  // ID 21: GPP
+                    aprilTagRunning = false;
+                    aprilTagStageStart = 0;
+                    aprilTagElapsed = 0;
+                    currentState = MechState.IDLE; // Stop april tage state
+                    break;
                 }
                 break;
 
@@ -418,7 +420,7 @@ public class MechController {
             robot.intakeMot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.intakeMot.setPower(power);
         } else {
-            robot.intakeMot.setPower(0);
+            // robot.intakeMot.setPower(0);
             double currentPos = robot.intakeMot.getCurrentPosition();
             int targetPos = (int)(((Math.ceil(currentPos/INTAKE_TICKS_PER_FULL_ROTATION))+1)*INTAKE_TICKS_PER_FULL_ROTATION);
             robot.intakeMot.setTargetPosition(targetPos);
@@ -496,13 +498,13 @@ public class MechController {
                 artifactCount, convertColor(indexer[0]), convertColor(indexer[1]), convertColor(indexer[2]));
 
         if (robot.pinpoint != null) {
+            robot.pinpoint.update();
             telemetry.addData("Pinpoint",
                     "X: %.1f in | Y: %.1f in | Heading: %.1f°",
                     robot.pinpoint.getPosX(DistanceUnit.INCH),
                     robot.pinpoint.getPosY(DistanceUnit.INCH),
                     robot.pinpoint.getHeading(AngleUnit.DEGREES)
             );
-            robot.pinpoint.update();
         }
 
         telemetry.addData("Indexer | Lifter",

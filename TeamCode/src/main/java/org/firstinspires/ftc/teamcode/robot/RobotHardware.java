@@ -40,17 +40,21 @@ public class RobotHardware {
     public RobotHardware(HardwareMap hwMap, Telemetry telemetry) {
         this.telemetry = telemetry;
 
-        shootingMot = hwMap.get(DcMotor.class, "shootingMot"); //C0
-        intakeMot = hwMap.get(DcMotor.class, "intakeMot"); //C1
+        shootingMot = hwMap.get(DcMotor.class, "shootingMot"); // E2
+        intakeMot = hwMap.get(DcMotor.class, "intakeMot"); // E3
+        // LFMotor C0
+        // LBMotor C1
+        // RFMotor E0
+        // RBMotor E1
 
-        indexer = hwMap.get(Servo.class, "indexer"); //C0
-        lifter = hwMap.get(Servo.class, "lifter"); //C1
+        indexer = hwMap.get(Servo.class, "indexer"); // E0
+        lifter = hwMap.get(Servo.class, "lifter"); // C0
 
-        pinpoint = hwMap.get(GoBildaPinpointDriver.class, "pinpoint"); //I2C 1
-        imu = hwMap.get(IMU.class, "imu");
+        pinpoint = hwMap.get(GoBildaPinpointDriver.class, "pinpoint"); //CI2C 1
+        imu = hwMap.get(IMU.class, "imu"); //CI2C0
 
-        sensorL = hwMap.get(RevColorSensorV3.class, "sensorL"); //I2C 2
-        sensorR = hwMap.get(RevColorSensorV3.class, "sensorR"); //I2C 3
+        sensorL = hwMap.get(RevColorSensorV3.class, "sensorL"); // EI2C 2
+        sensorR = hwMap.get(RevColorSensorV3.class, "sensorR"); // EI2C 3
         camera = hwMap.get(WebcamName.class, "Webcam 1");
 
         setMotorDirections();
