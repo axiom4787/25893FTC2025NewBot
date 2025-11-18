@@ -244,9 +244,8 @@ public class AutoBlue extends OpMode {
 
         mechController = new MechController(robot, visionController);
         mechController.handleMechState(MechState.APRIL_TAG);
-        mechController.handleMechState(MechState.START);
 
-        telemetry.addData("Status", "Initialized. Press START.");
+        telemetry.addData("Status", "Initialized. Detecting April Tag....");
         telemetry.update();
 
         pathTimer = new Timer();
@@ -258,12 +257,14 @@ public class AutoBlue extends OpMode {
         follower = Constants.createFollower(hardwareMap);
         buildPaths();
         follower.setStartingPose(startPose);
-
     }
 
     /** This method is called continuously after Init while waiting for "play". **/
     @Override
-    public void init_loop() {}
+    public void init_loop() {
+        mechController.handleMechState(mechController.getCurrentState());
+        mechController.allTelemetry();
+    }
 
     /** This method is called once at the start of the OpMode.
      * It runs all the setup actions, including building paths and starting the path system **/

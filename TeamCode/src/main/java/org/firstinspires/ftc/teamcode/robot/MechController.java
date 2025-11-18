@@ -353,7 +353,7 @@ public class MechController {
                     aprilTagRunning = false;
                     aprilTagStageStart = 0;
                     aprilTagElapsed = 0;
-                    currentState = MechState.IDLE; // Stop april tage state
+                    currentState = MechState.START; // Stop april tage state
                     break;
                 }
                 if (aprilTagElapsed >= APRIL_TAG_WAIT_MS) { // If timed out
@@ -361,7 +361,7 @@ public class MechController {
                     aprilTagRunning = false;
                     aprilTagStageStart = 0;
                     aprilTagElapsed = 0;
-                    currentState = MechState.IDLE; // Stop april tage state
+                    currentState = MechState.START; // Stop april tage state
                     break;
                 }
                 break;

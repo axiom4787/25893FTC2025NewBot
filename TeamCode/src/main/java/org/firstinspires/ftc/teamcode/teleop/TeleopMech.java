@@ -30,10 +30,16 @@ public class TeleopMech extends OpMode {
 
         mechController = new MechController(robot, visionController);
         mechController.handleMechState(MechState.APRIL_TAG);
-        mechController.handleMechState(MechState.START);
 
-        telemetry.addData("Status", "Initialized. Press START.");
+        telemetry.addData("Status", "Initialized. Detecting April Tag....");
         telemetry.update();
+    }
+
+    @Override
+
+    public void init_loop() {
+        mechController.handleMechState(mechController.getCurrentState());
+        mechController.allTelemetry();
     }
 
     @Override
