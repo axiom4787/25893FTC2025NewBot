@@ -1,131 +1,169 @@
-## TeamCode Module
+# 🧠 KrakenKoders FTC Code Guidelines
 
-Welcome!
+Welcome to the KrakenKoders robotics codebase!
+This repository contains our official FTC robot code. To keep things organized, stable, and reliable during competitions, we follow a **Pull Request (PR)** workflow.
 
-This module, TeamCode, is the place where you will write/paste the code for your team's
-robot controller App. This module is currently empty (a clean slate) but the
-process for adding OpModes is straightforward.
+---
 
-## Creating your own OpModes
+## 🚦 Branch Workflow
 
-The easiest way to create your own OpMode is to copy a Sample OpMode and make it your own.
+We use a simple version of Git branching:
 
-Sample opmodes exist in the FtcRobotController module.
-To locate these samples, find the FtcRobotController module in the "Project/Android" tab.
+| Branch Name   | Purpose                                                       |
+|---------------| ------------------------------------------------------------- |
+| `master`      | Stable, competition-ready robot code. Only merged via PR.     |
+| `feature/...` | New code, experiments, improvements. One change = one branch. |
+| `bugfix/...`  | Fixes to existing systems.                                    |
+| `docs/...`    | Updates to documentation only.                                |
 
-Expand the following tree elements:
- FtcRobotController/java/org.firstinspires.ftc.robotcontroller/external/samples
-
-### Naming of Samples
-
-To gain a better understanding of how the samples are organized, and how to interpret the
-naming system, it will help to understand the conventions that were used during their creation.
-
-These conventions are described (in detail) in the sample_conventions.md file in this folder.
-
-To summarize: A range of different samples classes will reside in the java/external/samples.
-The class names will follow a naming convention which indicates the purpose of each class.
-The prefix of the name will be one of the following:
-
-Basic:  	This is a minimally functional OpMode used to illustrate the skeleton/structure
-            of a particular style of OpMode.  These are bare bones examples.
-
-Sensor:    	This is a Sample OpMode that shows how to use a specific sensor.
-            It is not intended to drive a functioning robot, it is simply showing the minimal code
-            required to read and display the sensor values.
-
-Robot:	    This is a Sample OpMode that assumes a simple two-motor (differential) drive base.
-            It may be used to provide a common baseline driving OpMode, or
-            to demonstrate how a particular sensor or concept can be used to navigate.
-
-Concept:	This is a sample OpMode that illustrates performing a specific function or concept.
-            These may be complex, but their operation should be explained clearly in the comments,
-            or the comments should reference an external doc, guide or tutorial.
-            Each OpMode should try to only demonstrate a single concept so they are easy to
-            locate based on their name.  These OpModes may not produce a drivable robot.
-
-After the prefix, other conventions will apply:
-
-* Sensor class names are constructed as:    Sensor - Company - Type
-* Robot class names are constructed as:     Robot - Mode - Action - OpModetype
-* Concept class names are constructed as:   Concept - Topic - OpModetype
-
-Once you are familiar with the range of samples available, you can choose one to be the
-basis for your own robot.  In all cases, the desired sample(s) needs to be copied into
-your TeamCode module to be used.
-
-This is done inside Android Studio directly, using the following steps:
-
- 1) Locate the desired sample class in the Project/Android tree.
-
- 2) Right click on the sample class and select "Copy"
-
- 3) Expand the  TeamCode/java folder
-
- 4) Right click on the org.firstinspires.ftc.teamcode folder and select "Paste"
-
- 5) You will be prompted for a class name for the copy.
-    Choose something meaningful based on the purpose of this class.
-    Start with a capital letter, and remember that there may be more similar classes later.
-
-Once your copy has been created, you should prepare it for use on your robot.
-This is done by adjusting the OpMode's name, and enabling it to be displayed on the
-Driver Station's OpMode list.
-
-Each OpMode sample class begins with several lines of code like the ones shown below:
+### Examples:
 
 ```
- @TeleOp(name="Template: Linear OpMode", group="Linear Opmode")
- @Disabled
+feature/improved-drive
+bugfix/teleop-button-crash
+docs/team-readme-update
 ```
 
-The name that will appear on the driver station's "opmode list" is defined by the code:
- ``name="Template: Linear OpMode"``
-You can change what appears between the quotes to better describe your opmode.
-The "group=" portion of the code can be used to help organize your list of OpModes.
+---
 
-As shown, the current OpMode will NOT appear on the driver station's OpMode list because of the
-  ``@Disabled`` annotation which has been included.
-This line can simply be deleted , or commented out, to make the OpMode visible.
+## 🛠️ How to Make Changes
 
+1. **Create a branch from `master`:**
 
+```bash
+git checkout -b feature/my-change
+```
 
-## ADVANCED Multi-Team App management:  Cloning the TeamCode Module
+2. **Make and test code changes in Android Studio.**
 
-In some situations, you have multiple teams in your club and you want them to all share
-a common code organization, with each being able to *see* the others code but each having
-their own team module with their own code that they maintain themselves.
+3. **Commit the work:**
 
-In this situation, you might wish to clone the TeamCode module, once for each of these teams.
-Each of the clones would then appear along side each other in the Android Studio module list,
-together with the FtcRobotController module (and the original TeamCode module).
+```bash
+git add .
+git commit -m "Describe what changed"
+```
 
-Selective Team phones can then be programmed by selecting the desired Module from the pulldown list
-prior to clicking to the green Run arrow.
+4. **Push to GitHub:**
 
-Warning:  This is not for the inexperienced Software developer.
-You will need to be comfortable with File manipulations and managing Android Studio Modules.
-These changes are performed OUTSIDE of Android Studios, so close Android Studios before you do this.
- 
-Also.. Make a full project backup before you start this :)
+```bash
+git push -u origin feature/my-change
+```
 
-To clone TeamCode, do the following:
+---
 
-Note: Some names start with "Team" and others start with "team".  This is intentional.
+## 🔁 Pull Request (PR) Process
 
-1)  Using your operating system file management tools, copy the whole "TeamCode"
-    folder to a sibling folder with a corresponding new name, eg: "Team0417".
+Once you're done coding and testing:
 
-2)  In the new Team0417 folder, delete the TeamCode.iml file.
+1. Go to GitHub and open a **Pull Request**.
+2. Base branch should be: **`master`**
+3. Compare branch: **your feature or bugfix branch**
+4. Fill out the PR template (if available) or include:
 
-3)  the new Team0417 folder, rename the "src/main/java/org/firstinspires/ftc/teamcode" folder
-    to a matching name with a lowercase 'team' eg:  "team0417".
+✔️ What you changed
+✔️ Why you changed it
+✔️ How it was tested (drive motors? autonomous? sim?)
 
-4)  In the new Team0417/src/main folder, edit the "AndroidManifest.xml" file, change the line that contains
-         package="org.firstinspires.ftc.teamcode"
-    to be
-         package="org.firstinspires.ftc.team0417"
+5. Request a reviewer:
 
-5)  Add:    include ':Team0417' to the "/settings.gradle" file.
-    
-6)  Open up Android Studios and clean out any old files by using the menu to "Build/Clean Project""
+* Programming lead
+* Mentor
+* Another teammate if you pair-programmed
+
+6. Make any requested fixes.
+
+7. Once approved, the PR can be merged.
+
+---
+
+## 🧹 After Merge
+
+Once a PR is merged into `master`:
+
+* Delete the feature branch (optional but recommended)
+* Pull changes to your laptop:
+
+```bash
+git pull origin main
+```
+
+---
+
+## 📏 Code Rules
+
+* Code must compile before submitting.
+* No unused debug logs or commented-out blocks.
+* Keep methods short and readable.
+* Name motors, sensors, and constants clearly.
+
+---
+
+## 🤝 Expectations
+
+* Mistakes are okay — that’s why PRs exist.
+* Always ask if you’re unsure.
+* Code reviews are teamwork, not criticism.
+
+---
+
+> 💪 **The goal is stability, learning, teamwork — and robots that WORK on match day!**
+
+---
+
+## 📜 Scripts
+
+We've included helpful batch scripts in the `scripts/` folder to streamline your development workflow:
+
+### 🧰 `setup_adb_path.bat`
+
+**Purpose:** Configures ADB (Android Debug Bridge) in your system PATH so you can use `adb` commands from any terminal.
+
+**When to use:** Run this **once** after installing Android Studio or if `adb` commands aren't working.
+
+**How to use:**
+1. Right-click `setup_adb_path.bat` and select 'Run' option or run it from Command Prompt
+2. The script will:
+   - Locate ADB in your Android SDK installation
+   - Add it to your user PATH environment variable
+   - Verify that `adb.exe` exists
+3. After running, close and reopen any terminal windows for changes to take effect
+
+**Note:** The script looks for ADB at `%LOCALAPPDATA%\Android\Sdk\platform-tools`. If your Android SDK is installed elsewhere, you'll need to edit the script.
+
+### 🤖 `connect_robot.bat`
+
+**Purpose:** Automates the connection process to the robot controller over Wi-Fi and ADB.
+
+**When to use:** Every time you need to connect to the robot for wireless deployment or debugging.
+
+**How to use:**
+1. Make sure the Robot Controller is powered on
+2. Ensure Wi-Fi debugging is enabled on the Robot Controller
+3. Right-click `connect_robot.bat` and select 'Run' option or run it from Command Prompt
+4. The script will:
+   - Connect to the robot's Wi-Fi network (SSID: `17178-RC`)
+   - Wait for the connection to stabilize (~7 seconds)
+   - Display current Wi-Fi connection status
+   - Connect ADB to the robot at `192.168.43.1:5555`
+   - List all connected ADB devices to confirm connection
+
+**Configuration:** If your robot has a different team number or network settings, edit these values at the top of the script:
+- `ROBOT_SSID`: Your robot's Wi-Fi network name
+- `ROBOT_PROFILE`: The saved Wi-Fi profile name in Windows
+- `ADB_IP`: The robot's IP address (usually `192.168.43.1`)
+- `ADB_PORT`: The ADB port (usually `5555`)
+
+**Troubleshooting:**
+- If ADB doesn't show the RC after running, verify:
+  - The Robot Controller is powered on
+  - Wi-Fi Direct is enabled on the RC
+  - Network debugging is allowed in the RC settings
+  - You've run `setup_adb_path.bat` at least once
+
+---
+
+# 🦑 GO KRAKEN! 🦑
+
+If you break the build, you owe the team cookies. 🍪😉
+
+---
