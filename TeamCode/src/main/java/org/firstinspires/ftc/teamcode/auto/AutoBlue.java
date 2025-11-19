@@ -224,12 +224,12 @@ public class AutoBlue extends OpMode {
             autonomousPathUpdate();
         }
         if (mechController.getCurrentState() == MechState.INTAKE_STATE){
-            follower.setMaxPower(mechController.INTAKE_DRIVE_POWER);
+            follower.setMaxPower(MechController.INTAKE_DRIVE_POWER);
         } else {
-            follower.setMaxPower(mechController.FULL_DRIVE_POWER);
+            follower.setMaxPower(MechController.FULL_DRIVE_POWER);
         }
 
-        mechController.handleMechState(mechController.getCurrentState()); // Keeps running states till IDLE
+        mechController.update(); // Keeps running states till IDLE
 
         // Feedback to Driver Hub for debugging
         telemetry.addData("path state", pathState);
@@ -268,7 +268,7 @@ public class AutoBlue extends OpMode {
     /** This method is called continuously after Init while waiting for "play". **/
     @Override
     public void init_loop() {
-        mechController.handleMechState(mechController.getCurrentState());
+        mechController.update();
         mechController.allTelemetry();
     }
 

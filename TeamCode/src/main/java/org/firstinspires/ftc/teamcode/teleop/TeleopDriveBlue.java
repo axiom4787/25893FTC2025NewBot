@@ -68,7 +68,7 @@ public class TeleopDriveBlue extends OpMode {
     @Override
 
     public void init_loop() {
-        mechController.handleMechState(mechController.getCurrentState());
+        mechController.update();
         mechController.allTelemetry();
     }
 
@@ -86,11 +86,11 @@ public class TeleopDriveBlue extends OpMode {
         follower.update();
         telemetryM.update();
         if (mechController.getCurrentState() == MechState.INTAKE_STATE){
-            follower.setMaxPower(mechController.INTAKE_DRIVE_POWER);
+            follower.setMaxPower(MechController.INTAKE_DRIVE_POWER);
         } else {
-            follower.setMaxPower(mechController.FULL_DRIVE_POWER);
+            follower.setMaxPower(MechController.FULL_DRIVE_POWER);
         }
-        mechController.handleMechState(mechController.getCurrentState()); // Keeps running states till IDLE
+        mechController.update(); // Keeps running states till IDLE
 
         if (gamepad2.aWasPressed()) {
             mechController.setState(MechState.APRIL_TAG);

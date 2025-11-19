@@ -38,13 +38,13 @@ public class TeleopMech extends OpMode {
     @Override
 
     public void init_loop() {
-        mechController.handleMechState(mechController.getCurrentState());
+        mechController.update();
         mechController.allTelemetry();
     }
 
     @Override
     public void loop() {
-        mechController.handleMechState(mechController.getCurrentState()); // Keeps running states till IDLE
+        mechController.update(); // Keeps running states till IDLE
 
         // ----- APRIL_TAG handling -----
         if ((gamepad2.a) && !buttonPressed) {

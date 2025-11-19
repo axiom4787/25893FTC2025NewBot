@@ -17,20 +17,20 @@ public class MechController {
     public static final double[] INTAKE = {0, 120, 240}; // Indexer 0, 1, 2 @ Intake Post degrees
     public static final double[] SHOOT = {150, 270, 30}; // Indexer 0, 1, 2 @ Shooting Post degrees
     private static final double MAX_SERVO_ROTATION = 270.0; // Degrees
-    public static final double INTAKE_TICKS_PER_FULL_ROTATION = 537.7; //Encoder Resolution PPR for RPM 312
-    private final long POST_ROTATE_WAIT_MS = 1000; // After every rotation
-    private final long MOTOR_WAIT_MS = 2000; // 2 seconds for Shooting motor to reach full speed
-    private final long POST_INDEXER_WAIT_MS = 1000; // 1 second post Indexer rotation
-    private final long LIFT_WAIT_MS = 2000; // 2 seconds for Lifter in Up position for shooting
-    private final long DROP_WAIT_MS = 1000; // 1 second post Lifter in Down position
-    private final long APRIL_TAG_WAIT_MS = 3000; // 3 seconds waiting to detect AprilTag
-    public final double FULL_DRIVE_POWER = 1.0;
-    public final double INTAKE_DRIVE_POWER = 0.35;
+    private static final double INTAKE_TICKS_PER_FULL_ROTATION = 537.7; //Encoder Resolution PPR for RPM 312
+    private static final long POST_ROTATE_WAIT_MS = 1000; // After every rotation
+    private static final long MOTOR_WAIT_MS = 2000; // 2 seconds for Shooting motor to reach full speed
+    private static final long POST_INDEXER_WAIT_MS = 1000; // 1 second post Indexer rotation
+    private static final long LIFT_WAIT_MS = 2000; // 2 seconds for Lifter in Up position for shooting
+    private static final long DROP_WAIT_MS = 1000; // 1 second post Lifter in Down position
+    private static final long APRIL_TAG_WAIT_MS = 3000; // 3 seconds waiting to detect AprilTag
+    public static final double FULL_DRIVE_POWER = 1.0;
+    public static final double INTAKE_DRIVE_POWER = 0.35;
 
 
     // Limit constants
-    public static final int lifterDown = 21; // Lifter down angle degrees
-    public static final int lifterUp = 56; // Lifter up angle degrees
+    private static final int lifterDown = 21; // Lifter down angle degrees
+    private static final int lifterUp = 56; // Lifter up angle degrees
 
     // Offset constants
 
@@ -407,6 +407,9 @@ public class MechController {
 
     public void setState(MechState newState) {
         currentState = newState;
+    }
+    public void update() {
+        handleMechState(currentState);
     }
     public void setIndexer(double targetDegrees) {
         if (lastIndexer != targetDegrees) {
