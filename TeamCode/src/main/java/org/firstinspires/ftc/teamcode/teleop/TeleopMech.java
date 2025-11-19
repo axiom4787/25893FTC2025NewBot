@@ -47,7 +47,8 @@ public class TeleopMech extends OpMode {
         mechController.handleMechState(mechController.getCurrentState()); // Keeps running states till IDLE
 
         // ----- APRIL_TAG handling -----
-        if (gamepad2.a) {
+        if ((gamepad2.a) && !buttonPressed) {
+            buttonPressed = true;
             mechController.setState(MechState.APRIL_TAG);
         }
         else if ((gamepad2.left_trigger > 0.2) && !buttonPressed) {
