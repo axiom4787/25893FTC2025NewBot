@@ -29,7 +29,7 @@ public class TeleopMech extends OpMode {
         visionPortal = visionController.getVisionPortal();
 
         mechController = new MechController(robot, visionController);
-        mechController.handleMechState(MechState.APRIL_TAG);
+        mechController.handleMechState(MechState.START);
 
         telemetry.addData("Status", "Initialized. Detecting April Tag....");
         telemetry.update();
@@ -48,26 +48,26 @@ public class TeleopMech extends OpMode {
 
         // ----- APRIL_TAG handling -----
         if (gamepad2.a) {
-            mechController.handleMechState(MechState.APRIL_TAG);
+            mechController.setState(MechState.APRIL_TAG);
         }
         else if ((gamepad2.left_trigger > 0.2) && !buttonPressed) {
             buttonPressed = true;
-            mechController.handleMechState(MechState.INTAKE_STATE);
+            mechController.setState(MechState.INTAKE_STATE);
         } else if ((gamepad2.right_trigger > 0.2) && !buttonPressed) {
             buttonPressed = true;
-            mechController.handleMechState(MechState.SHOOT_STATE);
+            mechController.setState(MechState.SHOOT_STATE);
         } else if ((gamepad2.left_bumper) && !buttonPressed) {
             buttonPressed = true;
-            mechController.handleMechState(MechState.SHOOT_GREEN);
+            mechController.setState(MechState.SHOOT_GREEN);
         } else if ((gamepad2.right_bumper) && !buttonPressed) {
             buttonPressed = true;
-            mechController.handleMechState(MechState.SHOOT_PURPLE);
+            mechController.setState(MechState.SHOOT_PURPLE);
         } else if ((gamepad2.b) && !buttonPressed) {
             buttonPressed = true;
-            mechController.handleMechState(MechState.HUMAN_STATE);
+            mechController.setState(MechState.HUMAN_STATE);
         } else if ((gamepad2.x) && !buttonPressed) {
             buttonPressed = true;
-            mechController.handleMechState(MechState.IDLE);
+            mechController.setState(MechState.IDLE);
         }
         /*else if ((gamepad2.y) && !buttonPressed) { // TEST
             buttonPressed = true;

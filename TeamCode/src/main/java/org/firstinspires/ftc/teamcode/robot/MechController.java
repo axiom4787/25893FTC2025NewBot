@@ -54,7 +54,7 @@ public class MechController {
     private boolean humanIntakeRunning = false;
     private int humanIndex = -1;
     private long humanStateStart = 0;
-    private long humnElapsedTime = 0;
+
 
     // Constructor
     public MechController(RobotHardware RoboRoar, VisionController visionController) {
@@ -71,7 +71,7 @@ public class MechController {
                 currentState = MechState.START;
                 setLifter(0);
                 setIndexer(0);
-                currentState = MechState.IDLE;
+                currentState = MechState.APRIL_TAG;
                 break;
 
             case IDLE:
@@ -353,7 +353,7 @@ public class MechController {
                     aprilTagRunning = false;
                     aprilTagStageStart = 0;
                     aprilTagElapsed = 0;
-                    currentState = MechState.START; // Stop april tage state
+                    currentState = MechState.IDLE; // Stop april tage state
                     break;
                 }
                 if (aprilTagElapsed >= APRIL_TAG_WAIT_MS) { // If timed out
@@ -361,7 +361,7 @@ public class MechController {
                     aprilTagRunning = false;
                     aprilTagStageStart = 0;
                     aprilTagElapsed = 0;
-                    currentState = MechState.START; // Stop april tage state
+                    currentState = MechState.IDLE; // Stop april tage state
                     break;
                 }
                 break;

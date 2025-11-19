@@ -59,7 +59,7 @@ public class TeleopDriveBlue extends OpMode {
         visionPortal = visionController.getVisionPortal();
 
         mechController = new MechController(robot, visionController);
-        mechController.handleMechState(MechState.APRIL_TAG);
+        mechController.handleMechState(MechState.START);
 
         telemetry.addData("Status", "Initialized. Detecting April Tag....");
         telemetry.update();
@@ -89,25 +89,25 @@ public class TeleopDriveBlue extends OpMode {
         mechController.handleMechState(mechController.getCurrentState()); // Keeps running states till IDLE
 
         if (gamepad2.aWasPressed()) {
-            mechController.handleMechState(MechState.APRIL_TAG);
+            mechController.setState(MechState.APRIL_TAG);
         } else if ((gamepad2.left_trigger > 0.2) && !buttonPressed) {
             buttonPressed = true;
-            mechController.handleMechState(MechState.INTAKE_STATE);
+            mechController.setState(MechState.INTAKE_STATE);
         } else if ((gamepad2.right_trigger > 0.2) && !buttonPressed) {
             buttonPressed = true;
-            mechController.handleMechState(MechState.SHOOT_STATE);
+            mechController.setState(MechState.SHOOT_STATE);
         } else if ((gamepad2.left_bumper) && !buttonPressed) {
             buttonPressed = true;
-            mechController.handleMechState(MechState.SHOOT_GREEN);
+            mechController.setState(MechState.SHOOT_GREEN);
         } else if ((gamepad2.right_bumper) && !buttonPressed) {
             buttonPressed = true;
-            mechController.handleMechState(MechState.SHOOT_PURPLE);
+            mechController.setState(MechState.SHOOT_PURPLE);
         } else if ((gamepad2.b) && !buttonPressed) {
             buttonPressed = true;
-            mechController.handleMechState(MechState.HUMAN_STATE);
+            mechController.setState(MechState.HUMAN_STATE);
         } else if ((gamepad2.x) && !buttonPressed) {
             buttonPressed = true;
-            mechController.handleMechState(MechState.IDLE);
+            mechController.setState(MechState.IDLE);
         }
         boolean noButtons =
                 !gamepad2.b &&

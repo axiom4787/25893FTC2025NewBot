@@ -111,7 +111,7 @@ public class AutoBlue extends OpMode {
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(alignPickup1,true);
-                    mechController.handleMechState(MechState.INTAKE_STATE);
+                    mechController.setState(MechState.INTAKE_STATE);
                     setPathState(2);
                 }
                 break;
@@ -132,7 +132,7 @@ public class AutoBlue extends OpMode {
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(scorePickup1,true);
-                    mechController.handleMechState(MechState.SHOOT_STATE);
+                    mechController.setState(MechState.SHOOT_STATE);
                     setPathState(4);
                 }
                 break;
@@ -143,7 +143,7 @@ public class AutoBlue extends OpMode {
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
                     follower.followPath(alignPickup2,true);
-                    mechController.handleMechState(MechState.INTAKE_STATE);
+                    mechController.setState(MechState.INTAKE_STATE);
                     setPathState(5);
                 }
                 break;
@@ -164,7 +164,7 @@ public class AutoBlue extends OpMode {
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
                     follower.followPath(scorePickup2, true);
-                    mechController.handleMechState(MechState.SHOOT_STATE);
+                    mechController.setState(MechState.SHOOT_STATE);
                     setPathState(7);
                 }
                 break;
@@ -175,7 +175,7 @@ public class AutoBlue extends OpMode {
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
                     follower.followPath(alignPickup3,true);
-                    mechController.handleMechState(MechState.INTAKE_STATE);
+                    mechController.setState(MechState.INTAKE_STATE);
                     setPathState(8);
                 }
                 break;
@@ -196,7 +196,7 @@ public class AutoBlue extends OpMode {
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
                     follower.followPath(scorePickup3, true);
-                    mechController.handleMechState(MechState.SHOOT_STATE);
+                    mechController.setState(MechState.SHOOT_STATE);
                     setPathState(10);
                 }
                 break;
@@ -243,7 +243,7 @@ public class AutoBlue extends OpMode {
         visionPortal = visionController.getVisionPortal();
 
         mechController = new MechController(robot, visionController);
-        mechController.handleMechState(MechState.APRIL_TAG);
+        mechController.handleMechState(MechState.START);
 
         telemetry.addData("Status", "Initialized. Detecting April Tag....");
         telemetry.update();
