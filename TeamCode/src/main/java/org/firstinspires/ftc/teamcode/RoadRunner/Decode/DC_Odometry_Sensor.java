@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode.RoadRunner.Decode;// Copyright (c) 2024-2025 FTC 13532
 // All rights reserved.
 
-import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.AprilTags.GoBildaPinpointDriver;
 
 public class DC_Odometry_Sensor {
   private LinearOpMode myOp = null;
@@ -33,7 +33,7 @@ public class DC_Odometry_Sensor {
     // Initialize GoBilda PinPoint Pose computer
     ppo = myOp.hardwareMap.get(GoBildaPinpointDriver.class,"odo");
     // offsets in inch from center
-    ppo.setOffsets(1, -0.0,DistanceUnit.INCH);
+//    ppo.setOffsets(1, -0.0,DistanceUnit.INCH);
     // set pinpoint resolution
     //ppo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
     ppo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
@@ -57,9 +57,9 @@ public class DC_Odometry_Sensor {
     lx = x;
     ly = y;
     lb = b; // save last values
-    x = ppo.getPosX(DistanceUnit.INCH);
-    y = ppo.getPosY(DistanceUnit.INCH);
-    b = ppo.getHeading(AngleUnit.DEGREES);
+//    x = ppo.getPosX(DistanceUnit.INCH);
+//    y = ppo.getPosY(DistanceUnit.INCH);
+//    b = ppo.getHeading(AngleUnit.DEGREES);
   }
 
   public double getx() {

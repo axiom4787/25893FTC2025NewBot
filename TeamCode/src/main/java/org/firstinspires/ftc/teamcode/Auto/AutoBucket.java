@@ -3,15 +3,15 @@
 
 package org.firstinspires.ftc.teamcode.Auto;
 
-import static org.firstinspires.ftc.teamcode.ODO.GoBildaPinpointDriver.EncoderDirection.FORWARD;
-import static org.firstinspires.ftc.teamcode.ODO.GoBildaPinpointDriver.EncoderDirection.REVERSED;
-import static org.firstinspires.ftc.teamcode.ODO.GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD;
+import static org.firstinspires.ftc.teamcode.AprilTags.GoBildaPinpointDriver.EncoderDirection.FORWARD;
+import static org.firstinspires.ftc.teamcode.AprilTags.GoBildaPinpointDriver.EncoderDirection.REVERSED;
+import static org.firstinspires.ftc.teamcode.AprilTags.GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import org.firstinspires.ftc.teamcode.Mekanism.Mekanism;
-import org.firstinspires.ftc.teamcode.ODO.GoBildaPinpointDriver;
+import org.firstinspires.ftc.teamcode.AprilTags.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.Swerve.TheBestSwerve;
 import org.firstinspires.ftc.teamcode.Swerve.wpilib.geometry.Rotation2d;
 import org.firstinspires.ftc.teamcode.Utils;
@@ -47,9 +47,9 @@ public class AutoBucket extends LinearOpMode {
     perfect_voltage = 13.5;
     power_volt = perfect_voltage / initialVoltage;
     initOdo();
-    driveBase = new AutoSwerve(this, odo);
+//    driveBase = new AutoSwerve(this, odo);
     mek = new Mekanism(this);
-    amazingSwerve = new TheBestSwerve(this, odo, driveBase);
+//    amazingSwerve = new TheBestSwerve(this, odo, driveBase);
 
     waitForStart();
     mek.arm.homeArm();
@@ -185,13 +185,13 @@ public class AutoBucket extends LinearOpMode {
     sleep(100);
     odo.setEncoderResolution(goBILDA_4_BAR_POD);
     odo.setEncoderDirections(FORWARD, REVERSED);
-    odo.resetHeading(Rotation2d.fromRadians(1.88));
+//    odo.resetHeading(Rotation2d.fromRadians(1.88));
   }
 
   public void drive(double x, double y, double heading) {
     double heading2 = Math.atan2(x, y);
     if (heading2 < 0) heading2 += 360;
-    driveBase.set_wheels(heading2, heading2, heading2, heading2, odo.getHeading().getRadians());
+//    driveBase.set_wheels(heading2, heading2, heading2, heading2, odo.getHeading().getRadians());
   }
 
   public void moveRobot(double change_x, double change_y, double steer_amt) {
@@ -263,7 +263,7 @@ public class AutoBucket extends LinearOpMode {
   public void outputPosition() {
     telemetry.addLine("x pos: " + odo.getPosX());
     telemetry.addLine("y pos: " + odo.getPosY());
-    telemetry.addLine("heading (degrees): " + odo.getHeading().getDegrees());
+//    telemetry.addLine("heading (degrees): " + odo.getHeading().getDegrees());
   }
 
   /**

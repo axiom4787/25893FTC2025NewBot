@@ -1,7 +1,7 @@
 // Copyright (c) 2024-2025 FTC 13532
 // All rights reserved.
 
-<<<<<<< Updated upstream:FtcRobotController/src/main/java/org/firstinspires/ftc/robotcontroller/external/SensorHuskyLens.java
+/*
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -32,9 +32,6 @@ TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package org.firstinspires.ftc.robotcontroller.external;
-=======
-package org.firstinspires.ftc.teamcode.AprilTags;
->>>>>>> Stashed changes:TeamCode/src/main/java/org/firstinspires/ftc/teamcode/AprilTags/HuskyCamera.java
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;

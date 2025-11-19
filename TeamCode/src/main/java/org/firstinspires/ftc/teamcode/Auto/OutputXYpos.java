@@ -3,13 +3,13 @@
 
 package org.firstinspires.ftc.teamcode.Auto;
 
-import static org.firstinspires.ftc.teamcode.ODO.GoBildaPinpointDriver.EncoderDirection.REVERSED;
-import static org.firstinspires.ftc.teamcode.ODO.GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD;
+import static org.firstinspires.ftc.teamcode.AprilTags.GoBildaPinpointDriver.EncoderDirection.REVERSED;
+import static org.firstinspires.ftc.teamcode.AprilTags.GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.Mekanism.Mekanism;
-import org.firstinspires.ftc.teamcode.ODO.GoBildaPinpointDriver;
+import org.firstinspires.ftc.teamcode.AprilTags.GoBildaPinpointDriver;
 
 @Autonomous(name = "output XY position")
 public class OutputXYpos extends LinearOpMode {
@@ -25,7 +25,7 @@ public class OutputXYpos extends LinearOpMode {
     sleep(100);
     odometry.setEncoderResolution(goBILDA_4_BAR_POD);
     odometry.setEncoderDirections(REVERSED, REVERSED);
-    odometry.resetHeading();
+//    odometry.resetHeading();
 
     waitForStart();
     while (opModeIsActive()) {

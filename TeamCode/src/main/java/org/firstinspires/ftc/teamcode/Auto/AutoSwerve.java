@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import org.firstinspires.ftc.teamcode.ODO.GoBildaPinpointDriver;
+import org.firstinspires.ftc.teamcode.AprilTags.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.Utils;
 
 public class AutoSwerve {
@@ -205,7 +205,7 @@ public class AutoSwerve {
       double sHc = sH - getDeg() / 360; // normalize degree
       if (sHc > .5) {
         // FR BL BR FL
-        set_wheels(sHc, .5, .5, sHc, odo.getHeading().getDegrees() / 360);
+//        set_wheels(sHc, .5, .5, sHc, odo.getHeading().getDegrees() / 360);
       }
       if ((getX() - sX) < .2 || (getY() - sY) < .2) {
         setMotors(.4, 0);
@@ -229,7 +229,7 @@ public class AutoSwerve {
 
   public double getDeg() {
     odo.update();
-    return odo.getHeading().getDegrees();
+//    return odo.getHeading().getDegrees();
   }
 
   // align wheels has a angle always set where alignWheels is

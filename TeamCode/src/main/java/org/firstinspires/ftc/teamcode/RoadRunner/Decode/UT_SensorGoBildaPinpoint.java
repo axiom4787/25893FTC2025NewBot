@@ -21,13 +21,14 @@
 */
 package org.firstinspires.ftc.teamcode.RoadRunner.Decode;
 
-import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.AprilTags.GoBildaPinpointDriver;
 
 /*
  * This OpMode illustrates how to use the GoBildaPinpoint
@@ -82,7 +83,7 @@ public class UT_SensorGoBildaPinpoint extends OpMode {
         *  The Y pod offset refers to how far forwards from the tracking point the Y (strafe) odometry pod is.
         *  Forward of center is a positive number, backwards is a negative number.
         */
-        pinpoint.setOffsets(-2.0, 0.0, DistanceUnit.INCH); //these are tuned for 3110-0002-0001 Product Insight #1
+//        pinpoint.setOffsets(-2.0, 0.0, DistanceUnit.INCH); //these are tuned for 3110-0002-0001 Product Insight #1
 
         /*
          * Set the kind of pods used by your robot. If you're using goBILDA odometry pods, select either

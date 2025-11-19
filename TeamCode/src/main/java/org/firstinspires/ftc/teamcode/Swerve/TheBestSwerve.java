@@ -6,7 +6,7 @@ package org.firstinspires.ftc.teamcode.Swerve;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Auto.AutoSwerve;
-import org.firstinspires.ftc.teamcode.ODO.GoBildaPinpointDriver;
+import org.firstinspires.ftc.teamcode.AprilTags.GoBildaPinpointDriver;
 
 public class TheBestSwerve {
 
@@ -151,12 +151,13 @@ public class TheBestSwerve {
     //		telemetry.addLine("Joy mag: " + joy_magnitude);
 
     // Read raw value from odometer (in radians)
-    double robot_theta = odometry.getHeading().getRadians();
+//    double robot_theta = odometry.getHeading().getRadians();
     odometry.update();
 
     // Normalize odometry reading to align with standard polar coordinates
-    robot_theta = normalize_angle(robot_theta);
-    //		telemetry.addLine("Robot theta: " + robot_theta);
+    double robot_theta=0;
+      robot_theta = normalize_angle(robot_theta);
+      //		telemetry.addLine("Robot theta: " + robot_theta);
 
     // Compute steering angle relative to field-centric movements
     double steering_angle = joy_theta - robot_theta;
@@ -265,7 +266,7 @@ public class TheBestSwerve {
     if (right_joy_x > -0.001 && right_joy_x < 0.001) {
       if (activate_intended_robot_theta == false) {
         activate_intended_robot_theta = true;
-        intended_robot_theta = odometry.getHeading().getRadians();
+//        intended_robot_theta = odometry.getHeading().getRadians();
         intended_robot_theta = normalize_angle(intended_robot_theta);
       }
 
@@ -470,8 +471,8 @@ public class TheBestSwerve {
   }
 
   public double fieldOrientedHeading() {
-    double heading = odometry.getHeading().getDegrees() / 360;
-    return heading;
+//    double heading = odometry.getHeading().getDegrees() / 360;
+    return 0.0;
   }
 
   public static double getAngle(double x, double y) {

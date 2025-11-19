@@ -4,18 +4,14 @@
 package org.firstinspires.ftc.robotcontroller.external;
 
 import android.util.Size;
-<<<<<<< Updated upstream:FtcRobotController/src/main/java/org/firstinspires/ftc/robotcontroller/external/UtilityCameraFrameCapture.java
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-=======
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import java.util.Locale;
->>>>>>> Stashed changes:TeamCode/src/main/java/org/firstinspires/ftc/teamcode/AprilTags/UtilityCameraFrameCapture.java
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.VisionPortal;
+
+import java.util.Locale;
 
 /*
  * This OpMode helps calibrate a webcam or RC phone camera, useful for AprilTag pose estimation
@@ -31,20 +27,8 @@ import org.firstinspires.ftc.vision.VisionPortal;
  * In OnBot Java, use "Add File" to add this OpMode from the list of Samples.
  */
 
-<<<<<<< Updated upstream:FtcRobotController/src/main/java/org/firstinspires/ftc/robotcontroller/external/UtilityCameraFrameCapture.java
 @TeleOp(name = "Utility: Camera Frame Capture", group = "Utility")
 @Disabled
-public class UtilityCameraFrameCapture extends LinearOpMode
-{
-    /*
-     * EDIT THESE PARAMETERS AS NEEDED
-     */
-    final boolean USING_WEBCAM = false;
-    final BuiltinCameraDirection INTERNAL_CAM_DIR = BuiltinCameraDirection.BACK;
-    final int RESOLUTION_WIDTH = 640;
-    final int RESOLUTION_HEIGHT = 480;
-=======
-@TeleOp(name = "Camera Frame Capture", group = "Training")
 public class UtilityCameraFrameCapture extends LinearOpMode {
   /*
    * EDIT THESE PARAMETERS AS NEEDED
@@ -58,7 +42,6 @@ public class UtilityCameraFrameCapture extends LinearOpMode {
   boolean lastX;
   int frameCount;
   long capReqTime;
->>>>>>> Stashed changes:TeamCode/src/main/java/org/firstinspires/ftc/teamcode/AprilTags/UtilityCameraFrameCapture.java
 
   @Override
   public void runOpMode() {
