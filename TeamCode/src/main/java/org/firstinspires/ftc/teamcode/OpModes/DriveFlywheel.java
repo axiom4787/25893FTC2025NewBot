@@ -1,17 +1,27 @@
 package org.firstinspires.ftc.teamcode.OpModes;
 
+import androidx.annotation.MainThread;
+
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.PID.FlywheelPID;
 import org.firstinspires.ftc.teamcode.Mechanisms.Drivetrain;
 import org.firstinspires.ftc.teamcode.Mechanisms.Intake;
 
-@TeleOp(name = "Impulse Drive With FlywheelPID")
+import java.math.MathContext;
+
+@TeleOp(name = "Red Side Drive")
 public class DriveFlywheel extends OpMode {
 
     private double previousPid = 0.0;   // initialize PID contribution
@@ -19,6 +29,9 @@ public class DriveFlywheel extends OpMode {
     private boolean flywheelOn = false;
 
     private double targetRPM = 4000;
+
+    private Limelight3A limelight;
+    private IMU imu;
     private final double rpmStep = 50;
     private boolean upPressed = false;
     private boolean downPressed = false;
@@ -33,6 +46,10 @@ public class DriveFlywheel extends OpMode {
 
     public DcMotorEx SIntake;
     private boolean xWasPressed = false;
+    boolean autoAim = false;
+    boolean yWasPressed = false;
+    boolean bPrev = false;
+    boolean intakeOn = false;
 
     @Override
     public void init() {
@@ -54,35 +71,21 @@ public class DriveFlywheel extends OpMode {
 
         previousPid = 0.0;
         previousPower = 0.0;
-        telemetry.addLine("Press dpad up/down to adjust RPM");
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight.pipelineSwitch(1);
+        imu = hardwareMap.get(IMU.class, "imu");
+        RevHubOrientationOnRobot RevOrientation = new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                RevHubOrientationOnRobot.UsbFacingDirection.UP);
+        imu.initialize(new IMU.Parameters(RevOrientation));
     }
 
-    @Override
-    public void init_loop() {
-        if (gamepad1.dpad_up && !upPressed) {
-            targetRPM += rpmStep;
-            upPressed = true;
-        }
-        if (!gamepad1.dpad_up) {
-            upPressed = false;
-        }
-        if (gamepad1.dpad_down && !downPressed) {
-            targetRPM -= rpmStep;
-            if (targetRPM < 0) targetRPM = 0;
-            downPressed = true;
-        }
-        if (!gamepad1.dpad_down) {
-            downPressed = false;
-        }
-
-        telemetry.addData("Target RPM", targetRPM);
-        telemetry.update();
-    }
 
 
     @Override
     public void start() {
         timer.reset();
+        limelight.start();
     }
 
     @Override
@@ -91,10 +94,34 @@ public class DriveFlywheel extends OpMode {
         double y = -gamepad1.left_stick_y;
         double x = gamepad1.left_stick_x;
         double turn = gamepad1.right_stick_x;
-        boolean input1 = gamepad1.a;
+        boolean input1 = gamepad1.left_bumper;
         boolean input3 = false;
         boolean input2 = gamepad1.x;
+        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+        limelight.updateRobotOrientation(orientation.getYaw());
+        LLResult llResult = limelight.getLatestResult();
+        if (llResult != null && llResult.isValid()){
+            Pose3D botpose = llResult.getBotpose_MT2();
+        }
+        telemetry.addData("Ta", llResult.getTa());
+        telemetry.addData("Tx", llResult.getTx());
+        telemetry.addData("Ty", llResult.getTy());
 
+        if (gamepad1.x && !yWasPressed) {
+            autoAim = !autoAim;    // toggle
+        }
+        yWasPressed = gamepad1.x;
+
+        double tx = llResult.getTx();
+        boolean hasTarget = (llResult.isValid());
+        if (autoAim && hasTarget) {
+            double kP = 0.01 ;
+            turn = kP * tx;
+
+            if (Math.abs(tx) < 1.0) {
+                turn = 0;
+            }
+        }
         drive.driveRobotRelative(y,x,turn);
         intake.NonStationary(input1);
 
@@ -122,18 +149,21 @@ public class DriveFlywheel extends OpMode {
 
         double minusTRPM = 200;
 
-        if(avgRPM < targetRPM && avgRPM >(targetRPM-minusTRPM) && gamepad1.b){
-            input3 = true;
-        }
-        else{
-            input3 = false;
-        }
+        if (gamepad1.b && !bPrev) {
 
-        if(avgRPM <(targetRPM-minusTRPM) && gamepad1.b){
-            SIntake.setPower(0);
+            if (!intakeOn) {
+                // Trying to turn ON — only allow if below RPM limit
+                if (avgRPM < targetRPM &&  avgRPM > (targetRPM - minusTRPM)) {
+                    intakeOn = true;
+                }
+            } else {
+                // Trying to turn OFF — always allowed
+                intakeOn = false;
+            }
         }
+        gamepad1.b = bPrev;
+        SIntake.setPower(intakeOn ? 1.0 : 0.0);
 
-        intake.stationary(input3);
         leftFlywheel.setPower(power);
         rightFlywheel.setPower(power);
 
@@ -143,5 +173,4 @@ public class DriveFlywheel extends OpMode {
         telemetry.addData("Target RPM", targetRPM);
         telemetry.addData("Current RPM", avgRPM);
         telemetry.addData("Power", power);
-    }
-}
+    }}
