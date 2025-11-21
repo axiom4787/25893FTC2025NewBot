@@ -14,7 +14,7 @@ public class OurTeleOp extends OpMode {
     private CRServo agitator;
     private DcMotor rightDrive;
 
-    private float flyWheelVelocity = 1900;
+    private float flyWheelVelocity = 1300;
     private static final int bankVelocity = 1300;
     private static final int farVelocity = 1900;
     private static final int maxVelocity = 2200;
@@ -57,7 +57,7 @@ public class OurTeleOp extends OpMode {
         float y;
 
         x = gamepad1.right_stick_x;
-        y = -gamepad1.left_stick_y;
+        y = gamepad1.left_stick_y;
         leftDrive.setPower(y - x);
         rightDrive.setPower(y + x);
     }
