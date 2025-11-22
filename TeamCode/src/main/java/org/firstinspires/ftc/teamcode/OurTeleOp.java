@@ -106,12 +106,6 @@ public class OurTeleOp extends OpMode {
         if(gamepad1.yWasReleased()) {
             feedRoller.setPower(0);
         }
-        if(gamepad1.leftBumperWasPressed()) {
-            flyWheelVelocity = bankVelocity;
-        }
-        if (gamepad1.rightBumperWasPressed()) {
-            flyWheelVelocity = farVelocity;
-        }
     }
     public void flyWheel() {
         if(flyWheelPowered) {
