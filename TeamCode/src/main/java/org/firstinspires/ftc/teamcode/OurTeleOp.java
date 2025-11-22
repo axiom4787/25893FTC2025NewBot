@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareDevice;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 
 @TeleOp
@@ -52,8 +54,21 @@ public class OurTeleOp extends OpMode {
         basicMovement();
         turnOnMotors();
         flyWheel();
+        telemetry.update();
     }
-
+    public double getLowestVoltage() {
+        double lowestValue = Double.POSITIVE_INFINITY;
+        for(VoltageSensor sensor : hardwareMap.voltageSensor) {
+            if(sensor.getVoltage() < lowestValue && sensor.getVoltage() > 0.1) {
+                lowestValue = sensor.getVoltage();
+            }
+        }
+        if(lowestValue == Double.POSITIVE_INFINITY) {
+            lowestValue = 14;
+        }
+        telemetry.addLine("Voltage: " + lowestValue + "V");
+        return lowestValue;
+    }
     public void basicMovement() {
         float x;
         float y;
@@ -65,11 +80,7 @@ public class OurTeleOp extends OpMode {
     }
     public void turnOnMotors() {
         if(gamepad1.aWasPressed()) {
-            if(flyWheelPowered) {
-                flyWheelPowered = false;
-            } else {
-                flyWheelPowered = true;
-            }
+            flyWheelPowered = !flyWheelPowered;
         }
         if(gamepad1.bWasPressed()) {
             if(agitatorPowered) {
@@ -104,7 +115,8 @@ public class OurTeleOp extends OpMode {
     }
     public void flyWheel() {
         if(flyWheelPowered) {
-            flywheel.setVelocity(flyWheelVelocity);
+            double multiplier = 14 / getLowestVoltage();
+            flywheel.setVelocity(flyWheelVelocity * multiplier);
         } else {
             flywheel.setVelocity(0);
         }
