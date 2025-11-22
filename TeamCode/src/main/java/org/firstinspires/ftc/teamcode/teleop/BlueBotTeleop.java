@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.Mekanism.Mekanism;
 import org.firstinspires.ftc.teamcode.ODO.GoBildaPinpointDriver;
+import org.firstinspires.ftc.teamcode.sensors.pinPoint.*;
 import org.firstinspires.ftc.teamcode.Swerve.wpilib.geometry.Rotation2d;
 
 @Config
@@ -69,11 +70,11 @@ public class BlueBotTeleop extends LinearOpMode {
        */
       double right_joy_x = gamepad1.right_stick_x * -1.0;
 
-      amazingSwerve.swerveTheThing(left_joy_x, left_joy_y, right_joy_x);
+//      amazingSwerve.swerveTheThing(left_joy_x, left_joy_y, right_joy_x);
 
       // just in case auto get's screwed up
       if (gamepad1.b && gamepad1.a) {
-        amazingSwerve.odometry.resetHeading(new Rotation2d());
+//        amazingSwerve.odometry.resetHeading(new Rotation2d());
         sleep(250);
       }
 

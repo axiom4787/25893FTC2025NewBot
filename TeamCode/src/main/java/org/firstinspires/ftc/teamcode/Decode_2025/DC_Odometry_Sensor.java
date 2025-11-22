@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.Decode_2025;// Copyright (c) 2024-2025 FTC 13532
 // All rights reserved.
 
+import org.firstinspires.ftc.teamcode.ODO.*;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import org.firstinspires.ftc.teamcode.Swerve.wpilib.geometry.Pose2d;
 
 public class DC_Odometry_Sensor {
   private LinearOpMode myOp = null;
@@ -32,7 +34,7 @@ public class DC_Odometry_Sensor {
     // Initialize GoBilda PinPoint Pose computer
     ppo = myOp.hardwareMap.get(GoBildaPinpointDriver.class,"odo");
     // offsets in inch from center
-    ppo.setOffsets(1, -0.0,DistanceUnit.INCH);
+    ppo.setOffsets(1, -0.0);
     // set pinpoint resolution
     //ppo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
     ppo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
@@ -51,14 +53,14 @@ public class DC_Odometry_Sensor {
   }
   public void positionXY() {
     // update position data
-    ppo.getPosition();
+    ppo.getPose();
     ppo.update();
     lx = x;
     ly = y;
     lb = b; // save last values
-    x = ppo.getPosX(DistanceUnit.INCH);
-    y = ppo.getPosY(DistanceUnit.INCH);
-    b = ppo.getHeading(AngleUnit.DEGREES);
+    x = ppo.getPosX();
+    y = ppo.getPosY();
+    b = ppo.getHeading().getDegrees();
   }
 
   public double getx() {
@@ -76,28 +78,24 @@ public class DC_Odometry_Sensor {
   // Get positions for GoBilda Pinpoint current Position (x & y in cm, and heading in degrees)
   protected double getXPosition() {
     ppo.update();
-    Pose2D pos = ppo.getPosition();
-    return pos.getX(DistanceUnit.INCH);
+    return ppo.getPosX();
   }
 
   protected double getYPosition() {
     ppo.update();
-    Pose2D pos = ppo.getPosition();
-    return pos.getY(DistanceUnit.INCH);
+    return ppo.getPosY();
   }
 
   // returns heading in radians
   public double getHeading() {
     ppo.update();
-    Pose2D pos = ppo.getPosition();
-    return pos.getHeading(AngleUnit.DEGREES);
+    return ppo.getHeading().getRadians();
   }
 
   // return heading in  degrees
   public double getHeadDeg() {
     ppo.update();
-    Pose2D pos = ppo.getPosition();
-    return pos.getHeading(AngleUnit.DEGREES);
+    return ppo.getHeading().getDegrees();
   }
 
   public double vector() {

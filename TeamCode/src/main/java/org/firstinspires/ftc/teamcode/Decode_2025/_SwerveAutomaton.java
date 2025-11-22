@@ -53,10 +53,10 @@ public class _SwerveAutomaton extends LinearOpMode {
       telemetry.addLine("  field location");
       telemetry.addLine(" *****************");
 
-      odo.ppo.getPosition();
+      odo.ppo.getPose();
       odo.ppo.update();
-      telemetry.addData("position X", odo.ppo.getPosX(DistanceUnit.INCH));
-      telemetry.addData("position Y", odo.ppo.getPosY(DistanceUnit.INCH));
+      telemetry.addData("position X", odo.ppo.getPosX());
+      telemetry.addData("position Y", odo.ppo.getPosY());
 
       telemetry.update();
     } // end while run loop
