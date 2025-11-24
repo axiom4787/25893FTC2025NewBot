@@ -155,15 +155,10 @@ public class Bot {
 
         indexer.update();
 
-        // Begin continuous lock
+        // Toggle continuous lock
         if (g2.wasJustPressed(GamepadKeys.Button.X)) {
-            continuousAprilTagLock = true;
-            aprilTag.setCurrentCameraScannedId(0);
-        }
-
-        // Stop continuous lock
-        if (g2.wasJustPressed(GamepadKeys.Button.Y)) {
-            continuousAprilTagLock = false;
+            continuousAprilTagLock = !continuousAprilTagLock;
+            if (continuousAprilTagLock) aprilTag.setCurrentCameraScannedId(0);
         }
 
         // Alliance selection
@@ -171,8 +166,6 @@ public class Bot {
             aprilTag.setGoalTagID(20); // blue
         if (g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER))
             aprilTag.setGoalTagID(24); // red
-
-
 
         // ========== TELEMETRY ==========
         telemetry.addData("Field Centric", fieldCentric);
