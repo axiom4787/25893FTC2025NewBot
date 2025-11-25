@@ -78,13 +78,7 @@ public class Flipper {
     public void turnFlipper(double angle) {
         double targetPosition;
 
-        // 4.5 turn servo requires inverted formula (tested and verified)
-        if (SERVO_TYPE == ServoType.TURN_4_5) {
-            targetPosition = 1.0 - (angle / degreesPerUnit);
-        } else {
-            // 1 turn servo uses direct formula
-            targetPosition = angle / degreesPerUnit;
-        }
+        targetPosition = 1.0 - (angle / degreesPerUnit);
 
         // Clamp to valid range and set position
         setPosition(targetPosition);
