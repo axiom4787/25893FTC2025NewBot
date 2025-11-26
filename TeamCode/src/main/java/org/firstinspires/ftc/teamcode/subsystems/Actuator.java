@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class Actuator {
     private final double DOWN = 0.0; // flush with the floor of platform
-    private final double UP = .27; // raised to push it into the flywheel
+    private final double UP = .225; // raised to push it into the flywheel
 
     private boolean activated;
 
