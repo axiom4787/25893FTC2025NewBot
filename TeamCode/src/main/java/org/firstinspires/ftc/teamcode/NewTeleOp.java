@@ -17,13 +17,10 @@ public class NewTeleOp extends OpMode {
     private DcMotor leftDrive;
     private CRServo agitator;
     private DcMotor rightDrive;
-    private float proportionalMult = 0.01f;
-    private float intergralMult = 0f;
-    private float derivativeMult = 0f;
-    private float integral;
-    private float lastError;
+
     private float flyWheelVelocity = 1300;
     private float  ticksPerRev = 288;
+    private float offset = 0;
     private boolean flyWheelPowered;
     private boolean agitatorPowered;
     private boolean feedRollerPowered;
@@ -57,6 +54,7 @@ public class NewTeleOp extends OpMode {
         flyWheel();
 
         telemetry.addLine("Encoder Position: " + String.valueOf(feedRoller.getCurrentPosition()));
+        telemetry.addLine("Offset: " + offset);
         telemetry.update();
     }
     public double getLowestVoltage() {
@@ -123,14 +121,7 @@ public class NewTeleOp extends OpMode {
     public void flyWheel() {
         if(flyWheelPowered) {
             double multiplier = 14 / getLowestVoltage();
-
-            double targetVelocity = flyWheelVelocity * multiplier;
-            double error = targetVelocity - flywheel.getVelocity();
-            integral += error;
-            double derivative = error - lastError;
-            double output = proportionalMult * error + intergralMult * integral + derivativeMult * derivative;
-
-            flywheel.setVelocity(output);
+            flywheel.setVelocity(flyWheelVelocity * multiplier);
         } else {
             flywheel.setVelocity(0);
         }
