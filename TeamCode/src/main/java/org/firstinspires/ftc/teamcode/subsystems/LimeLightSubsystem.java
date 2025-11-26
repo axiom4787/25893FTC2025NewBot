@@ -41,7 +41,11 @@ public class LimeLightSubsystem {
     }
 
     public void addTelemetry(Telemetry telemetry) {
-
+        telemetry.addLine("----- Vision -----");
+        telemetry.addData("Target X", tx);
+        telemetry.addData("Target Y", ty);
+        telemetry.addData("Target Area", ta);
+        telemetry.addData("hasTarget = ", hasTarget);
     }
 
     public void periodic() {
