@@ -97,9 +97,9 @@ public class SteeringControls extends OpMode
         if (gamepad1.right_bumper) //if i press the right bumper
         {
             //set to full power
-            robot.launcher.setFlywheelSpeed(1);
+            robot.launcher.setFlywheelSpeed(0.75);
             robot.launcher.setAgitatorSpeed(1);
-            robot.launcher.setShooterIntakeSpeed(1);
+            robot.launcher.setShooterIntakeSpeed(0.5);
         }
         else if (gamepad1.left_bumper) //if i press the left bumper
         {
