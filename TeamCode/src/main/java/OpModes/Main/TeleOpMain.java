@@ -1,7 +1,10 @@
+//NEED TO UPDATE FLYWHEEL SYNC AFTER KICKER MOVEMENT
+
 package OpModes.Main;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -13,13 +16,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-@TeleOp(name = "Main Spindexer", group = "Linear OpMode")
-public class MainSpindexer extends LinearOpMode {
+@TeleOp(name = "TeleOpMain", group = "Linear OpMode")
+public class TeleOpMain extends LinearOpMode {
+    // PRE VARIABLE SECTION
+
+    // SPINDEXER
     int xPressCount = 0;  // counts how many balls have been shot
     public NormalizedColorSensor intakeColorSensor;
     public Servo indexServo;
     public CRServo intakeServo;
-
     public CRServo intakeServo2;
 
     public Servo kickerServo;
@@ -45,8 +50,22 @@ public class MainSpindexer extends LinearOpMode {
 
     public double targetDegrees = 0.0;
     boolean intakeOn = false;
+
+    //DRIVE TRAIN
+
+    private DcMotor frontLeftDrive;
+    private DcMotor frontRightDrive;
+    private DcMotor backLeftDrive;
+    private DcMotor backRightDrive;
+
+    private boolean crossPressedLast = false;
+
+
     @Override
     public void runOpMode() {
+        //INIT SECTION
+
+        //SPINDEVER INIT
         intakeColorSensor = hardwareMap.get(NormalizedColorSensor.class, "intakeSensor");
         indexServo = hardwareMap.get(Servo.class, "indexServo");
         intakeServo = hardwareMap.get(CRServo.class, "intakeServo");
@@ -66,10 +85,63 @@ public class MainSpindexer extends LinearOpMode {
         telemetry.addLine("Ready. Press A to move 60°.");
         addTelemetry();
         telemetry.update();
-
-        waitForStart();
         kickerServo.setPosition(0.011);
+
+        //DRIVE TRAIN INIT
+        // Initialize hardware
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "leftfrontmotor");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "rightfrontmotor");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "leftbackmotor");
+        backRightDrive = hardwareMap.get(DcMotor.class, "rightbackmotor");
+
+        // Correct motor directions
+        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
+        backRightDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        telemetry.addData("Status", "Initialized");
+        telemetry.update();
+        waitForStart();
         while (opModeIsActive()) {
+
+            //DRIVE
+
+            crossPressedLast = gamepad1.cross;
+
+            // Standard mecanum driving
+            double forward = -gamepad1.left_stick_y;
+            double right = gamepad1.left_stick_x;
+            double rotate = gamepad1.right_stick_x;
+
+            // Mecanum wheel math
+            double frontLeftPower = forward + right + rotate;
+            double frontRightPower = forward - right - rotate;
+            double backLeftPower = forward - right + rotate;
+            double backRightPower = forward + right - rotate;
+
+            // Normalize
+            double max = Math.max(
+                    Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower)),
+                    Math.max(Math.abs(backLeftPower), Math.abs(backRightPower))
+            );
+            if (max > 1.0) {
+                frontLeftPower /= max;
+                frontRightPower /= max;
+                backLeftPower /= max;
+                backRightPower /= max;
+            }
+
+            // Apply powers
+            frontLeftDrive.setPower(frontLeftPower);
+            frontRightDrive.setPower(frontRightPower);
+            backLeftDrive.setPower(backLeftPower);
+            backRightDrive.setPower(backRightPower);
+
+            telemetry.update();
+
+            //SPINDEXER
+
 
             // ---------------- COLOR DETECTION -----------------
             NormalizedRGBA colors = intakeColorSensor.getNormalizedColors();
@@ -110,7 +182,7 @@ public class MainSpindexer extends LinearOpMode {
                 else{
                     intakeOn = true;
                     intakeServo.setPower(1.0);
-                    intakeServo.setPower(-1.0);
+                    intakeServo2.setPower(-1.0);
                 }
             }
             prevY = Y;
@@ -139,7 +211,7 @@ public class MainSpindexer extends LinearOpMode {
                 //run shooter
                 // Find the division of the next needed color
 
-                int goalDiv = findDivisionWithColor(need_colors[(flag) % need_colors.length]+2);
+                int goalDiv = findDivisionWithColor(need_colors[(flag) % need_colors.length])+2;
                 if (goalDiv > 2){
                     goalDiv -= 3;
                 }
@@ -161,7 +233,7 @@ public class MainSpindexer extends LinearOpMode {
 
                 kickerServo.setPosition(0.7); //Flick up kicker servo
                 try {
-                    // Pause execution for 1.5 seconds (1000 milliseconds)
+                    // Pause execution for 1 seconds (1000 milliseconds)
                     Thread.sleep(1500);
                 } catch (InterruptedException e) {
                     // Handle the InterruptedException if the thread is interrupted while sleeping
@@ -200,9 +272,9 @@ public class MainSpindexer extends LinearOpMode {
             addTelemetry();
             telemetry.update();
             idle();
+
         }
     }
-
     // Telemetry helper
     public void addTelemetry() {
         telemetry.addData("Target°", "%.1f", targetDegrees);
@@ -268,4 +340,16 @@ public class MainSpindexer extends LinearOpMode {
         return Range.clip(d, 0.0, MAX_DEGREES);
     }
 
+    public void stopMotors() {
+        frontLeftDrive.setPower(0);
+        frontRightDrive.setPower(0);
+        backLeftDrive.setPower(0);
+        backRightDrive.setPower(0);
+    }
+
 }
+
+
+
+
+
