@@ -42,10 +42,9 @@ public class SigmaTeleop extends LinearOpMode {
         GamepadEx gp1 = new GamepadEx(gamepad1);
         GamepadEx gp2 = new GamepadEx(gamepad2);
 
+        startServos();
+
         waitForStart();
-
-        indexer.startIntake();
-
         while (opModeIsActive()) {
             gp1.readButtons();
             gp2.readButtons();
@@ -54,7 +53,13 @@ public class SigmaTeleop extends LinearOpMode {
         }
     }
 
-    //teleop type shift
+    private void startServos() {
+        actuator.down();
+        indexer.moveTo(Indexer.IndexerState.one);
+        indexer.setIntaking(true);
+    }
+
+    // teleop type shift
     public void teleopTick(GamepadEx g1, GamepadEx g2, Telemetry telemetry) {
 
         //apriltag turn correction

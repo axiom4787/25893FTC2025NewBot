@@ -27,8 +27,8 @@ public class Indexer {
     private final double minWait = 100;
     private final double maxWait = 300;
     public static double targetAngle = 0;
-    public static double offsetAngle = 105;
-    public static double outtakeOffsetAngle = 5;
+    public static double offsetAngle = 79;
+    public static double outtakeOffsetAngle = 0;
     private double lastAngle = offsetAngle;
     Actuator actuator;
     AnalogInput indexerAnalog;
