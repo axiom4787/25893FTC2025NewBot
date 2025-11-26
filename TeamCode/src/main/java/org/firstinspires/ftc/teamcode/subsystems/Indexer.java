@@ -26,6 +26,7 @@ public class Indexer {
     private final double msPerDegree = 0.6;
     private final double minWait = 100;
     private final double maxWait = 300;
+    private final double DEADBAND = 1.67; // degrees
     public static double targetAngle = 0;
     public static double offsetAngle = 79;
     public static double outtakeOffsetAngle = 0;
@@ -165,6 +166,10 @@ public class Indexer {
         targetAngle = (targetAngle + offsetAngle) % 360;
         double angleDelta = Math.abs(targetAngle - oldAngle);
         if (angleDelta > 180) angleDelta = 360 - angleDelta;
+
+        if (angleDelta < DEADBAND) {
+            return;
+        }
 
         double waitTime = Math.min(maxWait, Math.max(minWait, angleDelta * msPerDegree));
         scanTimer.reset();
