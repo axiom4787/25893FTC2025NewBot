@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -32,7 +34,8 @@ public class CPUplsCookExpansive extends LinearOpMode {
 
     // --- Odometry encoders (no motors attached, just encoder readings) ---
     private DcMotor intake, intake2, shooter;
-    private Servo shooterHinge;
+    private DcMotorEx flywheel;
+//    private Servo shooterHinge;
     private CRServo intakeToShooter, intakeToShooter2;
 
     public static boolean intakeActive = false;
@@ -40,7 +43,7 @@ public class CPUplsCookExpansive extends LinearOpMode {
     public static boolean shooterUp = false;
 
     public static double intake_speed = 0.5;
-    public static double shooter_power = 0.5;
+    public static double shooter_power = 1;
     public static double intakeToShooter_power = 0.5;
 
     // --- Odometry constants ---
@@ -63,6 +66,42 @@ public class CPUplsCookExpansive extends LinearOpMode {
     public static double kP = 0.01;      // Proportional control constant
     public static double maxPower = 0.2; // Maximum motor power (range: 0–1)
     public static int maxError = 100;
+
+    public static final double TICKS_PER_REV = 112.0;
+
+    // Motor spec: 6000 RPM no-load @ 12V
+    // MEASURED: 1400 RPM at full power with shooter attached
+    // This is your actual max - heavy shooter causes significant load
+    public static double MAX_RPM_UNDER_LOAD = 1400.0;  // Empirically determined
+
+    // ============= Controller Gains (Tune These) ============
+    // kV: At 1400 RPM, we want ~95% power (leaving 5% for PID correction)
+    // Calculation: kV = 0.95 / 1400 = 0.000678
+    public static double kV = 0.0006785714285714286;
+    public static double kS = 0.06;  // Static friction baseline
+
+    // PID gains - these should work well now that feedforward is correct
+    public static double kP_F = 0.0004;  // Proportional gain
+    public static double kI = 0.0002;  // Integral gain
+    public static double kD = 0.00005; // Derivative gain
+
+    // Anti-windup limit for integral term
+    public static double integralLimit = 0.2;
+
+    // ============= Internal State ============
+
+    private ElapsedTime dtTimer = new ElapsedTime();
+    private double lastPosition = 0.0;
+    private double integral = 0.0;
+    private double lastError = 0.0;
+
+    // Target shooter speed in RPM
+    public static double targetRPM = 980.0;
+    public static double currentRPM;
+    public static double error;
+    public static double output;
+    public static double ff;
+    public static double pid;
 
     private double getBatteryVoltage() {
         double result = Double.POSITIVE_INFINITY;
@@ -121,7 +160,8 @@ public class CPUplsCookExpansive extends LinearOpMode {
         intake = hardwareMap.get(DcMotor.class, "i");
         intake2 = hardwareMap.get(DcMotor.class, "i2");
         shooter = hardwareMap.get(DcMotor.class, "s");
-        shooterHinge = hardwareMap.get(Servo.class, "sH");
+        flywheel = hardwareMap.get(DcMotorEx.class, "s");
+//        shooterHinge = hardwareMap.get(Servo.class, "sH");
         intakeToShooter = hardwareMap.get(CRServo.class, "its");
         intakeToShooter2 = hardwareMap.get(CRServo.class, "its2");
 
@@ -156,10 +196,12 @@ public class CPUplsCookExpansive extends LinearOpMode {
         sleep(2000);
 
         // --- Motor directions ---
-        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontLeftDrive.setDirection(DcMotor.Direction.FORWARD);
         frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
-        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        backLeftDrive.setDirection(DcMotor.Direction.FORWARD);
         backRightDrive.setDirection(DcMotor.Direction.FORWARD);
+
+        shooter.setDirection(DcMotor.Direction.REVERSE);
 
         frontLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         frontRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -184,6 +226,18 @@ public class CPUplsCookExpansive extends LinearOpMode {
         imu.initialize(parameters);
 
 
+//        shooter = hardwareMap.get(DcMotorEx.class, "shooter");
+        shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        lastPosition = shooter.getCurrentPosition();
+        dtTimer.reset();
+
+        // Initialize dashboard
+        dashboard = FtcDashboard.getInstance();
+
+
         while (opModeIsActive()) {
             updateOdometry();
             double batteryVoltage = getBatteryVoltage();
@@ -194,21 +248,21 @@ public class CPUplsCookExpansive extends LinearOpMode {
 
             TelemetryPacket packet = new TelemetryPacket();
 
-            if (gamepad1.a && robot_centric) {
-                robot_centric = false;
-                field_centric = true;
-                sleep(200);
-                packet.put("field centric testing", field_centric);
-                packet.put("robot centric testing", robot_centric);
-            }
-            else if (gamepad1.y && field_centric) {
-
-                field_centric = false;
-                robot_centric = true;
-                sleep(200);
-                packet.put("robot centric testing", robot_centric);
-                packet.put("field centric testing", field_centric);
-            }
+//            if (gamepad1.a && robot_centric) {
+//                robot_centric = false;
+//                field_centric = true;
+//                sleep(200);
+//                packet.put("field centric testing", field_centric);
+//                packet.put("robot centric testing", robot_centric);
+//            }
+//            else if (gamepad1.y && field_centric) {
+//
+//                field_centric = false;
+//                robot_centric = true;
+//                sleep(200);
+//                packet.put("robot centric testing", robot_centric);
+//                packet.put("field centric testing", field_centric);
+//            }
 
             dashboard.sendTelemetryPacket(packet);
 
@@ -281,10 +335,10 @@ public class CPUplsCookExpansive extends LinearOpMode {
                 backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-                backLeftDrive.setPower(Logdrive + LATdrive - Turndrive);
-                backRightDrive.setPower(Logdrive - LATdrive + Turndrive);
-                frontLeftDrive.setPower(Logdrive - LATdrive - Turndrive);
-                frontRightDrive.setPower(Logdrive + LATdrive + Turndrive);
+                backLeftDrive.setPower(Logdrive - LATdrive + Turndrive);
+                backRightDrive.setPower(-Logdrive + LATdrive + Turndrive);
+                frontLeftDrive.setPower(Logdrive + LATdrive + Turndrive);
+                frontRightDrive.setPower(-Logdrive - LATdrive + Turndrive);
             }
 
             else if (!wheelBreak && field_centric) {
@@ -315,7 +369,7 @@ public class CPUplsCookExpansive extends LinearOpMode {
                     // private OdometrySystem odometrySystem;
 
                     // else if (!wheelBreak && field_centric) {
-                    //     frontLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+                    //     frontLeftDrive.setZeroPowerBehavior(DcMotor.ZerToPowerBehavior.FLOAT);
                     //     frontRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                     //     backLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                     //     backRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -392,9 +446,9 @@ public class CPUplsCookExpansive extends LinearOpMode {
 
 
             // --- Gamepad 2 controls ---
-            handleIntake();
+//            handleIntake();
             handleShooter();
-            handleShooterHinge();
+//            handleShooterHinge();
 
             // --- Dashboard telemetry ---
             sendDashboardTelemetry(batteryVoltage);
@@ -413,37 +467,80 @@ public class CPUplsCookExpansive extends LinearOpMode {
     }
 
 
-    private void handleIntake() {
-        if (gamepad2.left_bumper && !intakeActive) {
-            sleep(200);
-            intake.setPower(intake_speed);
-            intake2.setPower(intake_speed);
-            intakeActive = true;
-        } else if (gamepad2.left_bumper && intakeActive) {
-            sleep(200);
-            intake.setPower(0);
-            intake2.setPower(0);
-            intakeActive = false;
-        }
-    }
+//    private void handleIntake() {
+//        if (gamepad2.left_bumper && !intakeActive) {
+//            sleep(200);
+//            intake.setPower(intake_speed);
+//            intake2.setPower(intake_speed);
+//            intakeActive = true;
+//        } else if (gamepad2.left_bumper && intakeActive) {
+//            sleep(200);
+//            intake.setPower(0);
+//            intake2.setPower(0);
+//            intakeActive = false;
+//        }
+//    }
 
     private void handleShooter() {
-        if (gamepad2.right_bumper) {
-            sleep(200);
-            shooterActive = !shooterActive;
-            shooter.setPower(shooterActive ? shooter_power : 0);
-            intakeToShooter.setPower(shooterActive ? intakeToShooter_power : 0);
-            intakeToShooter2.setPower(shooterActive ? intakeToShooter_power : 0);
+        if (gamepad2.right_trigger > 0.2) {
+            double pos = shooter.getCurrentPosition();
+            double dt = dtTimer.seconds();
+            intakeToShooter.setPower(intakeToShooter_power);
+            intakeToShooter2.setPower(intakeToShooter_power);
+            // Prevent division by zero on first loop
+            if (dt < 0.001) dt = 0.001;
+            dtTimer.reset();
+
+            double deltaTicks = pos - lastPosition;
+            lastPosition = pos;
+
+            // Use built-in velocity measurement (more stable than manual calculation)
+            double velocityTicksPerSec = flywheel.getVelocity();
+            currentRPM = (velocityTicksPerSec / TICKS_PER_REV) * 60.0;
+
+            // ======== 2. Compute Feedforward ========
+            ff = 0.0;
+            if (targetRPM > 20) {
+                // kS provides base power to overcome friction
+                // kV scales linearly with RPM
+                ff = kS + kV * targetRPM;
+            }
+
+            // ======== 3. Compute PID ========
+            error = targetRPM - currentRPM;
+
+            // Integral with anti-windup clamping
+            integral += error * dt;
+            integral = Math.max(-integralLimit, Math.min(integralLimit, integral));
+
+            double derivative = (error - lastError) / dt;
+            lastError = error;
+
+            pid = kP_F * error + kI * integral + kD * derivative;
+
+            // ======== 4. Combine Feedforward + PID ========
+            output = ff + pid;
+
+            // Clamp to motor limits
+            output = Math.max(-1.0, Math.min(1.0, output));
+
+            // Command the motor
+            shooter.setPower(output);
+        }
+        else{
+            intakeToShooter.setPower(0);
+            intakeToShooter2.setPower(0);
+            shooter.setPower(0);
         }
     }
 
-    private void handleShooterHinge() {
-        if (gamepad2.a) {
-            sleep(200);
-            shooterUp = !shooterUp;
-            shooterHinge.setPosition(shooterUp ? 1 : 0);
-        }
-    }
+//    private void handleShooterHinge() {
+//        if (gamepad2.a) {
+//            sleep(200);
+//            shooterUp = !shooterUp;
+//            shooterHinge.setPosition(shooterUp ? 1 : 0);
+//        }
+//    }
 
     private void sendDashboardTelemetry(double batteryVoltage) {
         TelemetryPacket packet = new TelemetryPacket();
@@ -486,7 +583,7 @@ public class CPUplsCookExpansive extends LinearOpMode {
         packet.put("Wheel Brake Active", wheelBreak);
         packet.put("Intake Active", intakeActive);
         packet.put("Shooter Active", shooterActive);
-        packet.put("Shooter Hinge Position", shooterHinge.getPosition());
+//        packet.put("Shooter Hinge Position", shooterHinge.getPosition());
         packet.put("Robot X (in)", xPos);
         packet.put("Robot Y (in)", yPos);
         packet.put("Heading (rad)", heading);
@@ -503,13 +600,26 @@ public class CPUplsCookExpansive extends LinearOpMode {
         packet.put("Slow Mode", slow_mode);
         packet.put("Battery Voltage (V)", batteryVoltage);
         packet.put("GE", true);
+        packet.put("ITS", intakeToShooter.getPower());
+        packet.put("ITS2", intakeToShooter2.getPower());
+
+        packet.put("Target RPM", targetRPM);
+        packet.put("Actual RPM", currentRPM);
+        packet.put("Error RPM", error);
+        packet.put("Error %", (error / targetRPM) * 100.0);
+
+        // Control outputs
+        packet.put("Total Power", output);
+        packet.put("FF Power", ff);
+        packet.put("PID Power", pid);
+        packet.put("Integral", integral);
 
         dashboard.sendTelemetryPacket(packet);
 
         telemetry.addData("Wheel Brake Active", wheelBreak);
-        telemetry.addData("Intake Active", intakeActive);
-        telemetry.addData("Shooter Active", shooterActive);
-        telemetry.addData("Shooter Hinge Position", shooterHinge.getPosition());
+//        telemetry.addData("Intake Active", intakeActive);
+//        telemetry.addData("Shooter Active", shooterActive);
+//        telemetry.addData("Shooter Hinge Position", shooterHinge.getPosition());
         telemetry.addData("Robot X (in)", xPos);
         telemetry.addData("Robot Y (in)", yPos);
         telemetry.addData("Heading (rad)", heading);

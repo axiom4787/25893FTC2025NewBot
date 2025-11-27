@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Config
@@ -61,6 +63,7 @@ public class Shooter_Test_Dash extends OpMode {
 
         // Initialize dashboard
         dashboard = FtcDashboard.getInstance();
+        flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
 
         telemetry.addLine("=== RS-555 FLYWHEEL TUNED ===");
         telemetry.addLine("Motor: 6000 RPM no-load spec");
@@ -70,6 +73,14 @@ public class Shooter_Test_Dash extends OpMode {
         telemetry.addLine("System is now calibrated!");
         telemetry.addLine("Use FTC Dashboard to fine-tune PID gains");
         telemetry.update();
+    }
+    private double getBatteryVoltage() {
+        double result = Double.POSITIVE_INFINITY;
+        for (VoltageSensor sensor : hardwareMap.voltageSensor) {
+            double voltage = sensor.getVoltage();
+            if (voltage > 0) result = Math.min(result, voltage);
+        }
+        return result;
     }
 
     @Override
@@ -142,11 +153,12 @@ public class Shooter_Test_Dash extends OpMode {
         packet.put("kP", kP);
         packet.put("kI", kI);
         packet.put("kD", kD);
-
+        double batteryVoltage = getBatteryVoltage();
         // Diagnostics
         packet.put("--- DIAGNOSTICS ---", "");
         packet.put("Saturated?", Math.abs(output) >= 0.99);
         packet.put("FF % of Total", (ff / output) * 100.0);
+        packet.put("battery_Voltage", batteryVoltage);
         packet.put("Encoder Ticks", pos);
 
         dashboard.sendTelemetryPacket(packet);
@@ -192,4 +204,6 @@ public class Shooter_Test_Dash extends OpMode {
 
         telemetry.update();
     }
+
+
 }
