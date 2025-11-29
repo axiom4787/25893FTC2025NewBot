@@ -181,7 +181,7 @@ public class Indexer {
     }
 
     // Call this repeatedly in OpMode loop
-    public void update() {
+    public void update() { 
         indexerServoControl.moveToAngle(targetAngle);
 
         // some stuff the Ai spit out seems right but idk

@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -7,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.*;
-
+@Config
 @TeleOp(name = "UnifiedTeleOp", group = "AA_main")
 public class SigmaTeleop extends LinearOpMode {
 
@@ -22,9 +25,11 @@ public class SigmaTeleop extends LinearOpMode {
 
     private long lastAimUpdate = 0;
     private double lastTurnCorrection = 0;
+    private static int shooterRPM = 5000;
 
     private boolean continuousAprilTagLock = false;
     private boolean fieldCentric = false;
+    private FtcDashboard dash = FtcDashboard.getInstance();
 
     private static final long AIM_UPDATE_INTERVAL_MS = 50;
 
@@ -46,8 +51,11 @@ public class SigmaTeleop extends LinearOpMode {
 
         waitForStart();
         while (opModeIsActive()) {
+            telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
             gp1.readButtons();
             gp2.readButtons();
+            outtake.periodic();
+
 
             teleopTick(gp1, gp2, telemetry);
         }
@@ -118,9 +126,10 @@ public class SigmaTeleop extends LinearOpMode {
 
         //outtake control
         if (g2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.01) {
-            outtake.run();
+            outtake.setTargetRPM(shooterRPM);
         } else {
-            outtake.stop();
+
+            outtake.setTargetRPM(0);
         }
 
         // spindexer control
@@ -182,6 +191,8 @@ public class SigmaTeleop extends LinearOpMode {
         telemetry.addData("Next State", indexer.nextState());
         telemetry.addData("Indexer Voltage", indexer.getVoltageAnalog());
         telemetry.addData("Outtake Power", outtake.getPower());
+        telemetry.addData("measured RPM",outtake.getRPM());
+        telemetry.addData("target RPM",outtake.getTargetRpm());
         telemetry.update();
     }
 }
