@@ -208,17 +208,17 @@ public class Indexer {
 
 
     // Call this repeatedly in OpMode loop
-    public void update() { 
+    public void update() {
+        // move the CRServo toward target angle
         indexerServoControl.moveToAngle(targetAngle);
 
-        // some stuff the Ai spit out seems right but idk
+        // scan artifacts
         if (scanPending && scanTimer.milliseconds() >= scanDelay) {
             scanArtifact();
             scanPending = false;
         }
-
-
     }
+
 
     public IndexerState numToState(int num) {
         switch (num) {
