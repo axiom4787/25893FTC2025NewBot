@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 public class RpmPIDF {
     // gains like the gym type shift
     public double Kp = 0.001;
@@ -20,16 +22,24 @@ public class RpmPIDF {
     private final double derivAlpha = 0.6;
     private double lastDerivativeFiltered = 0.0;
 
+    // Timer for delta-time calculation
+    private final ElapsedTime timer = new ElapsedTime();
+
+    public RpmPIDF() {
+        timer.reset();
+    }
+
     /**
      * guys is this tuff params
       func Updates the PIDF controller and returns the motor power output.
       @param setpointRPM Desired RPM
       @param measuredRPM Current RPM
-     @param dt Time since last update (seconds)
       @return Motor power command (-1.0 to 1.0)
      */
-    public double update(double setpointRPM, double measuredRPM, double dt) {
-        if (dt <= 0) dt = 1e-6;
+    public double update(double setpointRPM, double measuredRPM) {
+        double dt = timer.seconds();
+        timer.reset();
+        if (dt <= 0) dt = 1e-6; // avoid divide by zero (guys im smart right?)
 
         double error = setpointRPM - measuredRPM;
 
