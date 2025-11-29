@@ -154,31 +154,53 @@ public class Indexer {
         moveThread.start();
     }
 
-    // Only sets targetAngle and updates state and timing
+    // more readable
     public void moveTo(IndexerState newState) {
-        shiftArtifacts(state, newState);
-        double oldAngle = lastAngle;
-        if (intaking) {
-            targetAngle = ((stateToNum(newState) - 1) * 120 + 180) % 360;
-        } else {
-            targetAngle = (stateToNum(newState) - 1) * 120;
-        }
-        targetAngle = (targetAngle + offsetAngle) % 360;
-        double angleDelta = Math.abs(targetAngle - oldAngle);
-        if (angleDelta > 180) angleDelta = 360 - angleDelta;
 
-        if (angleDelta < DEADBAND) {
+        // Update artifact array
+        shiftArtifacts(state, newState);
+
+        double previousAngle = lastAngle;
+
+        // compute baseangle
+        int baseAngle = (stateToNum(newState) - 1) * 120;
+
+        // Intake adds 180
+        if (intaking) {
+            baseAngle = (baseAngle + 180) % 360;
+        }
+
+        //calibration
+        double desiredAngle = (baseAngle + offsetAngle) % 360;
+
+        //compute effective delta
+        double delta = Math.abs(desiredAngle - previousAngle);
+
+        // shortest path (wrap around)
+        if (delta > 180) {
+            delta = 360 - delta;
+        }
+
+        // dont do anything for small angle change (idk if this is necessary we should look into it)
+        if (delta < DEADBAND) {
             return;
         }
 
-        double waitTime = Math.min(maxWait, Math.max(minWait, angleDelta * msPerDegree));
+        // compute delay
+        double waitTime = delta * msPerDegree;
+        waitTime = Math.max(minWait, Math.min(maxWait, waitTime));
+
+        //reset timing
         scanTimer.reset();
         scanDelay = waitTime;
         scanPending = true;
 
-        lastAngle = targetAngle;
+        //update things
+        lastAngle = desiredAngle;
+        targetAngle = desiredAngle;
         state = newState;
     }
+
 
     // Call this repeatedly in OpMode loop
     public void update() { 
