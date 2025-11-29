@@ -27,10 +27,9 @@ public class Indexer {
     private final double minWait = 100;
     private final double maxWait = 300;
     private final double DEADBAND = 1.67; // degrees
-    public static double targetAngle = 0;
+    public  double targetAngle = 0;
     public static double offsetAngle = 79;
     public static double outtakeOffsetAngle = 0;
-    private double lastAngle = offsetAngle;
     Actuator actuator;
     AnalogInput indexerAnalog;
 
@@ -157,10 +156,6 @@ public class Indexer {
     // more readable
     public void moveTo(IndexerState newState) {
 
-        // Update artifact array
-        shiftArtifacts(state, newState);
-
-        double previousAngle = lastAngle;
 
         // compute baseangle
         int baseAngle = (stateToNum(newState) - 1) * 120;
@@ -173,21 +168,26 @@ public class Indexer {
         //calibration
         double desiredAngle = (baseAngle + offsetAngle) % 360;
 
-        //compute effective delta
-        double delta = Math.abs(desiredAngle - previousAngle);
+        double current = indexerServoControl.getCurrentAngle();
 
-        // shortest path (wrap around)
-        if (delta > 180) {
-            delta = 360 - delta;
-        }
+        double rawDiff = desiredAngle - (current % 360);
+        if (rawDiff > 180) rawDiff -= 360;
+        if (rawDiff < -180) rawDiff += 360;
+
+        double rawDelta = Math.abs(rawDiff);
+
 
         // dont do anything for small angle change (idk if this is necessary we should look into it)
-        if (delta < DEADBAND) {
+        if (rawDelta < DEADBAND) {
             return;
         }
 
+
+        // Update artifact array
+        shiftArtifacts(state, newState);
+
         // compute delay
-        double waitTime = delta * msPerDegree;
+        double waitTime = rawDelta * msPerDegree;
         waitTime = Math.max(minWait, Math.min(maxWait, waitTime));
 
         //reset timing
@@ -196,8 +196,13 @@ public class Indexer {
         scanPending = true;
 
         //update things
-        lastAngle = desiredAngle;
-        targetAngle = desiredAngle;
+        double diff = desiredAngle - (current % 360);
+
+        if (diff > 180) diff -= 360;
+        if (diff < -180) diff += 360;
+
+        targetAngle = current + diff;
+
         state = newState;
     }
 
@@ -246,14 +251,12 @@ public class Indexer {
     }
 
     public IndexerState closestZero() {
-        if (state == IndexerState.two) {
-            return IndexerState.one;
-        }
-        if (state == IndexerState.three) {
-            return IndexerState.oneAlt;
-        }
-        return state;
+        double ang = indexerServoControl.getCurrentAngle() % 360;
+        if (ang < 0) ang += 360;
+        if (ang > 180) return IndexerState.oneAlt;
+        return IndexerState.one;
     }
+
 
     public double getVoltageAnalog() {
         return indexerAnalog.getVoltage();
