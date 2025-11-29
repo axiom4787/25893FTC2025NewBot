@@ -11,19 +11,20 @@ public class CRServoPositionControl {
     private final CRServo crServo;
     private final AnalogInput encoder;
 
-    public static double kp = 0.40;
-    public static double ki = 0.00;
-
+    public static double kp = 0.12;
+    public static double ki = 0.001;
     // NO derivative - amplifies noise
-    public static double ff = 0.10;
 
-    public static double deadband = 1.6;
-    public static double minPower = 0.02;
+    public static double ff = 0.06;
+
+    public static double deadband = 2.0;
+    public static double minPower = 0.04;
 
     public static double maxVoltage = 3.2;
     public static double fullRotation = 360.0;
 
     private double integral = 0.0;
+    private double lastError = 0;
 
     // continuous angle tracker
     private double continuousAngle = 0.0;
@@ -37,6 +38,10 @@ public class CRServoPositionControl {
         this.crServo = servo;
         this.encoder = encoder;
         timer.reset();
+    }
+
+    public double getCurrentAngle() {
+        return getContinuousAngle();
     }
 
     private double getFilteredVoltage() {
@@ -70,12 +75,14 @@ public class CRServoPositionControl {
     }
 
     public void moveToAngle(double targetDeg) {
+
         double current = getContinuousAngle();
         double error = targetDeg - current;
 
         // Deadband
         if (Math.abs(error) < deadband) {
             crServo.setPower(0);
+            integral = 0;
             return;
         }
 
@@ -84,16 +91,15 @@ public class CRServoPositionControl {
         timer.reset();
         if (dt < 0.0001) dt = 0.0001;
 
-        // Integral
+        if (Math.signum(error) != Math.signum(lastError))
+            integral = 0;
+
         integral += error * dt;
-        integral = Math.max(-2, Math.min(2, integral));
+        integral = Math.max(-3, Math.min(3, integral));
 
-        double p = kp * error;
-        double i = ki * integral;
+        lastError = error;
 
-        double ffTerm = ff * Math.signum(error);
-
-        double out = p + i + ffTerm;
+        double out = kp * error + ki * integral + ff * Math.signum(error);
 
         // min power threshold
         if (Math.abs(out) < minPower)
