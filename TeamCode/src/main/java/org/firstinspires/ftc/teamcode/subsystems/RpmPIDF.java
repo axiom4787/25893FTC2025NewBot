@@ -1,63 +1,68 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 public class RpmPIDF {
-    // to tune
+    // gains like the gym type shift
     public double Kp = 0.001;
     public double Ki = 0.0001;
     public double Kd = 0.0001;
 
-    // Feedforward gains (empirical)
+    // ff gains
     public double kS = 0.0;   // static friction
-    public double kV = 0.001; // power per RPM (power = kV * rpm)
+    public double kV = 0.001; // proportional to RPM
 
     // state
-    private double lastError = 0.0;
     private double integral = 0.0;
     private double lastMeasurement = 0.0;
 
-    private double integralLimit = 0.5; // clamping integral
+    private final double integralLimit = 0.5; // clamp integral
 
-    // smooths out derivitave for noisy encoder data
-    private double derivAlpha = 0.6;
+    // smoting
+    private final double derivAlpha = 0.6;
     private double lastDerivativeFiltered = 0.0;
 
+    /**
+     * guys is this tuff params
+      func Updates the PIDF controller and returns the motor power output.
+      @param setpointRPM Desired RPM
+      @param measuredRPM Current RPM
+     @param dt Time since last update (seconds)
+      @return Motor power command (-1.0 to 1.0)
+     */
     public double update(double setpointRPM, double measuredRPM, double dt) {
+        if (dt <= 0) dt = 1e-6;
+
         double error = setpointRPM - measuredRPM;
 
-        // Integral with limiting
+        // Integral clamped
         integral += error * dt;
-        if (integral > integralLimit) integral = integralLimit;
-        if (integral < -integralLimit) integral = -integralLimit;
+        integral = clamp(integral, -integralLimit, integralLimit);
 
-        // Derivative on measurement to reduce derivative kick
-        double rawDerivative = -(measuredRPM - lastMeasurement) / dt; // derivative of error but using measurement derivative
-        // low pass fiter derivative
+        // Derivative with kickredcution
+        double rawDerivative = -(measuredRPM - lastMeasurement) / dt;
         double derivativeFiltered = derivAlpha * lastDerivativeFiltered + (1 - derivAlpha) * rawDerivative;
         lastDerivativeFiltered = derivativeFiltered;
 
-        // PID type shift (small adjsutmetns)
         double pidOut = Kp * error + Ki * integral + Kd * derivativeFiltered;
 
-        // Feedforward (to hit the gas)
+        // ff type shift
         double ff = kS * Math.signum(setpointRPM) + kV * setpointRPM;
 
-        // total command
-        double output = ff + pidOut;
+        // clamped final output
+        double output = clamp(ff + pidOut, -1.0, 1.0);
 
-        // clamp to motor power range
-        output = Math.max(-1.0, Math.min(1.0, output));
-
-        // update state
-        lastError = error;
         lastMeasurement = measuredRPM;
 
         return output;
     }
 
+    //reset state
     public void reset() {
-        integral = 0;
-        lastError = 0;
-        lastDerivativeFiltered = 0;
-        lastMeasurement = 0;
+        integral = 0.0;
+        lastDerivativeFiltered = 0.0;
+        lastMeasurement = 0.0;
+    }
+
+    private double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
     }
 }
