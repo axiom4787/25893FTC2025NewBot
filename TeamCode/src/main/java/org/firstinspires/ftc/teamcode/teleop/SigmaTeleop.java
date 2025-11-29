@@ -69,7 +69,7 @@ public class SigmaTeleop extends LinearOpMode {
 
     // teleop type shift
     public void teleopTick(GamepadEx g1, GamepadEx g2, Telemetry telemetry) {
-
+        outtake.periodic();
         //apriltag turn correction
         double turnCorrection = 0;
 
