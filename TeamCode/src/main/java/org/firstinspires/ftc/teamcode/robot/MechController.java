@@ -14,9 +14,9 @@ public class MechController {
 
 
     // Hardware constants
-    public static final double[] INTAKE = {0, 120, 240}; // Indexer 0, 1, 2 @ Intake Post degrees
-    public static final double[] SHOOT = {180, 270, 60}; // Indexer 0, 1, 2 @ Shooting Post degrees
-    private static final double MAX_SERVO_ROTATION = 270.0; // Degrees
+    public static final double[] INTAKE = {0, 116, 251}; // Indexer 0, 1, 2 @ Intake Post degrees
+    public static final double[] SHOOT = {185, 300, 53}; // Indexer 0, 1, 2 @ Shooting Post degrees 180, 270, 60
+    private static final double MAX_SERVO_ROTATION = 300.0; // Degrees
     private static final double INTAKE_TICKS_PER_FULL_ROTATION = 537.7; //Encoder Resolution PPR for RPM 312
     private static final long POST_ROTATE_WAIT_MS = 1000; // After every rotation
     private static final long MOTOR_WAIT_MS = 2000; // 2 seconds for Shooting motor to reach full speed
@@ -30,7 +30,7 @@ public class MechController {
 
     // Limit constants
     private static final int lifterDown = 45; // Lifter down angle degrees
-    private static final int lifterUp = 100; // Lifter up angle degrees
+    private static final int lifterUp = 110; // Lifter up angle degrees
 
     // Offset constants
 
@@ -56,6 +56,7 @@ public class MechController {
     private boolean humanIntakeRunning = false;
     private int humanIndex = -1;
     private long humanStateStart = 0;
+    private int targetPos;
 
 
     // Constructor
@@ -424,17 +425,26 @@ public class MechController {
         if (Math.abs(power) > 0.01) {
             robot.intakeMot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             robot.intakeMot.setPower(power);
-        } else {
-            // robot.intakeMot.setPower(0);
             double currentPos = robot.intakeMot.getCurrentPosition();
-            int targetPos = (int)(((Math.ceil(currentPos/INTAKE_TICKS_PER_FULL_ROTATION))+1)*INTAKE_TICKS_PER_FULL_ROTATION);
+            targetPos = (int)(((Math.ceil(currentPos / INTAKE_TICKS_PER_FULL_ROTATION)) + 1) * INTAKE_TICKS_PER_FULL_ROTATION);
+
+        } else if (robot.intakeMot.getCurrentPosition() < targetPos) {
             robot.intakeMot.setTargetPosition(targetPos);
             robot.intakeMot.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             robot.intakeMot.setPower(0.5);
+
+        } else {
+            robot.intakeMot.setPower(0);
+            robot.intakeMot.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            targetPos = robot.intakeMot.getCurrentPosition();
         }
     }
     public void runShootingMot(double power) {
-        robot.shootingMot.setPower(power);
+        if (Math.abs(power) > 0.01) {
+            robot.shootingMot.setPower(6000/6000);
+        } else {
+            robot.shootingMot.setPower(0);
+        }
     }
     public void setLifter(int down0up1) {
         if (lastLifter != down0up1) {

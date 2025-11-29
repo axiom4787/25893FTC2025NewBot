@@ -18,7 +18,6 @@ import org.firstinspires.ftc.teamcode.robot.VisionController;
 import org.firstinspires.ftc.vision.VisionPortal;
 
 @Autonomous(name = "AutoBlue", group = "Auto")
-@Disabled
 public class AutoBlue extends OpMode {
 
     RobotHardware robot;

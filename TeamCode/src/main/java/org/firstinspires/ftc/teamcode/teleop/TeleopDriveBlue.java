@@ -25,7 +25,6 @@ import java.util.function.Supplier;
 
 @Configurable
 @TeleOp(name = "TeleopBlue", group = "Teleop")
-@Disabled
 public class TeleopDriveBlue extends OpMode {
     private Follower follower;
     private final Pose startingPose = Blue.SCORE_POSE;
