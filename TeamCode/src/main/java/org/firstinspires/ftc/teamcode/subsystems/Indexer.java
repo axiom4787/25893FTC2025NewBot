@@ -27,9 +27,10 @@ public class Indexer {
     private final double minWait = 100;
     private final double maxWait = 300;
     private final double DEADBAND = 1.67; // degrees
-    public  double targetAngle = 0;
+    public static double targetAngle = 0;
     public static double offsetAngle = 79;
     public static double outtakeOffsetAngle = 0;
+    private double lastAngle = offsetAngle;
     Actuator actuator;
     AnalogInput indexerAnalog;
 
@@ -156,6 +157,10 @@ public class Indexer {
     // more readable
     public void moveTo(IndexerState newState) {
 
+        // Update artifact array
+        shiftArtifacts(state, newState);
+
+        double previousAngle = lastAngle;
 
         // compute baseangle
         int baseAngle = (stateToNum(newState) - 1) * 120;
@@ -168,26 +173,21 @@ public class Indexer {
         //calibration
         double desiredAngle = (baseAngle + offsetAngle) % 360;
 
-        double current = indexerServoControl.getCurrentAngle();
+        //compute effective delta
+        double delta = Math.abs(desiredAngle - previousAngle);
 
-        double rawDiff = desiredAngle - (current % 360);
-        if (rawDiff > 180) rawDiff -= 360;
-        if (rawDiff < -180) rawDiff += 360;
-
-        double rawDelta = Math.abs(rawDiff);
-
+        // shortest path (wrap around)
+        if (delta > 180) {
+            delta = 360 - delta;
+        }
 
         // dont do anything for small angle change (idk if this is necessary we should look into it)
-        if (rawDelta < DEADBAND) {
+        if (delta < DEADBAND) {
             return;
         }
 
-
-        // Update artifact array
-        shiftArtifacts(state, newState);
-
         // compute delay
-        double waitTime = rawDelta * msPerDegree;
+        double waitTime = delta * msPerDegree;
         waitTime = Math.max(minWait, Math.min(maxWait, waitTime));
 
         //reset timing
@@ -196,29 +196,24 @@ public class Indexer {
         scanPending = true;
 
         //update things
-        double diff = desiredAngle - (current % 360);
-
-        if (diff > 180) diff -= 360;
-        if (diff < -180) diff += 360;
-
-        targetAngle = current + diff;
-
+        lastAngle = desiredAngle;
+        targetAngle = desiredAngle;
         state = newState;
     }
 
 
     // Call this repeatedly in OpMode loop
     public void update() {
-        // move the CRServo toward target angle
         indexerServoControl.moveToAngle(targetAngle);
 
-        // scan artifacts
+        // some stuff the Ai spit out seems right but idk
         if (scanPending && scanTimer.milliseconds() >= scanDelay) {
             scanArtifact();
             scanPending = false;
         }
-    }
 
+
+    }
 
     public IndexerState numToState(int num) {
         switch (num) {
@@ -251,12 +246,14 @@ public class Indexer {
     }
 
     public IndexerState closestZero() {
-        double ang = indexerServoControl.getCurrentAngle() % 360;
-        if (ang < 0) ang += 360;
-        if (ang > 180) return IndexerState.oneAlt;
-        return IndexerState.one;
+        if (state == IndexerState.two) {
+            return IndexerState.one;
+        }
+        if (state == IndexerState.three) {
+            return IndexerState.oneAlt;
+        }
+        return state;
     }
-
 
     public double getVoltageAnalog() {
         return indexerAnalog.getVoltage();
@@ -269,5 +266,7 @@ public class Indexer {
     public boolean isBusy() {
         return scanPending;
     }
+    public double getTargetVoltage() {
+        return indexerServoControl.getTargetVoltage();
+    }
 }
-

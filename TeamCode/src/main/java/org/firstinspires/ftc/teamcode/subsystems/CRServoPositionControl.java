@@ -1,95 +1,70 @@
 package org.firstinspires.ftc.teamcode.subsystems;
-
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Config
 public class CRServoPositionControl {
-
     private final CRServo crServo;
-    private final AnalogInput encoder;
+    private final AnalogInput encoder; // Analog input for position from 4th wire
 
-    public static double kp = 0.12;
-    public static double ff = 0.05;
-    public static double deadband = 2.0;
-    public static double minPower = 0.05;
-
-    public static double maxVoltage = 3.2;
-    public static double fullRotation = 360.0;
-
-    private double continuousAngle = 0.0;
-    private Double lastRawAngle = null;
-    private double filteredVoltage = 0.0;
+    public static double kp = 0.341;
+    public static double ki = 0.0;
+    public static double kd = 0.0;
+    public static double kf = 0.0167;
+    public static double filterAlpha = 0.8;
+    private double integral = 0.0;
+    private double lastError = 0.0;
+    private double filteredVoltage = 0;
+    private double targetVoltage;
+    private ElapsedTime timer = new ElapsedTime();
 
     public CRServoPositionControl(CRServo servo, AnalogInput encoder) {
         this.crServo = servo;
         this.encoder = encoder;
-    }
-
-    public double getCurrentAngle() {
-        return getContinuousAngle();
+        timer.reset();
     }
 
     private double getFilteredVoltage() {
-        filteredVoltage = 0.6 * filteredVoltage + 0.4 * encoder.getVoltage();
+        filteredVoltage = (1 - filterAlpha) * filteredVoltage + filterAlpha * encoder.getVoltage();
         return filteredVoltage;
     }
 
-    private double voltageToAngle(double v) {
-        return (v / maxVoltage) * fullRotation;
+
+    public double angleToVoltage(double angleDegrees) {
+        angleDegrees = Math.max(0, Math.min(360, angleDegrees)); // Clamp
+        return (angleDegrees / 360.0) * 3.3;
+        // REV Through-Bore analog encoders output 0–3.3V, not 0–3.2V apparently but we measured 3.2 so we will try
     }
 
-    private double getContinuousAngle() {
-        double rawAngle = voltageToAngle(getFilteredVoltage());
+    public void moveToAngle(double targetAngleDegrees) {
+        targetVoltage = angleToVoltage(targetAngleDegrees);
+        double currentVoltage = getFilteredVoltage();
 
-        if (lastRawAngle == null) {
-            lastRawAngle = rawAngle;
-            continuousAngle = rawAngle;
-            return continuousAngle;
-        }
+        double error = targetVoltage - currentVoltage;
 
-        double delta = rawAngle - lastRawAngle;
+        // Shortest path wrap handling, for continuous rotation (optional)
+        if (error > 1.65) { error -= 3.3; }
+        if (error < -1.65) { error += 3.3; }
 
-        // unwrap rollover
-        if (delta > 180) delta -= 360;
-        if (delta < -180) delta += 360;
+        double deltaTime = timer.seconds();
+        timer.reset();
+        if (deltaTime <= 0.0001) deltaTime = 0.0001;
 
-        continuousAngle += delta;
-        lastRawAngle = rawAngle;
+        integral += error * deltaTime;
+        integral = Math.max(-2, Math.min(2, integral));
+        double derivative = (error - lastError) / deltaTime;
 
-        return continuousAngle;
+        double output = kp * error + ki * integral + kd * derivative + kf * Math.signum(error);
+        output = Math.max(-1.0, Math.min(1.0, output));
+        crServo.setPower(output);
+        lastError = error;
     }
-
-    public void moveToAngle(double targetDeg) {
-        double current = getContinuousAngle();
-        double error = targetDeg - current;
-
-        // unwrap error to shortest path
-        if (error > 180) error -= 360;
-        if (error < -180) error += 360;
-
-        // stop if within deadband
-        if (Math.abs(error) < deadband) {
-            crServo.setPower(0);
-            return;
-        }
-
-        // proportional + feedforward
-        double power = kp * error + ff * Math.signum(error);
-
-        // apply minimum power
-        if (Math.abs(power) < minPower) {
-            power = minPower * Math.signum(power);
-        }
-
-        // clamp to -1,1
-        power = Math.max(-1, Math.min(1, power));
-
-        crServo.setPower(power);
+    public double getTargetVoltage() {
+        return targetVoltage;
     }
 }
-
 
 /*
 package org.firstinspires.ftc.teamcode.subsystems;
