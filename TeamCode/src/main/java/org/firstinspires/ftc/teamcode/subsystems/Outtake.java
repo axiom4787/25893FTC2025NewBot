@@ -21,20 +21,15 @@ public class Outtake {
     private final double TPR = 28.0;
 
     public static double p = 0.0002;
-    public static double i = 0.0;
-    public static double d = 0.0;
-    public static double f = 0.0003;
+    public static double s = 0.0;
+    public static double v = 0.0;
 
     public Outtake(HardwareMap hardwareMap) {
         shooter = new MotorEx(hardwareMap, "outtake");
         shooter.setInverted(true);
 
         // Initialize PIDF controller
-        rpmPIDF = new RpmPIDF();
-        rpmPIDF.Kp = p;
-        rpmPIDF.Ki = i;
-        rpmPIDF.Kd = d;
-        rpmPIDF.kV = f;
+        rpmPIDF = new RpmPIDF(p,s,v);
     }
 
     public void stop() {

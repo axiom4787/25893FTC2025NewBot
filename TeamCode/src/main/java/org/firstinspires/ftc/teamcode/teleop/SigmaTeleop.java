@@ -127,7 +127,7 @@ public class SigmaTeleop extends LinearOpMode {
             outtake.setTargetRPM(shooterRPM);
         } else {
             outtake.shooterEnabled = false;
-            outtake.setTargetRPM(0);
+            outtake.setPower(0);
         }
 
         // spindexer control
