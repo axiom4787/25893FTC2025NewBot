@@ -52,8 +52,6 @@ public class Outtake {
     public void set(double x) {
         if (mode == Mode.POWER) {
             motorPower = clamp(x, 0.0, 1.0);
-            if(Math.abs(currentRPM) <= 5)
-                controller.reset();
         } else { // PIDF_CONTROL
             targetRPM = x;
         }

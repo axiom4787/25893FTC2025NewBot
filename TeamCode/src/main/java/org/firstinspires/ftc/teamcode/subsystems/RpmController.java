@@ -9,15 +9,10 @@ public class RpmController {
     private final double kS; //static
     private final double kV; //velocity proportional
 
-    // State
-    private double lastMeasurement = 0.0;
-    private final ElapsedTime timer = new ElapsedTime();
-
     public RpmController(double Kp, double kS, double kV) {
         this.Kp = Kp;
         this.kS = kS;
         this.kV = kV;
-        timer.reset();
     }
 
     /**
@@ -28,9 +23,6 @@ public class RpmController {
      * @return motor power (-1 to 1)
      */
     public double update(double setpointRPM, double measuredRPM) {
-        double dt = Math.max(timer.seconds(), 1e-6);
-        timer.reset();
-
         double error = setpointRPM - measuredRPM;
 
         // Feedforward
@@ -41,14 +33,7 @@ public class RpmController {
 
         // Clamp output
         double output = clamp(ff + pOut, -1.0, 1.0);
-
-        lastMeasurement = measuredRPM;
         return output;
-    }
-
-    public void reset() {
-        lastMeasurement = 0.0;
-        timer.reset();
     }
 
     private double clamp(double v, double min, double max) {
