@@ -39,7 +39,6 @@ public class Outtake {
     }
 
     public void setPower(double power) {
-        motorPower = clamp(power, 0, 1.0);
         shooter.set(motorPower);
     }
 
