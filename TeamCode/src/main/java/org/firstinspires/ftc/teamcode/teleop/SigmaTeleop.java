@@ -123,9 +123,10 @@ public class SigmaTeleop extends LinearOpMode {
 
         //outtake control
         if (g2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.01) {
+            outtake.shooterEnabled = true;
             outtake.setTargetRPM(shooterRPM);
         } else {
-
+            outtake.shooterEnabled = false;
             outtake.setTargetRPM(0);
         }
 
