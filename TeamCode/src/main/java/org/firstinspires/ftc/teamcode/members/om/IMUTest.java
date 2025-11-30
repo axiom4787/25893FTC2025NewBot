@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.omcode;
+package org.firstinspires.ftc.teamcode.members.om;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;

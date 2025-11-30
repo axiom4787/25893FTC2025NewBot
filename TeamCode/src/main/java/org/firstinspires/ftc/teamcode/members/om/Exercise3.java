@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.omcode;
+package org.firstinspires.ftc.teamcode.members.om;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  * This OpMode illustrates all the exercises from Section 3.3.
  */
 
-@TeleOp(name="Basic Telemetry Exercises", group="Exercises")
+@TeleOp(name="Om - Basic Telemetry", group="Exercises")
 public class Exercise3 extends LinearOpMode {
 
     @Override
