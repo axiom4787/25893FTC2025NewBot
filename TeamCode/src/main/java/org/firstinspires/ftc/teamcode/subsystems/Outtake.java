@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import static androidx.core.math.MathUtils.clamp;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -83,9 +85,5 @@ public class Outtake {
         motorPower = controller.update(targetRPM, currentRPM);
         motorPower = clamp(motorPower, 0, 1.0);
         shooter.set(motorPower);
-    }
-
-    private double clamp(double value, double min, double max) {
-        return Math.max(min, Math.min(max, value));
     }
 }

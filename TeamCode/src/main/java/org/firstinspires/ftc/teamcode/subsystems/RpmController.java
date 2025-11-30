@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import com.qualcomm.robotcore.util.ElapsedTime;
+import static androidx.core.math.MathUtils.clamp;
 
 public class RpmController {
 
@@ -34,9 +34,5 @@ public class RpmController {
         // Clamp output
         double output = clamp(ff + pOut, -1.0, 1.0);
         return output;
-    }
-
-    private double clamp(double v, double min, double max) {
-        return Math.max(min, Math.min(max, v));
     }
 }
