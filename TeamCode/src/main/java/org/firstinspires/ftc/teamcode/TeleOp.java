@@ -3,8 +3,10 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
+@com.qualcomm.robotcore.eventloop.opmode.TeleOp
 public class TeleOp extends LinearOpMode {
     DcMotor frontLeft, frontRight, backLeft, backRight;
 
@@ -27,6 +29,8 @@ public class TeleOp extends LinearOpMode {
         frontLeft.setDirection(DcMotor.Direction.REVERSE);
         backLeft.setDirection(DcMotor.Direction.REVERSE);
 
+        launcher.setDirection(DcMotorSimple.Direction.REVERSE);
+
         launcher.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         launcher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
@@ -47,19 +51,19 @@ public class TeleOp extends LinearOpMode {
             backLeft.setPower(backLeftPower);
             backRight.setPower(backRightPower);
 
-            if (gamepad2.a) {
+            if (gamepad1.a) {
                 gate.setPosition(1.0);
-            } else if (gamepad2.b) {
+            } else if (gamepad1.b) {
                 gate.setPosition(0.0);
             }
 
-            if (gamepad2.right_trigger > 0.1) {
-                launcher.setVelocity(6000 * gamepad2.right_trigger);
+            if (gamepad1.right_trigger > 0.1) {
+                launcher.setVelocity(6000 * gamepad1.right_trigger);
             } else {
                 launcher.setVelocity(0);
             }
 
-            if (gamepad2.dpad_down) {
+            if (gamepad1.dpad_down) {
                 intakeAction=true;
             }
 
@@ -72,9 +76,9 @@ public class TeleOp extends LinearOpMode {
                     intakeAction=false;
                 }
             } else {
-                if (gamepad2.left_trigger > 0.1) {
+                if (gamepad1.left_trigger > 0.1) {
                     intake.setPower(1.0);
-                } else if (gamepad2.left_bumper) {
+                } else if (gamepad1.left_bumper) {
                     intake.setPower(-1.0);
                 } else {
                     intake.setPower(0.0);
