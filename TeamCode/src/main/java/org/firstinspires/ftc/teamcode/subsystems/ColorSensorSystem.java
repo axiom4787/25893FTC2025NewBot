@@ -27,8 +27,8 @@ public class ColorSensorSystem {
 
     public Indexer.ArtifactColor getColor() {
         int[] rgb = {colorSensor.red(), colorSensor.green(), colorSensor.blue()};
-        if (checkRange(rgb, PURPLE_RGB, PURPLE_TOLERANCE)) return Indexer.ArtifactColor.purple;
-        if (checkRange(rgb, GREEN_RGB, GREEN_TOLERANCE)) return Indexer.ArtifactColor.green;
+        if (checkColorRange(rgb, PURPLE_RGB, PURPLE_TOLERANCE)) return Indexer.ArtifactColor.purple;
+        if (checkColorRange(rgb, GREEN_RGB, GREEN_TOLERANCE)) return Indexer.ArtifactColor.green;
         return Indexer.ArtifactColor.unknown;
     }
 }
