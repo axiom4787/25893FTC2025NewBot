@@ -11,7 +11,7 @@ import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(name = " Auto Pedro Path 0.01", group = "Autonomous")
+@Autonomous(name = " Auto Pedro Path 0.06", group = "Autonomous")
 public class AutoPedroPath extends OpMode {
 
     private Follower follower;
@@ -19,9 +19,9 @@ public class AutoPedroPath extends OpMode {
 
     private int pathState;
 
-    private final Pose startPose = new Pose(28.5, 128, Math.toRadians(0)); // Start Pose of our robot.
+    private final Pose startPose = new Pose(0, 0, Math.toRadians(0)); // Start Pose of our robot.
 //    private final Pose scorePose = new Pose(60, 85, Math.toRadians(0)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose scorePose = new Pose(28.5, 128, Math.toRadians(180)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose scorePose = new Pose(1, 1, Math.toRadians(90)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
 
     private final Pose pickup1Pose = new Pose(37, 121, Math.toRadians(0)); // Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup2Pose = new Pose(43, 130, Math.toRadians(0)); // Middle (Second Set) of Artifacts from the Spike Mark.
