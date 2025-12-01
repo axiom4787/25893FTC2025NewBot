@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 import com.bylazar.telemetry.JoinedTelemetry;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -34,10 +35,8 @@ public abstract class AutonomousOpMode extends OpMode {
     private PathState pathState;
 
     // Pedro paths
-    private PathChain redHitAndRun;
-    private PathChain blueHitAndRun;
-    private PathChain blueLeaveStart1;
-    private PathChain redLeaveStart1;
+    private PathChain hitAndRun;
+    private PathChain lowStartThenLeave;
     private JoinedTelemetry joinedTelemetry;
     private static ElapsedTime stopWatch = new ElapsedTime();
 
@@ -45,29 +44,22 @@ public abstract class AutonomousOpMode extends OpMode {
 
         Poses.AlliancePoses poses = Poses.forAlliance(alliance);
         // TODO: build our pedro paths here
-        // TODO - these hit and run paths are using OLD shooting positions in front the goals. Need to change based on updated shooter mechanism
-//        redHitAndRun = follower.pathBuilder()
-//                .addPath(new BezierLine(redStartingPose2, redShootingPose))
-//                .setConstantHeadingInterpolation(redStartingPose2.getHeading())
-//                .addPath(new BezierLine(redShootingPose, redTopLeavePose))
-//                .build();
-//
-//        blueHitAndRun = follower.pathBuilder()
-//                .addPath(new BezierLine(blueStartingPose2, blueShootingPose))
-//                .setConstantHeadingInterpolation(blueStartingPose2.getHeading())
-//                .addPath(new BezierLine(blueShootingPose, blueLowLeavePose))
-//                .build();
-//
+        // hit and run is designed to move from starting to shooting position, then to leave position
+        // TODO: this probably needs to be separate path segments to allow for shooting inbetween movement
+        hitAndRun = follower.pathBuilder()
+                .addPath(new BezierLine(poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2),
+                        poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2)))
+                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2).getHeading())
+                .addPath(new BezierLine(poses.get(Poses.NamedPose.SHOOTING_GOAL_TOP_2),
+                        poses.get(Poses.NamedPose.LEAVE_TOP)))
+                .build();
+
 //        // TODO - rename these - these are minimal paths to exit the lower launch zone to get leave points ONLY
-//        redLeaveStart1 = follower.pathBuilder()
-//                .addPath(new BezierLine(redStartingPose1, redLowLeavePose))
-//                .setConstantHeadingInterpolation(redStartingPose1.getHeading())
-//                .build();
-//
-//        blueLeaveStart1 = follower.pathBuilder()
-//                .addPath(new BezierLine(blueStartingPose1, blueLowLeavePose))
-//                .setConstantHeadingInterpolation(blueStartingPose1.getHeading())
-//                .build();
+        lowStartThenLeave = follower.pathBuilder()
+                .addPath(new BezierLine(poses.get(Poses.NamedPose.STARTING_LOW),
+                        poses.get(Poses.NamedPose.LEAVE_LOW)))
+                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.STARTING_LOW).getHeading())
+                .build();
 
         // TODO - we are missing paths to collect balls from each of the rows...
     }
