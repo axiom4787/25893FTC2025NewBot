@@ -69,11 +69,16 @@ public class TeleopMech extends OpMode {
         } else if ((gamepad2.x) && !buttonPressed) {
             buttonPressed = true;
             mechController.setState(MechState.IDLE);
-        }
-        /*else if ((gamepad2.y) && !buttonPressed) { // TEST
+        } else if ((gamepad2.dpad_up) && !buttonPressed) {
             buttonPressed = true;
-            mechController.getEmptyIndex();
-        }*/
+            mechController.tagPattern = new int[]{21, 2, 1, 1}; // ID 21: GPP
+        } else if ((gamepad2.dpad_right) && !buttonPressed) {
+            buttonPressed = true;
+            mechController.tagPattern = new int[]{22, 1, 2, 1}; // ID 22: PGP
+        } else if ((gamepad2.dpad_down) && !buttonPressed) {
+            buttonPressed = true;
+            mechController.tagPattern = new int[]{23, 1, 1, 2}; // ID 23: PPG
+        }
 
         // Reset button press flag when no buttons (except A) are pressed
         boolean noButtons =
@@ -83,7 +88,10 @@ public class TeleopMech extends OpMode {
                         gamepad2.right_trigger <= 0.2 &&
                         !gamepad2.left_bumper &&
                         !gamepad2.right_bumper &&
-                        !gamepad2.a;
+                        !gamepad2.a &&
+                        !gamepad2.dpad_up &&
+                        !gamepad2.dpad_right &&
+                        !gamepad2.dpad_down;
 
         if (noButtons) {
             buttonPressed = false;

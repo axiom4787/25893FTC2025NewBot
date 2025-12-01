@@ -18,14 +18,15 @@ public class MechController {
     public static final double[] SHOOT = {185, 300, 53}; // Indexer 0, 1, 2 @ Shooting Post degrees 180, 270, 60
     private static final double MAX_SERVO_ROTATION = 300.0; // Degrees
     private static final double INTAKE_TICKS_PER_FULL_ROTATION = 537.7; //Encoder Resolution PPR for RPM 312
+    private static final long INTAKE_CUTOFF_MS = 3000;
     private static final long POST_ROTATE_WAIT_MS = 1000; // After every rotation
     private static final long MOTOR_WAIT_MS = 2000; // 2 seconds for Shooting motor to reach full speed
     private static final long POST_INDEXER_WAIT_MS = 1000; // 1 second post Indexer rotation
     private static final long LIFT_WAIT_MS = 2000; // 2 seconds for Lifter in Up position for shooting
     private static final long DROP_WAIT_MS = 1000; // 1 second post Lifter in Down position
     private static final long APRIL_TAG_WAIT_MS = 3000; // 3 seconds waiting to detect AprilTag
-    public static final double FULL_DRIVE_POWER = 1.0;
-    public static final double INTAKE_DRIVE_POWER = 0.35;
+    public static final double FULL_DRIVE_POWER = 0.8;
+    public static final double INTAKE_DRIVE_POWER = 0.25;
 
 
     // Limit constants
@@ -184,40 +185,49 @@ public class MechController {
 
                     case 0:
                         intakeTargetIndex = getEmptyIndex();
-                        if (intakeTargetIndex == -1) { // Stopping intake state when indexer is filled
+                        if (intakeTargetIndex == -1) { // Stop intake stage
                             currentState = MechState.IDLE;
                             break;
                         }
 
-                        setIndexer(INTAKE[intakeTargetIndex]); // Rotating to next empty indexer slot
+                        setIndexer(INTAKE[intakeTargetIndex]);
                         intakeStageStart = System.currentTimeMillis();
                         intakeStage = 1;
                         break;
 
                     case 1:
-                        if (System.currentTimeMillis() - intakeStageStart < POST_ROTATE_WAIT_MS) // Waiting for the indexer to finish rotation
+                        if (System.currentTimeMillis() - intakeStageStart < POST_ROTATE_WAIT_MS) // Wait for indexer rotate
                             break;
 
                         runIntakeMot(1);
-                        intakeStageStart = System.currentTimeMillis();
+                        intakeStageStart = System.currentTimeMillis();   // Start timer
                         intakeStage = 2;
                         break;
 
                     case 2:
-                        int color = visionController.artifactColor(); // Detecting artifact color
+                        int color = visionController.artifactColor();
                         boolean detected = color != 0;
 
-                        if (detected) {
+                        if (detected) { // Artifact detection
                             runIntakeMot(0);
-                            indexer[intakeTargetIndex] = color; // Storing artifact color
+                            indexer[intakeTargetIndex] = color;
                             artifactCount++;
-                            intakeStageStart = System.currentTimeMillis(); // Begin POST_WAIT
+                            intakeStageStart = System.currentTimeMillis(); // Resets timer
                             intakeStage = 3;
+                            break;
                         }
+
+                        if (System.currentTimeMillis() - intakeStageStart >= INTAKE_CUTOFF_MS) { // Timer cut-off
+                            runIntakeMot(0);
+                            currentState = MechState.IDLE;
+                            intakeStage = 0;
+                            break;
+                        }
+
                         break;
 
                     case 3:
-                        if (System.currentTimeMillis() - intakeStageStart >= POST_ROTATE_WAIT_MS) { // Waiting post intake
+                        if (System.currentTimeMillis() - intakeStageStart >= POST_ROTATE_WAIT_MS) { // Wait time after detected artifact
                             intakeStage = 0;
                         }
                         break;
