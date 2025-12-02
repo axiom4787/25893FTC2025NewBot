@@ -131,7 +131,8 @@ public class SigmaTeleop extends LinearOpMode {
         // spindexer control
         // Advance state
         if (g2.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
-            if (!indexer.isBusy()) indexer.moveTo(indexer.nextState());
+            indexer.moveTo(indexer.nextState());
+            telemetry.addLine("Indexer moving");
         }
 
         //actuator control
