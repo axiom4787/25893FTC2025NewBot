@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.hardware.SimpleServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+@Config
+
 public class Actuator {
-    private final double DOWN = 0.0; // flush with the floor of platform
-    private final double UP = .27; // raised to push it into the flywheel
+    public final double DOWN = 0.0; // flush with the floor of platform
+    public final double UP = .17; // raised to push it into the flywheel
 
     private boolean activated;
 
