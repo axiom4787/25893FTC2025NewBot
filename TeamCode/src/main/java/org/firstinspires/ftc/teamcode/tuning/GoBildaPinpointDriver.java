@@ -1,7 +1,7 @@
 // Copyright (c) 2024-2025 FTC 13532
 // All rights reserved.
 
-package org.firstinspires.ftc.teamcode.AprilTags;
+package org.firstinspires.ftc.teamcode.tuning;
 
 /*   MIT License
 *   Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,6 +38,7 @@ import java.util.Arrays;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 
 @I2cDeviceType
 @DeviceProperties(
@@ -302,8 +303,9 @@ public class GoBildaPinpointDriver extends I2cDeviceSynchDevice<I2cDeviceSynchSi
    * @param xOffset how sideways from the center of the robot is the X (forward) pod? Left increases
    * @param yOffset how far forward from the center of the robot is the Y (Strafe) pod? forward
    *     increases
+   * @param mm
    */
-  public void setOffsets(double xOffset, double yOffset) {
+  public void setOffsets(double xOffset, double yOffset, DistanceUnit mm) {
     writeFloat(Register.X_POD_OFFSET, (float) xOffset);
     writeFloat(Register.Y_POD_OFFSET, (float) yOffset);
   }
@@ -375,8 +377,9 @@ public class GoBildaPinpointDriver extends I2cDeviceSynchDevice<I2cDeviceSynchSi
    *
    * @param ticks_per_mm should be somewhere between 10 ticks/mm and 100 ticks/mm a goBILDA Swingarm
    *     pod is ~13.26291192
+   * @param mm
    */
-  public void setEncoderResolution(double ticks_per_mm) {
+  public void setEncoderResolution(double ticks_per_mm, DistanceUnit mm) {
     writeByteArray(
         Register.MM_PER_TICK, (floatToByteArray((float) ticks_per_mm, ByteOrder.LITTLE_ENDIAN)));
   }
@@ -539,28 +542,28 @@ public class GoBildaPinpointDriver extends I2cDeviceSynchDevice<I2cDeviceSynchSi
   /**
    * @return the estimated H (heading) position of the robot in Radians
    */
-  public double getHeading() {
+  public double getHeading(UnnormalizedAngleUnit radians) {
     return hOrientation;
   }
 
   /**
    * @return the estimated X (forward) velocity of the robot in mm/sec
    */
-  public double getVelX() {
+  public double getVelX(DistanceUnit inch) {
     return xVelocity;
   }
 
   /**
    * @return the estimated Y (strafe) velocity of the robot in mm/sec
    */
-  public double getVelY() {
+  public double getVelY(DistanceUnit inch) {
     return yVelocity;
   }
 
   /**
    * @return the estimated H (heading) velocity of the robot in radians/sec
    */
-  public double getHeadingVelocity() {
+  public double getHeadingVelocity(UnnormalizedAngleUnit radians) {
     return hVelocity;
   }
 
