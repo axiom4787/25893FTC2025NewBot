@@ -34,9 +34,9 @@ public class Indexer {
     public static double targetAngle = 0;
 
     // scan timing
-    private final double msPerDegree = 0.6;
-    private final double minWait = 100;
-    private final double maxWait = 300;
+    private static final double msPerDegree = 0.6;
+    private static final double minWait = 100;
+    private static final double maxWait = 300;
 
     // objects
     private final ColorSensorSystem colorSensor;
@@ -122,7 +122,7 @@ public class Indexer {
 
         double delta = Math.abs(targetAngle - actualAngle);
         if (delta > 180) delta = 360 - delta;
-        if (delta < DEADBAND) return;
+        //if (delta < DEADBAND) return;
 
         double wait = Math.min(maxWait, Math.max(minWait, delta * msPerDegree));
         scanTimer.reset();

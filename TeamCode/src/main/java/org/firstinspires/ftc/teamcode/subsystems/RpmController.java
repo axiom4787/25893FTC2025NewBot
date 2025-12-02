@@ -2,12 +2,15 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import static androidx.core.math.MathUtils.clamp;
 
+import com.acmerobotics.dashboard.config.Config;
+
+@Config
 public class RpmController {
 
     // Gains
-    private final double Kp;
-    private final double kS; //static
-    private final double kV; //velocity proportional
+    public final double Kp;
+    public final double kS; //static
+    public final double kV; //velocity proportional
 
     public RpmController(double Kp, double kS, double kV) {
         this.Kp = Kp;

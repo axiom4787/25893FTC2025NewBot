@@ -3,13 +3,13 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import static androidx.core.math.MathUtils.clamp;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 /**
- * Initialize in either RPM or Power control mode
- * Change mode with public mode variable
- * You can use set function in both modes - in RPM mode set to an RPM and in power mode set to a power value (0.0-1.0)
+ * POWER mode  → set(x) sets power 0–1
+ * RPM mode    → set(x) sets RPM target and uses PIDF control
  */
 
 @Config
@@ -21,27 +21,30 @@ public class Outtake {
     }
 
     private final MotorEx shooter;
-    private final RpmController controller;
 
-    private double motorPower = 0.0;
-    private double currentRPM = 0.0;
-    private double targetRPM = 0.0;
+    // FTCLib PID controller (P, I, D only)
+    private final PIDController controller;
 
-    private final double turnsPerRev = 28.0;
-
-    // Dashboard tunable gains
+    // Dashboard-tunable gains
     public static double p = 0.0002;
-    public static double s = 0.0;
-    public static double v = 0.0;
+    public static double i = 0.0;
+    public static double d = 0.0;
+    public static double f = 0.0003;   // feedforward from earlier code
 
-    // Current mode
+    // Mode + state
     public Mode mode;
+    private double motorPower = 0.0;
+    private double targetRPM = 0.0;
+    private double currentRPM = 0.0;
+
+    private final double TPR = 28.0;   // encoder ticks per rotation
 
     public Outtake(HardwareMap hardwareMap, Mode mode) {
         shooter = new MotorEx(hardwareMap, "outtake");
         shooter.setInverted(true);
+
         this.mode = mode;
-        controller = new RpmController(p, s, v);
+        controller = new PIDController(p, i, d);
     }
 
     public void stop() {
@@ -50,40 +53,44 @@ public class Outtake {
         targetRPM = 0.0;
     }
 
-    //unified control method
+    /** Unified setter */
     public void set(double x) {
         if (mode == Mode.POWER) {
             motorPower = clamp(x, 0.0, 1.0);
-        } else { // PIDF_CONTROL
+        } else { // RPM MODE
             targetRPM = x;
         }
     }
 
-    public double getRPM() {
-        return currentRPM;
-    }
-
-    public double getTargetRPM() {
-        return targetRPM;
-    }
-
-    public double getPower() {
-        return motorPower;
-    }
+    public double getRPM() { return currentRPM; }
+    public double getTargetRPM() { return targetRPM; }
+    public double getPower() { return motorPower; }
 
     public void periodic() {
-        // Update measured RPM
-        currentRPM = shooter.getVelocity() / turnsPerRev * 60.0;
+        // Update current RPM from motor encoder
+        currentRPM = shooter.getVelocity() / TPR * 60.0;
 
         if (mode == Mode.POWER) {
-            // Direct open-loop
+            // Open-loop mode
             shooter.set(motorPower);
             return;
         }
 
-        //control loop rpm control
-        motorPower = controller.update(targetRPM, currentRPM);
-        motorPower = clamp(motorPower, 0, 1.0);
+        // Update PID gains live from dashboard
+        controller.setPID(p, i, d);
+
+        // Compute PID term
+        double pid = controller.calculate(currentRPM, targetRPM);
+
+        // Compute feedforward term from earlier code
+        double ff = targetRPM * f;
+
+        // Combined PIDF output
+        motorPower = pid + ff;
+
+        // Constrain power
+        motorPower = clamp(motorPower, 0.0, 1.0);
+
         shooter.set(motorPower);
     }
 }
