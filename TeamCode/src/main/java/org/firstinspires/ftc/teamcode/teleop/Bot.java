@@ -35,7 +35,6 @@ public class Bot {
     public FSM state;
 
     private static final double TRIGGER_DEADZONE = 0.05;
-    private boolean quickSpinRequested = false;
 
     public Bot(HardwareMap hardwareMap, Telemetry tele, Gamepad gamepad1, Gamepad gamepad2) {
         intake = new Intake(hardwareMap);
@@ -49,16 +48,10 @@ public class Bot {
         state = FSM.Intake;
     }
 
-    private void enterState(FSM newState) {
-        if (state != newState) {
-            state = newState;
-            quickSpinRequested = false;
-        }
-    }
-
-    public void teleopInit() {
+    public void teleopInit()
+    {
         indexer.startIntake();
-        enterState(FSM.Intake);
+        state = FSM.Intake;
     }
 
     public void teleopTick() {
@@ -90,6 +83,7 @@ public class Bot {
         telemetry.addData("Field Centric:", fieldCentric);
         telemetry.addData("Indexer States:", "Current State: %s , Next State: %s",indexer.getState(), indexer.nextState());
         telemetry.addData("Indexer Voltages:", "Target: %.3f , Actual: %.3f" , indexer.getTargetVoltage(), indexer.getVoltageAnalog());
+        telemetry.addData("Outtake RPM:", "Target: %.1f, Actual: %.1f", outtake.getTargetRPM(),outtake.getRPM());
         telemetry.addData("Actuator up?: ", actuator.isActivated());
         telemetry.update();
     }
@@ -108,27 +102,17 @@ public class Bot {
         if (leftTrigger > TRIGGER_DEADZONE) intake.run();
         else intake.stop();
 
-        if (g2.wasJustPressed(GamepadKeys.Button.A)) enterState(FSM.QuickOuttake);
-        if (g2.wasJustPressed(GamepadKeys.Button.B)) enterState(FSM.SortOuttake);
-        if (g2.wasJustPressed(GamepadKeys.Button.Y)) enterState(FSM.Endgame);
+        if (g2.wasJustPressed(GamepadKeys.Button.A)) state = (FSM.QuickOuttake);
+        if (g2.wasJustPressed(GamepadKeys.Button.B)) state = (FSM.SortOuttake);
+        if (g2.wasJustPressed(GamepadKeys.Button.Y)) state = (FSM.Endgame);
     }
 
     private void handleQuickOuttakeState() {
         if (g2.wasJustPressed(GamepadKeys.Button.X)) {
-            quickSpinRequested = !quickSpinRequested;
-            if (quickSpinRequested) {
-                // TODO: start shooter quickly (e.g. outtake.startHighSpeed())
-            } else {
-                // TODO: outtake.stop()
-            }
+            //TODO:Start quickspin
         }
 
-        if (quickSpinRequested) {
-            // TODO: do ts ig
-            // Example: call indexer.advanceOne() with your own timing logic
-        }
-
-        if (g2.wasJustPressed(GamepadKeys.Button.A)) enterState(FSM.Intake);
+        if (g2.wasJustPressed(GamepadKeys.Button.A)) state = (FSM.Intake);
     }
 
     private void handleSortOuttakeState() {
@@ -138,13 +122,12 @@ public class Bot {
         // 3) feed one ball at a time with small delays
         if (g2.wasJustPressed(GamepadKeys.Button.A)) {
             // cancel sort and return to intake
-            enterState(FSM.Intake);
+            state = (FSM.Intake);
         }
     }
 
     private void handleEndgameState() {
         // TODO: activate actuator to open slides or perform endgame actions
-        // Example: actuator.extendSlides();
-        if (g2.wasJustPressed(GamepadKeys.Button.A)) enterState(FSM.Intake);
+        if (g2.wasJustPressed(GamepadKeys.Button.A)) state = (FSM.Intake);
     }
 }
