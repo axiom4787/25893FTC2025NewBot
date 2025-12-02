@@ -28,6 +28,6 @@ public class OurAuto extends LinearOpMode {
         flywheel.setVelocity(1300);
         sleep(5000);
         flap.setPosition(90 * positionPerDegree);
-        sleep();
+        sleep(5000);
     }
 }

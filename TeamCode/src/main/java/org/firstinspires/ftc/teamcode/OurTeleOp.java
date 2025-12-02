@@ -89,7 +89,7 @@ public class OurTeleOp extends LinearOpMode {
         }
         if(gamepad1.bWasPressed()) {
             flap.setPosition(90 * positionPerDegree);
-
+            sleep(300);
         }
         if(gamepad1.xWasPressed()) {
             if(!feedRoller.isBusy()) {
