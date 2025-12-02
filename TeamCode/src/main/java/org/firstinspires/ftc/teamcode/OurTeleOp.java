@@ -1,13 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareDevice;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 
 @TeleOp
@@ -15,38 +14,35 @@ public class OurTeleOp extends OpMode {
     private DcMotorEx flywheel;
     private DcMotor feedRoller;
     private DcMotor leftDrive;
-    private CRServo agitator;
+    private Servo flap;
     private DcMotor rightDrive;
-
     private float flyWheelVelocity = 1300;
-    private static final int bankVelocity = 1300;
-    private static final int farVelocity = 1900;
-    private static final int maxVelocity = 2200;
-
+    private float  ticksPerRev = 288;
+    private float positionPerDegree = 1 / (270 / 2);
+    private float offset = 0;
     private boolean flyWheelPowered;
-    private boolean agitatorPowered;
+    private boolean flapUp;
     private boolean feedRollerPowered;
-
     public void init() {
         flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         feedRoller = hardwareMap.get(DcMotor.class, "coreHex");
         leftDrive = hardwareMap.get(DcMotor.class, "leftDrive");
-        agitator = hardwareMap.get(CRServo.class, "servo");
+        flap = hardwareMap.get(Servo.class, "servo");
         rightDrive = hardwareMap.get(DcMotor.class, "rightDrive");
 
-        // Establishing the direction and mode for the motors
         flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        feedRoller.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        feedRoller.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         flywheel.setDirection(DcMotor.Direction.REVERSE);
         feedRoller.setDirection(DcMotor.Direction.REVERSE);
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
-        agitator.setDirection(DcMotor.Direction.REVERSE);
+
         telemetry.addLine("a to turn on/off the flywheel");
         telemetry.addLine("b to turn on/off the agitator");
         telemetry.addLine("x to turn on/off the feed roller");
-        telemetry.addLine("Left bumper for slow speed");
-        telemetry.addLine("right bumper for medium speed");
-
- 
+        telemetry.addLine("y to turn off flywheel agitator and set feed roller angle");
         telemetry.update();
     }
 
@@ -54,6 +50,9 @@ public class OurTeleOp extends OpMode {
         basicMovement();
         turnOnMotors();
         flyWheel();
+
+        telemetry.addLine("Encoder Position: " + String.valueOf(feedRoller.getCurrentPosition()));
+        telemetry.addLine("Offset: " + offset);
         telemetry.update();
     }
     public double getLowestVoltage() {
@@ -83,28 +82,33 @@ public class OurTeleOp extends OpMode {
             flyWheelPowered = !flyWheelPowered;
         }
         if(gamepad1.bWasPressed()) {
-            if(agitatorPowered) {
-                agitatorPowered = false;
-                agitator.setPower(0);
-            } else {
-                agitatorPowered = true;
-                agitator.setPower(1);
-            }
+            flap.setPosition(90 * positionPerDegree);
+
         }
         if(gamepad1.xWasPressed()) {
-            if(feedRollerPowered) {
-                feedRollerPowered = false;
-                feedRoller.setPower(0);
-            } else {
-                feedRollerPowered = true;
-                feedRoller.setPower(1);
+            if(!feedRoller.isBusy()) {
+                if(feedRollerPowered) {
+                    feedRoller.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    feedRollerPowered = false;
+                    feedRoller.setPower(0);
+                } else {
+                    feedRoller.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    feedRollerPowered = true;
+                    feedRoller.setPower(1);
+                }
             }
         }
-        if(gamepad1.y) {
-            feedRoller.setPower(-0.5);
-        }
-        if(gamepad1.yWasReleased()) {
-            feedRoller.setPower(0);
+        if(gamepad1.yWasPressed()) {
+            float angleOff = (feedRoller.getCurrentPosition() % ticksPerRev);
+
+            feedRollerPowered = false;
+
+            feedRoller.setTargetPosition((int)(feedRoller.getCurrentPosition() - angleOff));
+            feedRoller.setPower(1);
+            feedRoller.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            flywheel.setPower(0);
+            flap.setPosition(0);
         }
     }
     public void flyWheel() {

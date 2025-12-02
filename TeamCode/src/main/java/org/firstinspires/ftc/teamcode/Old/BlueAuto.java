@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Old;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @Autonomous
-public class TriangeAuto extends LinearOpMode {
+public class BlueAuto extends LinearOpMode {
     private DcMotor leftDrive;
     private DcMotor rightDrive;
 
@@ -18,10 +18,12 @@ public class TriangeAuto extends LinearOpMode {
         rightDrive.setDirection(DcMotorSimple.Direction.REVERSE);
         waitForStart();
 
-        rightDrive.setPower(1);
+        rightDrive.setPower(-1);
         leftDrive.setPower(1);
-
-        sleep(500);
+        sleep(200);
+        leftDrive.setPower(1);
+        rightDrive.setPower(1);
+        sleep(700);
         leftDrive.setPower(0);
         rightDrive.setPower(0);
     }
