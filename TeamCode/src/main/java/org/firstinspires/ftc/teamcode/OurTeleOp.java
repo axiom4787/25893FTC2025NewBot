@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -19,7 +20,7 @@ public class OurTeleOp extends LinearOpMode {
     private DcMotor rightDrive;
     private float flyWheelVelocity = 1300;
     private float  ticksPerRev = 288;
-    private float positionPerDegree = 1 / (270 / 2);
+    private float positionPerDegree = 1f / 270f;
     private float offset = 0;
     private boolean flyWheelPowered;
     private boolean flapUp;
@@ -40,24 +41,23 @@ public class OurTeleOp extends LinearOpMode {
         feedRoller.setDirection(DcMotor.Direction.REVERSE);
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
 
+        flap.setDirection(Servo.Direction.REVERSE);
+
         telemetry.addLine("a to turn on/off the flywheel");
         telemetry.addLine("b to turn on/off the agitator");
         telemetry.addLine("x to turn on/off the feed roller");
         telemetry.addLine("y to turn off flywheel agitator and set feed roller angle");
-        telemetry.addLine("Left bumper for slow speed");
-        telemetry.addLine("right bumper for medium speed");
-        telemetry.addLine("This will disappear when the first interaction begins");
         telemetry.addLine("Voltage control is on");
 
         telemetry.update();
 
+        waitForStart();
         while(opModeIsActive()) {
             basicMovement();
             turnOnMotors();
             flyWheel();
 
-            telemetry.addLine("Encoder Position: " + String.valueOf(feedRoller.getCurrentPosition()));
-            telemetry.addLine("Offset: " + offset);
+            telemetry.addLine("Servo Position: " + flap.getPosition());
             telemetry.update();
         }
     }
@@ -88,8 +88,14 @@ public class OurTeleOp extends LinearOpMode {
             flyWheelPowered = !flyWheelPowered;
         }
         if(gamepad1.bWasPressed()) {
-            flap.setPosition(90 * positionPerDegree);
-            sleep(300);
+            // + 30 * positionPerDegree because the starting position is 30 so to set it to a 0 you have to add 30
+            if(flapUp) {
+                flapUp = false;
+                flap.setPosition(1 - (30 * positionPerDegree));
+            } else {
+                flapUp = true;
+                flap.setPosition(1 - ((90 + 30) * positionPerDegree));
+            }
         }
         if(gamepad1.xWasPressed()) {
             if(!feedRoller.isBusy()) {
@@ -115,6 +121,11 @@ public class OurTeleOp extends LinearOpMode {
 
             flywheel.setPower(0);
             flap.setPosition(0);
+        }
+    }
+    void servoBusy(float target) {
+        while (opModeIsActive() && Math.abs(flap.getPosition() - target) > 0.05) {
+            sleep(20);
         }
     }
     public void flyWheel() {
