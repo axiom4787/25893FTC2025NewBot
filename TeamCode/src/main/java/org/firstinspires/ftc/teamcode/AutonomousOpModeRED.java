@@ -9,9 +9,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Alliance;
  */
 
 @Autonomous
-public abstract class AutonomousOpModeRED extends AutonomousOpMode {
+public class AutonomousOpModeRED extends AutonomousOpMode {
 
-    protected AutonomousOpModeRED() {
+    public AutonomousOpModeRED() {
         super(Alliance.RED);
     }
 }

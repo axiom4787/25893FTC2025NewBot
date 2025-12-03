@@ -21,7 +21,9 @@ import org.firstinspires.ftc.teamcode.robot.RobotBaseAutonomous;
 
 public abstract class AutonomousOpMode extends OpMode {
 
-    protected AutonomousOpMode() {}
+    private PathChain getRow3ThenReturnToStartTop1;
+
+    private AutonomousOpMode() {}
     protected AutonomousOpMode(Alliance alliance) {
         this.alliance = alliance;
     }
@@ -30,7 +32,7 @@ public abstract class AutonomousOpMode extends OpMode {
     private Timer pathTimer, actionTimer, opmodeTimer;
     private RobotBaseAutonomous robotBase;
 
-    private Alliance alliance = Alliance.RED;
+    private Alliance alliance;
 
     private PathState pathState;
 
@@ -39,6 +41,9 @@ public abstract class AutonomousOpMode extends OpMode {
     private PathChain lowStartThenLeave;
     private JoinedTelemetry joinedTelemetry;
     private static ElapsedTime stopWatch = new ElapsedTime();
+    boolean firstFired = false;
+    boolean secondFired = false;
+    boolean thirdFired = false;
 
     private void buildPaths() {
 
@@ -59,6 +64,29 @@ public abstract class AutonomousOpMode extends OpMode {
                 .addPath(new BezierLine(poses.get(Poses.NamedPose.STARTING_LOW),
                         poses.get(Poses.NamedPose.LEAVE_LOW)))
                 .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.STARTING_LOW).getHeading())
+                .build();
+
+        getRow3ThenReturnToStartTop1 = follower.pathBuilder()
+                .addPath(new BezierLine(poses.get(Poses.NamedPose.STARTING_TOP_1),
+                        poses.get(Poses.NamedPose.INTAKE_ROW_3_START)))
+                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.INTAKE_ROW_3_START).getHeading())
+                .addPoseCallback(poses.get(Poses.NamedPose.INTAKE_ROW_3_START), new Runnable() {
+                    @Override
+                    public void run() {
+                        robotBase.getIntake().loadBallToShooter(telemetry);
+                    }
+                }, 0.5)
+                .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_START),
+                        poses.get(Poses.NamedPose.INTAKE_ROW_3_END)))
+                .addPoseCallback(poses.get(Poses.NamedPose.INTAKE_ROW_3_END), new Runnable() {
+                    @Override
+                    public void run() {
+                        robotBase.getIntake().stop(telemetry);
+                    }
+                }, 0.5)
+                .setConstantHeadingInterpolation(poses.get(Poses.NamedPose.STARTING_TOP_1).getHeading())
+                .addPath(new BezierLine(poses.get(Poses.NamedPose.INTAKE_ROW_3_END),
+                        poses.get(Poses.NamedPose.STARTING_TOP_1)))
                 .build();
 
         // TODO - we are missing paths to collect balls from each of the rows...
@@ -98,10 +126,10 @@ public abstract class AutonomousOpMode extends OpMode {
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
 
+        Poses.AlliancePoses poses = Poses.forAlliance(alliance);
         follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(poses.get(Poses.NamedPose.STARTING_TOP_2));
         buildPaths();
-       // follower.setStartingPose(Constants.startingPose);
-        //follower.setStartingPose(redStartingPose1);
     }
 
     /**
@@ -120,7 +148,7 @@ public abstract class AutonomousOpMode extends OpMode {
     @Override
     public void start() {
         opmodeTimer.resetTimer();
-        //setPathState(0);
+        setNextPathState(PathState.SCORE_PRELOADED);
 
         robotBase = RobotBaseAutonomous.getInstance(hardwareMap, telemetry);
 
@@ -145,14 +173,32 @@ public abstract class AutonomousOpMode extends OpMode {
     public void autonomousPathUpdate(Telemetry telemetry) {
         switch (pathState) {
             case SCORE_PRELOADED:
-                if (!follower.isBusy()) {
-                    //follower.followPath(path1);
-                    robotBase.getShooter().startFlywheel(telemetry, -0.825);
+                case SCORE:
+                {
+                    if (!follower.isBusy()) {
+                        //follower.followPath(path1);
+                        robotBase.getShooter().startFlywheel(telemetry, -0.825);
 
-                    robotBase.getShooter().fire(telemetry);
-                    setNextPathState(PathState.INTAKE_ROW3);
+
+                        if (pathTimer.getElapsedTime() == 500 && !firstFired) {
+                            firstFired = true;
+                            robotBase.getShooter().fire(telemetry);
+                        }
+                        if (pathTimer.getElapsedTime() == 1000 && !secondFired) {
+                            secondFired = true;
+                            robotBase.getShooter().fire(telemetry);
+                        }
+                        if (pathTimer.getElapsedTime() == 1500 && !thirdFired) {
+                            thirdFired = true;
+                            robotBase.getShooter().fire(telemetry);
+                            robotBase.getShooter().stop(telemetry);
+                        }
+
+
+                        setNextPathState(PathState.INTAKE_ROW3);
+                    }
+                    break;
                 }
-                break;
             case INTAKE_ROW3:
 
             /* You could check for
@@ -165,7 +211,7 @@ public abstract class AutonomousOpMode extends OpMode {
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
 
-                    //follower.followPath(path2, true);
+                    follower.followPath(getRow3ThenReturnToStartTop1, 0.5,true);
                     setNextPathState(PathState.SCORE);
                 }
                 break;
@@ -189,18 +235,6 @@ public abstract class AutonomousOpMode extends OpMode {
 
                     //follower.followPath(path4, true);
                     setNextPathState(PathState.SCORE);
-                }
-                break;
-            case SCORE:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup2Pose's position */
-
-                if (!follower.isBusy()) {
-                    /* Grab Sample */
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    //follower.followPath(path5, true);
-                    // TODO: SCORE state can lead to more than one next state, including SCORE_LEAVE_POINTS
-                    // How should this handle those cases?
-                    setNextPathState(PathState.INTAKE_ROW2);
                 }
                 break;
             case SCORE_LEAVE_POINTS:
