@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.pedroPathing.Alliance;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.pedroPathing.Drawing;
 import org.firstinspires.ftc.teamcode.robot.Poses;
 import org.firstinspires.ftc.teamcode.robot.RobotBaseAutonomous;
 import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
@@ -20,6 +21,8 @@ import org.firstinspires.ftc.teamcode.utils.TelemetryMirror;
 
 public abstract class AutonomousOpMode extends OpMode {
 
+    public static final String AUTONOMOUS_OP_MODE = "AutonomousOpMode";
+    public static final String ALLIANCE = "Alliance";
     private PathChain getRow3ThenReturnToStartTop1;
 
     private AutonomousOpMode() {}
@@ -95,29 +98,25 @@ public abstract class AutonomousOpMode extends OpMode {
     /**
      * This is the main loop of the OpMode, it will run repeatedly after clicking "Play".
      **/
-
-    private boolean done;
-
     @Override
     public void loop() {
 
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
-        // TODO: we need to configure the state machine
         autonomousPathUpdate(telemetry);
 
         // Feedback to Driver Hub for debugging
-        //telemetry.addData("path state", pathState);
+        telemetry.addData("path state", pathState);
         telemetryMirror.addData("x", follower.getPose().getX());
         telemetryMirror.addData("y", follower.getPose().getY());
         telemetryMirror.addData("heading", follower.getPose().getHeading());
         telemetryMirror.update();
+        draw();
     }
 
     /**
      * This method is called once at the init of the OpMode.
      **/
-
     @Override
     public void init() {
 
@@ -130,21 +129,28 @@ public abstract class AutonomousOpMode extends OpMode {
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(poses.get(Poses.NamedPose.STARTING_TOP_2));
         buildPaths();
+        drawOnlyCurrent();
     }
 
     /**
      * This method is called continuously after Init while waiting for "play".
      **/
-
     @Override
     public void init_loop() {
+        telemetry.addData("Code Version", BuildConfig.VERSION_NAME);
+        telemetry.addData("Code Build Time", BuildConfig.APP_BUILD_TIME);
+        telemetry.addData(ALLIANCE, alliance.name());
+        telemetry.addData(AUTONOMOUS_OP_MODE, "initialized");
+        telemetry.update();
+
+        follower.update();
+        drawOnlyCurrent();
     }
 
     /**
      * This method is called once at the start of the OpMode.
      * It runs all the setup actions, including building paths and starting the path system
      **/
-
     @Override
     public void start() {
         opmodeTimer.resetTimer();
@@ -162,6 +168,21 @@ public abstract class AutonomousOpMode extends OpMode {
 
     @Override
     public void stop() {
+        robotBase.stop(telemetry);
+    }
+
+    public void drawOnlyCurrent() {
+        try {
+            Drawing.drawRobot(follower.getPose());
+            Drawing.sendPacket();
+        } catch (Exception e) {
+            // TODO: we don't want this to cause a runtime exception!!
+            throw new RuntimeException("Drawing failed " + e);
+        }
+    }
+
+    public void draw() {
+        Drawing.drawDebug(follower);
     }
 
     /**
@@ -257,7 +278,6 @@ public abstract class AutonomousOpMode extends OpMode {
     /**
      * These change the states of the paths and actions. It will also reset the timers of the individual switches
      **/
-
     public void setNextPathState(PathState pState) {
         pathState = pState;
         pathTimer.resetTimer();
