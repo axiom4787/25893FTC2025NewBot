@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-
 @TeleOp
 public class OurTeleOp extends LinearOpMode {
     private DcMotorEx flywheel;
@@ -21,7 +20,6 @@ public class OurTeleOp extends LinearOpMode {
     private float flyWheelVelocity = 1300;
     private float  ticksPerRev = 288;
     private float positionPerDegree = 1f / 270f;
-    private float offset = 0;
     private boolean flyWheelPowered;
     private boolean flapUp;
     private boolean feedRollerPowered;
@@ -47,7 +45,6 @@ public class OurTeleOp extends LinearOpMode {
         telemetry.addLine("b to turn on/off the agitator");
         telemetry.addLine("x to turn on/off the feed roller");
         telemetry.addLine("y to turn off flywheel agitator and set feed roller angle");
-        telemetry.addLine("Voltage control is on");
 
         telemetry.update();
 
@@ -56,23 +53,11 @@ public class OurTeleOp extends LinearOpMode {
             basicMovement();
             turnOnMotors();
             flyWheel();
+            feedRollerSetter();
 
-            telemetry.addLine("Servo Position: " + flap.getPosition());
+            telemetry.addLine("Flywheel Velocity" + flywheel.getVelocity());
             telemetry.update();
         }
-    }
-    public double getLowestVoltage() {
-        double lowestValue = Double.POSITIVE_INFINITY;
-        for(VoltageSensor sensor : hardwareMap.voltageSensor) {
-            if(sensor.getVoltage() < lowestValue && sensor.getVoltage() > 0.1) {
-                lowestValue = sensor.getVoltage();
-            }
-        }
-        if(lowestValue == Double.POSITIVE_INFINITY) {
-            lowestValue = 14;
-        }
-        telemetry.addLine("Voltage: " + lowestValue + "V");
-        return lowestValue;
     }
     public void basicMovement() {
         float x;
@@ -97,19 +82,6 @@ public class OurTeleOp extends LinearOpMode {
                 flap.setPosition(1 - ((90 + 30) * positionPerDegree));
             }
         }
-        if(gamepad1.xWasPressed()) {
-            if(!feedRoller.isBusy()) {
-                if(feedRollerPowered) {
-                    feedRoller.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    feedRollerPowered = false;
-                    feedRoller.setPower(0);
-                } else {
-                    feedRoller.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    feedRollerPowered = true;
-                    feedRoller.setPower(1);
-                }
-            }
-        }
         if(gamepad1.yWasPressed()) {
             float angleOff = (feedRoller.getCurrentPosition() % ticksPerRev);
 
@@ -125,15 +97,20 @@ public class OurTeleOp extends LinearOpMode {
             flap.setPosition(1 - (30 * positionPerDegree));
         }
     }
-    void servoBusy(float target) {
-        while (opModeIsActive() && Math.abs(flap.getPosition() - target) > 0.05) {
-            sleep(20);
+    public void feedRollerSetter() {
+        double error = Math.abs(flyWheelVelocity - flywheel.getVelocity());
+        boolean inRange = error <= 50;
+        //50 is a tolerance
+        if (!feedRoller.isBusy()) {
+            feedRoller.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            feedRollerPowered = inRange;
+            feedRoller.setPower(feedRollerPowered ? 1 : 0);
         }
     }
     public void flyWheel() {
         if(flyWheelPowered) {
-            double multiplier = 14 / getLowestVoltage();
-            flywheel.setVelocity(flyWheelVelocity * multiplier);
+            flywheel.setVelocity(flyWheelVelocity);
         } else {
             flywheel.setVelocity(0);
         }

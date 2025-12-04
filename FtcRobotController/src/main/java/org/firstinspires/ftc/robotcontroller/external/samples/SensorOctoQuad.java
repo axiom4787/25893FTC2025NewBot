@@ -58,12 +58,12 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  * This sample does not show how to interpret these readings, just how to obtain and display them.
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  *
  * See the sensor's product page: https://www.tindie.com/products/35114/
  */
-@Disabled
-@TeleOp(name = "OctoQuad Basic", group="OctoQuad")
+ 
+ (name = "OctoQuad Basic", group="OctoQuad")
 public class SensorOctoQuad extends LinearOpMode {
 
     // Identify which encoder OctoQuad inputs are connected to each odometry pod.

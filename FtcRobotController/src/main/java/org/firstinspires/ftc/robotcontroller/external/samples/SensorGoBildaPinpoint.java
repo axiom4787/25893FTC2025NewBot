@@ -36,12 +36,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
  * The OpMode assumes that the sensor is configured with a name of "pinpoint".
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  *
  * See the sensor's product page: https://www.gobilda.com/pinpoint-odometry-computer-imu-sensor-fusion-for-2-wheel-odometry/
  */
-@TeleOp(name = "Sensor: GoBilda Pinpoint", group = "Sensor")
-@Disabled
+ (name = "Sensor: GoBilda Pinpoint", group = "Sensor")
+ 
 public class SensorGoBildaPinpoint extends OpMode {
     // Create an instance of the sensor
     GoBildaPinpointDriver pinpoint;

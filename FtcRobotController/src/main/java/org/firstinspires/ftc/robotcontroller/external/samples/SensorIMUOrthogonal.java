@@ -70,13 +70,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
  *    usbFacingDirection
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list.
  *
  * Finally, choose the two correct parameters to define how your Hub is mounted and edit this OpMode
  * to use those parameters.
  */
-@TeleOp(name = "Sensor: IMU Orthogonal", group = "Sensor")
-@Disabled   // Comment this out to add to the OpMode list
+ (name = "Sensor: IMU Orthogonal", group = "Sensor")
+    // Comment this out to add to the OpMode list
 public class SensorIMUOrthogonal extends LinearOpMode
 {
     // The IMU sensor object

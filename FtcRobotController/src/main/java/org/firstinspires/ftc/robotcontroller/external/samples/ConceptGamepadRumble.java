@@ -83,11 +83,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  *          it waits till the sensor drops back below the threshold before it can trigger again.
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list.
  */
 
-@Disabled
-@TeleOp(name="Concept: Gamepad Rumble", group ="Concept")
+ 
+ (name="Concept: Gamepad Rumble", group ="Concept")
 public class ConceptGamepadRumble extends LinearOpMode
 {
     boolean lastA = false;                      // Use to track the prior button state.

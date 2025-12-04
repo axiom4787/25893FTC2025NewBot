@@ -39,10 +39,10 @@ import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
  * It assumes that the ODS sensor is configured with a name of "sensor_ods".
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  */
-@TeleOp(name = "Sensor: MR ODS", group = "Sensor")
-@Disabled
+ (name = "Sensor: MR ODS", group = "Sensor")
+ 
 public class SensorMROpticalDistance extends LinearOpMode {
 
   OpticalDistanceSensor odsSensor;  // Hardware Device Object

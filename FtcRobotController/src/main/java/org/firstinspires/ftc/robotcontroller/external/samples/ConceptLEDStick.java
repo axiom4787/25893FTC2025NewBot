@@ -53,14 +53,14 @@ import com.qualcomm.robotcore.util.Range;
  * This OpMode assumes that the QWIIC LED Stick is attached to an I2C interface named "back_leds" in the robot configuration.
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  *
  * You can buy this product here:  https://www.sparkfun.com/products/18354
  * Don't forget to also buy this to make it easy to connect to your Control or Expansion Hub:
  * https://www.sparkfun.com/products/25596
  */
-@TeleOp(name = "Concept: LED Stick", group = "Concept")
-@Disabled
+ (name = "Concept: LED Stick", group = "Concept")
+ 
 public class ConceptLEDStick extends OpMode {
     private boolean wasUp;
     private boolean wasDown;

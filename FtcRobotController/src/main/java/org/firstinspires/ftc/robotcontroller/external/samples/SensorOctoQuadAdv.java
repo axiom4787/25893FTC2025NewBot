@@ -77,12 +77,12 @@ import java.util.List;
  *  See the OctoSwerveDrive() constructor below for the correct wheel/channel assignment.
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  *
  * See the sensor's product page: https://www.tindie.com/products/35114/
  */
-@Disabled
-@TeleOp(name="OctoQuad Advanced", group="OctoQuad")
+ 
+ (name="OctoQuad Advanced", group="OctoQuad")
 public class SensorOctoQuadAdv extends LinearOpMode {
 
     @Override

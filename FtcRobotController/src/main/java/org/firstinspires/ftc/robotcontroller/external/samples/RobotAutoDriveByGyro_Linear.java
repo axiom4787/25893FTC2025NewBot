@@ -85,11 +85,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
  *      "Proportional Gain" is a constant that YOU choose to set the "strength" of the steering response.
  *
  *  Use Android Studio to Copy this Class, and Paste it into your "TeamCode" folder with a new name.
- *  Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ *  Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Robot: Auto Drive By Gyro", group="Robot")
-@Disabled
+ (name="Robot: Auto Drive By Gyro", group="Robot")
+ 
 public class RobotAutoDriveByGyro_Linear extends LinearOpMode {
 
     /* Declare OpMode members. */

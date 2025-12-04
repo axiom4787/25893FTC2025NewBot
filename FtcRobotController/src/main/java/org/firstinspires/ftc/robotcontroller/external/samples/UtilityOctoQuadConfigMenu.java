@@ -42,7 +42,7 @@ import java.util.Stack;
  *
  * This OpMode assumes that the OctoQuad is attached to an I2C interface named "octoquad" in the robot configuration.
  *
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  *
  * Select, Init and run the "OctoQuad Configuration Tool" OpMode
  * Read the blue User-Interface tips at the top of the telemetry screen.
@@ -51,8 +51,8 @@ import java.util.Stack;
  *
  * See the sensor's product page: https://www.tindie.com/products/digitalchickenlabs/octoquad-8ch-quadrature-pulse-width-decoder/
  */
-@TeleOp(name = "OctoQuad Configuration Tool", group="OctoQuad")
-@Disabled
+ (name = "OctoQuad Configuration Tool", group="OctoQuad")
+ 
 public class UtilityOctoQuadConfigMenu extends LinearOpMode
 {
     TelemetryMenu.MenuElement rootMenu = new TelemetryMenu.MenuElement("OctoQuad Config Menu", true);

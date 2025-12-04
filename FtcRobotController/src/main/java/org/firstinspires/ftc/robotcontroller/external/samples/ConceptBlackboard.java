@@ -46,8 +46,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  * The blackboard is a standard hashmap so you can use methods like:
  * put, get, containsKey, remove, etc.
  */
-@TeleOp(name = "Concept: Blackboard", group = "Concept")
-@Disabled
+ (name = "Concept: Blackboard", group = "Concept")
+ 
 public class ConceptBlackboard extends OpMode {
     // We use constants here so we won't have the problem of typos in different places when we
     // meant to refer to the same thing.

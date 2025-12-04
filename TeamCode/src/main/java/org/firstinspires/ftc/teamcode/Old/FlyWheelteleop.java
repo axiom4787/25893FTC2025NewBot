@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 
-@TeleOp
+ 
 public class FlyWheelteleop extends OpMode {
     private DcMotorEx flywheel;
     private DcMotor feedRoller;

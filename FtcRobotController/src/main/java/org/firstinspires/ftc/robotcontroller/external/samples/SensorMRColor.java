@@ -48,10 +48,10 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
  * You can use the X button on gamepad1 to toggle the LED on and off.
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  */
-@TeleOp(name = "Sensor: MR Color", group = "Sensor")
-@Disabled
+ (name = "Sensor: MR Color", group = "Sensor")
+ 
 public class SensorMRColor extends LinearOpMode {
 
   ColorSensor colorSensor;    // Hardware Device Object

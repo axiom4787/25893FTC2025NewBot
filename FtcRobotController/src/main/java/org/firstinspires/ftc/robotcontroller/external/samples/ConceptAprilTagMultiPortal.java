@@ -41,8 +41,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 /**
  * This OpMode demonstrates the basics of using multiple vision portals simultaneously
  */
-@TeleOp(name = "Concept: AprilTagMultiPortal", group = "Concept")
-@Disabled
+ (name = "Concept: AprilTagMultiPortal", group = "Concept")
+ 
 public class ConceptAprilTagMultiPortal extends LinearOpMode
 {
     VisionPortal portal1;

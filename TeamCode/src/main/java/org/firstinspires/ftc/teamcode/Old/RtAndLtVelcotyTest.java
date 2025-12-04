@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 
 //Made with AI
-@TeleOp
+ 
 public class RtAndLtVelcotyTest extends LinearOpMode {
 
     private DcMotorEx flywheel;

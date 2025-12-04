@@ -42,7 +42,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  * If you are using OnBotJava, please see the ConceptSoundsOnBotJava sample
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  *
  * Operation:
  *
@@ -67,8 +67,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  *
  */
 
-@TeleOp(name="Concept: Sound Resources", group="Concept")
-@Disabled
+ (name="Concept: Sound Resources", group="Concept")
+ 
 public class ConceptSoundsASJava extends LinearOpMode {
 
     // Declare OpMode members.

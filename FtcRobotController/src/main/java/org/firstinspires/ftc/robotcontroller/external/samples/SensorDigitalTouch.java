@@ -40,10 +40,10 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
  * The OpMode assumes that the digital channel is configured with a name of "digitalTouch".
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list.
  */
-@TeleOp(name = "Sensor: digital channel", group = "Sensor")
-@Disabled
+ (name = "Sensor: digital channel", group = "Sensor")
+ 
 public class SensorDigitalTouch extends LinearOpMode {
     DigitalChannel digitalTouch;  // Digital channel Object
 

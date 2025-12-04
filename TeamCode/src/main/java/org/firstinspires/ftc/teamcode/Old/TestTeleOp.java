@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
-@TeleOp
+ 
 public class TestTeleOp extends OpMode {
     private DcMotorEx flywheel;
     private DcMotor feedRoller;

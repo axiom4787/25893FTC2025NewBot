@@ -45,10 +45,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * The OpMode assumes that the sensor is configured with a name of "sensor_distance".
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  */
-@TeleOp(name = "Sensor: AndyMarkTOF", group = "Sensor")
-@Disabled
+ (name = "Sensor: AndyMarkTOF", group = "Sensor")
+ 
 public class SensorAndyMarkTOF extends LinearOpMode {
 
     private DistanceSensor sensorDistance;

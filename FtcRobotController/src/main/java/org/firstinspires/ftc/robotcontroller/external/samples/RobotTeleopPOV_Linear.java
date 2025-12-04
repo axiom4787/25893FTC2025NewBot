@@ -45,11 +45,11 @@ import com.qualcomm.robotcore.util.Range;
  * It also opens and closes the claws slowly using the left and right Bumper buttons.
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Robot: Teleop POV", group="Robot")
-@Disabled
+ (name="Robot: Teleop POV", group="Robot")
+ 
 public class RobotTeleopPOV_Linear extends LinearOpMode {
 
     /* Declare OpMode members. */

@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.util.Range;
 
 
 
-@TeleOp
+ 
 public class JustWheels extends OpMode {
     private DcMotor leftDrive;
     double maxSpeed = 1;

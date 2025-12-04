@@ -47,10 +47,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
  * Sensor. It assumes that the sensor is configured with a name of "navx".
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  */
-@TeleOp(name = "Sensor: KL navX Micro", group = "Sensor")
-@Disabled
+ (name = "Sensor: KL navX Micro", group = "Sensor")
+ 
 public class SensorKLNavxMicro extends LinearOpMode {
 
     /** In this sample, for illustration purposes we use two interfaces on the one gyro object.

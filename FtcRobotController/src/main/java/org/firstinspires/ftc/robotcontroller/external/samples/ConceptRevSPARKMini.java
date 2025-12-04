@@ -45,11 +45,11 @@ import com.qualcomm.robotcore.util.Range;
  * and name them 'left_drive' and 'right_drive'.
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="REV SPARKmini Simple Drive Example", group="Concept")
-@Disabled
+ (name="REV SPARKmini Simple Drive Example", group="Concept")
+ 
 public class ConceptRevSPARKMini extends LinearOpMode {
 
     // Declare OpMode members.

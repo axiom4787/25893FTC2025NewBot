@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@Autonomous
+ 
 public class BlueAutoWithShooting extends LinearOpMode {
     private DcMotorEx flywheel;
     private DcMotor feedRoller;

@@ -41,7 +41,7 @@ package org.firstinspires.ftc.robotcontroller.external.samples;
  * into and the red should be the higher)
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  *
  * You can buy this product here:  https://www.revrobotics.com/rev-31-2010/
  */
@@ -50,8 +50,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.LED;
 
-@TeleOp(name = "Concept: RevLED", group = "Concept")
-@Disabled
+ (name = "Concept: RevLED", group = "Concept")
+ 
 public class ConceptRevLED extends OpMode {
     LED frontLED_red;
     LED frontLED_green;

@@ -57,11 +57,11 @@ import com.qualcomm.robotcore.hardware.SwitchableLight;
  *   Edit this code to make WHITE_THRESHOLD halfway between the min and max.
  *
  *   Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- *   Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ *   Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Robot: Auto Drive To Line", group="Robot")
-@Disabled
+ (name="Robot: Auto Drive To Line", group="Robot")
+ 
 public class RobotAutoDriveToLine_Linear extends LinearOpMode {
 
     /* Declare OpMode members. */

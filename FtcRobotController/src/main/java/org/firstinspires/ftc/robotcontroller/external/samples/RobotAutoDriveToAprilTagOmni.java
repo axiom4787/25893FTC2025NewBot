@@ -81,12 +81,12 @@ import java.util.concurrent.TimeUnit;
  * Speed and Turn sensitivity can be adjusted using the SPEED_GAIN, STRAFE_GAIN and TURN_GAIN constants.
  *
  * Use Android Studio to Copy this Class, and Paste it into the TeamCode/src/main/java/org/firstinspires/ftc/teamcode folder.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list.
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list.
  *
  */
 
-@TeleOp(name="Omni Drive To AprilTag", group = "Concept")
-@Disabled
+ (name="Omni Drive To AprilTag", group = "Concept")
+ 
 public class RobotAutoDriveToAprilTagOmni extends LinearOpMode
 {
     // Adjust these numbers to suit your robot.

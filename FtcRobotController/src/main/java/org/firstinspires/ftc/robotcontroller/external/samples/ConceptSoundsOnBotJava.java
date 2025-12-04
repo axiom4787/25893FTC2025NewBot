@@ -60,8 +60,8 @@ import java.io.File;
  *      https://github.com/ftctechnh/ftc_app/tree/master/FtcRobotController/src/main/res/raw/silver.wav
  */
 
-@TeleOp(name="Concept: Sound Files", group="Concept")
-@Disabled
+ (name="Concept: Sound Files", group="Concept")
+ 
 public class ConceptSoundsOnBotJava extends LinearOpMode {
 
     // Point to sound files on the phone's drive

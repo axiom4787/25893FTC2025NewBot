@@ -41,12 +41,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * The OpMode assumes that the range sensor is configured with a name of "sensor_range".
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  *
  * @see <a href="http://modernroboticsinc.com/range-sensor">MR Range Sensor</a>
  */
-@TeleOp(name = "Sensor: MR range sensor", group = "Sensor")
-@Disabled   // comment out or remove this line to enable this OpMode
+ (name = "Sensor: MR range sensor", group = "Sensor")
+    // comment out or remove this line to enable this OpMode
 public class SensorMRRangeSensor extends LinearOpMode {
 
     ModernRoboticsI2cRangeSensor rangeSensor;

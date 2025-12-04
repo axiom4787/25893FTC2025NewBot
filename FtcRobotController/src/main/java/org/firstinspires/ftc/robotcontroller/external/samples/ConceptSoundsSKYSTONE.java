@@ -41,14 +41,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
  * This code also prevents sounds from stacking up by setting a "playing" flag, which is cleared when the sound finishes playing.
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  *
  * Operation:
  *      Use the DPAD to change the selected sound, and the Right Bumper to play it.
  */
 
-@TeleOp(name="SKYSTONE Sounds", group="Concept")
-@Disabled
+  (name="SKYSTONE Sounds", group="Concept")
+ 
 public class ConceptSoundsSKYSTONE extends LinearOpMode {
 
     // List of available sound resources

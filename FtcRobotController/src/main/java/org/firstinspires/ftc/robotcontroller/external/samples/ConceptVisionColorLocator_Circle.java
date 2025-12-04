@@ -65,11 +65,11 @@ import java.util.List;
  *       Or use a screen copy utility like ScrCpy.exe to view the video remotely.
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ * Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  */
 
-@Disabled
-@TeleOp(name = "Concept: Vision Color-Locator (Circle)", group = "Concept")
+ 
+ (name = "Concept: Vision Color-Locator (Circle)", group = "Concept")
 public class ConceptVisionColorLocator_Circle extends LinearOpMode {
     @Override
     public void runOpMode() {

@@ -58,14 +58,14 @@ import com.qualcomm.robotcore.util.Range;
  * View the RobotHardware.java class file for more details
  *
  *  Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- *  Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
+ *  Remove or comment out the   line to add this OpMode to the Driver Station OpMode list
  *
  *  In OnBot Java, add a new OpMode, select this sample, and select TeleOp.
  *  Also add another new file named RobotHardware.java, select the sample with that name, and select Not an OpMode.
  */
 
-@TeleOp(name="Concept: Robot Hardware Class", group="Robot")
-@Disabled
+ (name="Concept: Robot Hardware Class", group="Robot")
+ 
 public class ConceptExternalHardwareClass extends LinearOpMode {
 
     // Create a RobotHardware object to be used to access robot hardware.
