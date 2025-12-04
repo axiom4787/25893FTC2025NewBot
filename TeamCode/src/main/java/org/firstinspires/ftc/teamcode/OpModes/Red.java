@@ -138,7 +138,6 @@ public class Red extends OpMode {
         telemetry.addData("Ty", llResult.getTy());
         telemetry.addData("Distance", distance);
 
-
         if (gamepad1.x && !yWasPressed) {
             autoAim = !autoAim;
         }
@@ -169,10 +168,7 @@ public class Red extends OpMode {
         double leftVel = leftFlywheel.getVelocity();
         double rightVel = rightFlywheel.getVelocity();
         double avgRPM = (leftVel + rightVel) / 2 / 28.0 * 60.0;
-
         double pidOut = pid.calculate(targetRPM, avgRPM, 0.02);
-
-
         double power;
         if (!flywheelOn) {
             power = 0;
