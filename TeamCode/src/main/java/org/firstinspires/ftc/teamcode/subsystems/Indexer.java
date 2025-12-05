@@ -70,9 +70,14 @@ public class Indexer {
     // getters
     public IndexerState getState() { return state; }
     public boolean getIntaking() { return intaking; }
+
+    // Only use isBusy() when color sensing fully works
     public boolean isBusy() { return scanPending; }
     public double getVoltageAnalog() { return indexerAnalog.getVoltage(); }
     public double getTargetVoltage() { return indexerServoControl.getTargetVoltage(); }
+    public String getIntakingOrOuttaking() {
+        return intaking ? "Intaking" : "Outtaking";
+    }
 
     public void setIntaking(boolean isIntaking) {
         if (this.intaking != isIntaking) {
@@ -132,9 +137,5 @@ public class Indexer {
 
     public IndexerState nextState() {
         return state.next();
-    }
-
-    public String getIntakingOrOuttaking() {
-        return intaking ? "Intaking" : "Outtaking";
     }
 }

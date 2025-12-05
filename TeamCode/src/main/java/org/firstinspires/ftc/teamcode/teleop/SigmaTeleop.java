@@ -151,12 +151,12 @@ public class SigmaTeleop extends LinearOpMode {
 
         // Set intaking ON
         if (g2.wasJustPressed(GamepadKeys.Button.A) && !actuator.isActivated()) {
-            if (!indexer.isBusy()) indexer.setIntaking(true);
+            indexer.setIntaking(true);
         }
 
         // Set intaking OFF
         if (g2.wasJustPressed(GamepadKeys.Button.B)) {
-            if (!indexer.isBusy()) indexer.setIntaking(false);
+            indexer.setIntaking(false);
         }
 
         indexer.update();
