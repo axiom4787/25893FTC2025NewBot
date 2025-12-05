@@ -57,8 +57,12 @@ public class CRServoPositionControl
         // Compute wrapped shortest-path error
         double error = targetVoltage - currentVoltage;
 
-        while (error >  ticksPerRev / 2.0) error -= ticksPerRev;
-        while (error < -ticksPerRev / 2.0) error += ticksPerRev;
+        error = (error + ticksPerRev / 2.0) % ticksPerRev - ticksPerRev / 2.0;
+        if (error > ticksPerRev / 2.0) {
+            error -= ticksPerRev;
+        } else if (error < -ticksPerRev / 2.0) {
+            error += ticksPerRev;
+        }
 
         // dt
         double dt = timer.seconds();
