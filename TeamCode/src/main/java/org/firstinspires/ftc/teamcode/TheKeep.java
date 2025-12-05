@@ -33,7 +33,7 @@ public class TheKeep extends OpMode {
 
     // Sets up a variable to store what snap point the fidget tech is at
     private int number = 13;
-    private final double[] spinPosition = {0.3,0.6,0.1,0.14,0.17,0.21,0.25,0.28,0.32,0.36,0.4,0.43,0.47,0.51,0.55,0.58,0.62,0.66,0.7,0.73,0.77,0.8,0.83,0.87,0.91,0.94,0.98};
+    private final double[] spinPosition = {0.03,0.06,0.1,0.14,0.17,0.21,0.25,0.28,0.32,0.36,0.4,0.43,0.47,0.51,0.55,0.58,0.62,0.66,0.7,0.73,0.77,0.8,0.83,0.87,0.91,0.94,0.98};
 
     // Sets up the variables to store the vision and april tags camera settings
     private AprilTagProcessor aprilTag;
@@ -41,14 +41,11 @@ public class TheKeep extends OpMode {
 
     // Sets up variables to store each april tags data
     private AprilTagDetection blueBase = null;
-    private AprilTagDetection greenPurplePurple = null;
-    private AprilTagDetection purpleGreenPurple = null;
-    private AprilTagDetection purplePurpleGreen = null;
+    private boolean greenPurplePurple = false;
+    private boolean purpleGreenPurple = false;
+    private boolean purplePurpleGreen = false;
     private AprilTagDetection redBase = null;
-
-    // Sets up variables used to make sure tag is present
-    private boolean[] wasTag = {false,false,false,false,false};
-    private int[] list = {0,1,2,3,4};
+    
 
     @Override
     public void init() {
@@ -110,9 +107,13 @@ public class TheKeep extends OpMode {
         getAprilTagData();
         if (blueBase != null) telemetry.addData("Blue Base Range", blueBase.ftcPose.range);
         if (redBase != null) telemetry.addData("Red Base Range", redBase.ftcPose.range);
-        if (greenPurplePurple != null) telemetry.addData("Green Purple Purple Range", greenPurplePurple.ftcPose.range);
-        if (purpleGreenPurple != null) telemetry.addData("Purple Green Purple Range", purpleGreenPurple.ftcPose.range);
-        if (purplePurpleGreen != null) telemetry.addData("Purple Purple Green Range", purplePurpleGreen.ftcPose.range);
+        if (greenPurplePurple) {
+            telemetry.addData("Pattern Is","Green Purple Purple" );
+        } else if (purpleGreenPurple) {
+            telemetry.addData("Pattern Is", "Purple Green Purple");
+        } else if (purplePurpleGreen) {
+            telemetry.addData("Pattern Is", "Purple Purple Green");
+        } else telemetry.addData("Pattern Is", "Unknown");
 
         // These lines add the fidget tech's position to the telemetry
         telemetry.addData("Fidget Tech Position", spinPosition[number]);
@@ -192,9 +193,6 @@ public class TheKeep extends OpMode {
 
     private void getAprilTagData() {
         blueBase = null;
-        greenPurplePurple = null;
-        purpleGreenPurple = null;
-        purplePurpleGreen = null;
         redBase = null;
         List<AprilTagDetection> currentDetections = aprilTag.getDetections();
         telemetry.addData("# AprilTags Detected", currentDetections.size());
@@ -207,23 +205,19 @@ public class TheKeep extends OpMode {
                     blueBase = detection;
                 }
                 if (detection.id == 21) {
-                    greenPurplePurple = detection;
+                    greenPurplePurple = true;
                 }
                 if (detection.id == 22) {
-                    purpleGreenPurple = detection;
+                    purpleGreenPurple = true;
                 }
                 if (detection.id == 23) {
-                    purplePurpleGreen = detection;
+                    purplePurpleGreen = true;
                 }
                 if (detection.id == 24) {
                     redBase = detection;
                 }
             } else {
-                blueBase = null;
-                greenPurplePurple = null;
-                purpleGreenPurple = null;
-                purplePurpleGreen = null;
-                redBase = null;
+
             }
         }
 
