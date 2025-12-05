@@ -2,12 +2,10 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -26,7 +24,7 @@ public class TheKeep extends OpMode {
     private DcMotor FrontR = null;
     private DcMotor BackL = null;
     private DcMotor BackR = null;
-    private CRServo intake = null;
+    private DcMotor intake = null;
     private DcMotor Shooter = null;
     private Servo ballEjector = null;
     private Servo fidgetTech = null;
@@ -67,7 +65,7 @@ public class TheKeep extends OpMode {
 
         // Initialize the shooter and intake
         Shooter = hardwareMap.get(DcMotor.class,"Shooter");
-        intake = hardwareMap.get(CRServo.class,"intake");
+        intake = hardwareMap.get(DcMotor.class,"intake");
 
         // Initialize the ball ejector and fidget tech servos
         ballEjector = hardwareMap.get(Servo.class, "ballEjector");
