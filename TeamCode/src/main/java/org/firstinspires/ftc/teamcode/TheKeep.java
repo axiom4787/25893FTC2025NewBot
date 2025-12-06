@@ -95,7 +95,8 @@ public class TheKeep extends OpMode {
 
         // These lines set the shooter's power to 100% if the circle button is pressed and 0% if its not
         if (gamepad1.left_trigger > 0) {
-            Shooter.setPower(1);
+            Shooter.setPower(.9);
+            intake.setPower(0);
         } else Shooter.setPower(0);
 
         // These lines check to see if the fidget tech is in the way of the ball ejector if it's not when

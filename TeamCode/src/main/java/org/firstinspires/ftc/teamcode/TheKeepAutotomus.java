@@ -91,8 +91,11 @@ public class TheKeepAutotomus extends LinearOpMode {
         sleep(100);
         ballEjector.setPosition(0);
         Shooter.setPower(0);
-        setWheelPower(.25,0,0,1);
+        setWheelPower(-0.5,0,0,1);
         sleep(1000);
+        setWheelPower(0,0,0,1);
+
+
     }
 
     private void setWheelPower(double speed, double strafe, double turn, double multiplier) {
