@@ -4,10 +4,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 //import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
- /*Copyright (c) 2017 FIRST. All rights reserved.
+/*Copyright (c) 2017 FIRST. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted (subject to the limitations in the disclaimer below) provided that
@@ -34,16 +34,16 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 
-
+/*
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 //import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
+*/
 /*
  * This OpMode illustrates the concept of driving a path based on encoder counts.
  * The code is structured as a LinearOpMode
@@ -68,13 +68,13 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
-*/
+ */
 //@Disabled
 @Autonomous(name="AutoMode_Hinaa", group="Robot")
 //@Disabled
 public class AutoMode_Hinaa extends LinearOpMode {
 
-     //Declare OpMode members.
+    //Declare OpMode members.
     private DcMotor frontleft   = null;
     private DcMotor frontright  = null;
     private DcMotor backleft  = null;
@@ -84,7 +84,8 @@ public class AutoMode_Hinaa extends LinearOpMode {
     private DcMotor outtakeleft;
     private DcMotor outtakeright;
 
-    private Servo belt;
+    private CRServo frontWheels;
+    private CRServo backWheels;
     private ElapsedTime runtime = new ElapsedTime();
 
     // Calculate the COUNTS_PER_INCH for your specific drive train.
@@ -115,7 +116,9 @@ public class AutoMode_Hinaa extends LinearOpMode {
         intake = hardwareMap.get(DcMotor.class, "intake");
         outtakeleft = hardwareMap.get(DcMotor.class, "outtakeleft");
         outtakeright = hardwareMap.get(DcMotor.class, "outtakeright");
-        belt = hardwareMap.get(Servo.class, "belt");
+        frontWheels = hardwareMap.get(CRServo.class, "frontWheels");
+        backWheels = hardwareMap.get(CRServo.class, "backWheels");
+
 
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
@@ -126,13 +129,15 @@ public class AutoMode_Hinaa extends LinearOpMode {
         frontright.setDirection(DcMotor.Direction.FORWARD);
         backright.setDirection(DcMotor.Direction.FORWARD);
         // Make the two outtakes spin opposite ways
-        outtakeleft.setDirection(DcMotor.Direction.FORWARD);
-        outtakeright.setDirection(DcMotor.Direction.REVERSE);
+        outtakeleft.setDirection(DcMotor.Direction.REVERSE);
+        outtakeright.setDirection(DcMotor.Direction.FORWARD);
 
         // Set all powers to zero initially
         intake.setPower(0);
         outtakeleft.setPower(0);
         outtakeright.setPower(0);
+        frontWheels.setPower(0.0);
+        backWheels.setPower(0.0);
 
 
         frontleft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -157,10 +162,11 @@ public class AutoMode_Hinaa extends LinearOpMode {
         // Wait for the game to start (driver presses START)
         waitForStart();
 
-        encoderDrive(DRIVE_SPEED,  30,  30, 2.0);
-
-        belt.setPosition(1.0);
-        telemetry.addLine("Running conveyor..."); //move ball up with conveyor belt
+/*
+        // Run rollers to move game piece up
+        frontWheels.setPower(1.0);
+        backWheels.setPower(1.0);
+        telemetry.addLine("Running rollers...");
         telemetry.update();
         sleep(1500);
 
@@ -168,7 +174,210 @@ public class AutoMode_Hinaa extends LinearOpMode {
         outtakeright.setPower(-1.0);
         telemetry.addLine("Running outtake..."); //shoot ball
         telemetry.update();
+        //sleep(1500);
+
+        // Run rollers to move game piece up
+        frontWheels.setPower(1.0);
+        backWheels.setPower(1.0);
+        telemetry.addLine("Running rollers...");
+        telemetry.update();
         sleep(1500);
+
+        // Run rollers again
+        frontWheels.setPower(1.0);
+        backWheels.setPower(1.0);
+        telemetry.addLine("Running rollers...");
+        telemetry.update();
+        sleep(3000);
+
+        // Stop rollers
+        frontWheels.setPower(0.0);
+        backWheels.setPower(0.0);
+        // Stop outtake
+        outtakeleft.setPower(0);
+        outtakeright.setPower(0);
+*/
+        telemetry.addLine("Forward 40...");
+        telemetry.update();
+        encoderDrive(DRIVE_SPEED,  45,  45, 2.0);
+        sleep(250);
+
+        outtakeleft.setPower(1.0);
+        outtakeright.setPower(1.0);
+        telemetry.addLine("outtake ON..."); //shoot ball
+        telemetry.update();
+
+        sleep(2500);
+
+        intake.setPower(-1.0);
+        telemetry.addLine("intake ON...");
+        telemetry.update();
+
+        frontWheels.setPower(1.0);
+        backWheels.setPower(1.0);
+        telemetry.addLine("rollers ON...");
+        telemetry.update();
+
+        sleep(3500);
+
+        outtakeleft.setPower(0.0);
+        outtakeright.setPower(0.0);
+        telemetry.addLine("outtake OFF..."); //shoot ball
+        telemetry.update();
+
+        intake.setPower(0.0);
+        telemetry.addLine("intake OFF...");
+        telemetry.update();
+
+        frontWheels.setPower(0.0);
+        backWheels.setPower(0.0);
+        telemetry.addLine("rollers OFF...");
+        telemetry.update();
+
+        telemetry.addLine("Forward 15...");
+        telemetry.update();
+        encoderDrive(DRIVE_SPEED,  15,  15, 2.0);
+
+        telemetry.addLine("Turning Right...");
+        telemetry.update();
+        encoderDrive(TURN_SPEED, 31, -31, 2.0);  // adjust inches to set turn angle
+        //sleep(250);
+
+        intake.setPower(-1.0);
+        telemetry.addLine("intake ON...");
+        telemetry.update();
+
+        frontWheels.setPower(0.25);
+        backWheels.setPower(0.25);
+        telemetry.addLine("rollers ON...");
+        telemetry.update();
+
+        telemetry.addLine("Forward 40...");
+        telemetry.update();
+        encoderDrive(DRIVE_SPEED,  40,  40, 2.0);
+        sleep(250);
+
+        frontWheels.setPower(0.0);
+        backWheels.setPower(0.0);
+        telemetry.addLine("rollers OFF...");
+        telemetry.update();
+
+        intake.setPower(0.0);
+        telemetry.addLine("intake OFF...");
+        telemetry.update();
+
+        telemetry.addLine("Backward 40...");
+        telemetry.update();
+        encoderDrive(DRIVE_SPEED,  -40,  -40, 2.0);
+
+        telemetry.addLine("Turning Left...");
+        telemetry.update();
+        encoderDrive(TURN_SPEED, -31, 31, 2.0);  // adjust inches to set turn angle
+        //sleep(250);
+
+        telemetry.addLine("Backward 15...");
+        telemetry.update();
+        encoderDrive(DRIVE_SPEED,  -15,  -15, 2.0);
+
+        outtakeleft.setPower(1.0);
+        outtakeright.setPower(1.0);
+        telemetry.addLine("outtake ON..."); //shoot ball
+        telemetry.update();
+
+        sleep(1500);
+
+        intake.setPower(-1.0);
+        telemetry.addLine("intake ON...");
+        telemetry.update();
+
+        frontWheels.setPower(1.0);
+        backWheels.setPower(1.0);
+        telemetry.addLine("rollers ON...");
+        telemetry.update();
+
+        sleep(2500);
+
+        outtakeleft.setPower(1.0);
+        outtakeright.setPower(1.0);
+        telemetry.addLine("outtake OFF..."); //shoot ball
+        telemetry.update();
+
+        frontWheels.setPower(0.0);
+        backWheels.setPower(0.0);
+        telemetry.addLine("rollers OFF...");
+        telemetry.update();
+
+        intake.setPower(0.0);
+        telemetry.addLine("intake OFF...");
+        telemetry.update();
+/*
+        telemetry.addLine("Strafing Left...");
+        telemetry.update();
+        strafeDrive(DRIVE_SPEED, -20, 3.0);   // 20 inches right
+        //sleep(250);
+
+        telemetry.addLine("Forward 20...");
+        telemetry.update();
+        encoderDrive(DRIVE_SPEED, 20, 20, 3.0);
+        //sleep(250);
+
+        telemetry.addLine("Backward 20...");
+        telemetry.update();
+        encoderDrive(DRIVE_SPEED, -20, -20, 3.0);
+        //sleep(250);
+
+        telemetry.addLine("Strafe Left 20...");
+        telemetry.update();
+        strafeDrive(DRIVE_SPEED, -20, 3.0);
+        //sleep(250);
+
+        intake.setPower(1.0);
+
+        telemetry.addLine("Forward 20...");
+        telemetry.update();
+        encoderDrive(DRIVE_SPEED, 20, 20, 3.0);
+        //sleep(250);
+        intake.setPower(1.0);
+
+        telemetry.addLine("Backward 20...");
+        telemetry.update();
+        encoderDrive(DRIVE_SPEED, -20, -20, 3.0);
+        //sleep(250);
+
+        telemetry.addLine("Strafe Left 20...");
+        telemetry.update();
+        strafeDrive(DRIVE_SPEED, -20, 3.0);
+        //sleep(250);
+
+        intake.setPower(1.0);
+        telemetry.addLine("Forward 20...");
+        telemetry.update();
+        encoderDrive(DRIVE_SPEED, 20, 20, 3.0);
+        //sleep(250);
+
+        intake.setPower(0.0);
+        telemetry.addLine("Backward 20...");
+        telemetry.update();
+        encoderDrive(DRIVE_SPEED, -20, -20, 3.0);
+        //sleep(250);
+
+        telemetry.addLine("Strafe Left 20...");
+        telemetry.update();
+        strafeDrive(DRIVE_SPEED, -20, 3.0);
+        //sleep(250);
+
+        intake.setPower(1.0);
+        telemetry.addLine("Forward 20...");
+        telemetry.update();
+        encoderDrive(DRIVE_SPEED, 20, 20, 3.0);
+        //sleep(250);
+
+        intake.setPower(0.0);
+        telemetry.addLine("Backward 20...");
+        telemetry.update();
+        encoderDrive(DRIVE_SPEED, -20, -20, 3.0);
+        //sleep(250);
+*/
         // Step through each leg of the path,
         // Note: Reverse movement is obtained by setting a negative distance (not speed)
         /*encoderDrive(DRIVE_SPEED,  35,  35, 3.0);  // S1: Forward 47 Inches with 5 Sec timeout
@@ -185,11 +394,6 @@ public class AutoMode_Hinaa extends LinearOpMode {
         intake.setPower(0);
         sleep(500);
 
-        belt.setPosition(1.0);
-        telemetry.addLine("Running conveyor..."); //move ball up with conveyor belt
-        telemetry.update();
-        sleep(1500);
-
         outtakeleft.setPower(1.0);
         outtakeright.setPower(1.0);
         telemetry.addLine("Running outtake..."); //shoot ball
@@ -204,14 +408,19 @@ public class AutoMode_Hinaa extends LinearOpMode {
         sleep(1000);  // pause to display final telemetry message.
     }
 
-/*
-     *  Method to perform a relative move, based on encoder counts.
-     *  Encoders are not reset as the move is based on the current position.
-     *  Move will stop if any of three conditions occur:
-     *  1) Move gets to the desired position
-     *  2) Move runs out of time
-     *  3) Driver stops the OpMode running.
-*/
+    /*
+    //rollers reverse: frontWheels.setPosition(0.0);
+    //backWheels.setPosition(0.0);
+
+    //rollers stop: frontWheels.setPosition(0.5);
+    //backWheels.setPosition(0.5);
+         *  Method to perform a relative move, based on encoder counts.
+         *  Encoders are not reset as the move is based on the current position.
+         *  Move will stop if any of three conditions occur:
+         *  1) Move gets to the desired position
+         *  2) Move runs out of time
+         *  3) Driver stops the OpMode running.
+    */
     public void encoderDrive(double speed,
                              double leftInches, double rightInches,
                              double timeoutS) {
@@ -330,4 +539,22 @@ public class AutoMode_Hinaa extends LinearOpMode {
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

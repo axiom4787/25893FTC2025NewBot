@@ -67,37 +67,37 @@ public class Auto_Amulya extends LinearOpMode {
         if (opModeIsActive()) {
 
             // ---- Drive Sequence Example ----
-            moveForward(9, DRIVE_SPEED);
+            moveForward(25, DRIVE_SPEED);
             sleep(500);
-        /*
+
             // ---- New: Turning Precisely ----
-            turnRight(45, TURN_SPEED); // turn 90° right
+            turnLeft(135, TURN_SPEED); // turn 90° right
             sleep(500);
 
-            strafeRight(25, DRIVE_SPEED);
+            strafeLeft(20, DRIVE_SPEED);
             sleep(500);
 
-            moveForward(3, DRIVE_SPEED);
+            moveForward(8, DRIVE_SPEED);
             sleep(500);
 
-            runIntake(4000); // run for 4 seconds
+            //runIntake(4000); // run for 4 seconds
 
             moveBackward(3, DRIVE_SPEED);
             sleep(500);
 
-            strafeRight(3, DRIVE_SPEED);
+            strafeLeft(3, DRIVE_SPEED);
             sleep(500);
 
             moveForward(3, DRIVE_SPEED);
             sleep(500);
 
-            runIntake(4000); // run for 4 seconds
+            //runIntake(4000); // run for 4 seconds
 
-
-            turnLeft(90, TURN_SPEED); // turn 90° left
+/*
+            turnRight(90, TURN_SPEED); // turn 90° left
             sleep(500);
 
-            strafeRight(20, DRIVE_SPEED);
+            strafeLeft(20, DRIVE_SPEED);
             sleep(500);
 
             strafeLeft(20, DRIVE_SPEED);
@@ -110,7 +110,7 @@ public class Auto_Amulya extends LinearOpMode {
 
             // ---- Intake Sequence ----
             runIntake(2000); // run for 2 seconds
-            */
+*/
             telemetry.addLine("Auto Complete");
             telemetry.update();
         }
@@ -414,3 +414,16 @@ public class Auto_Amulya extends LinearOpMode {
 }
 
 */
+
+
+
+
+
+
+
+
+
+
+
+
+
