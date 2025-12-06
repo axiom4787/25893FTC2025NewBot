@@ -106,7 +106,7 @@ public abstract class AutonomousOpMode extends OpMode {
         autonomousPathUpdate(telemetry);
 
         // Feedback to Driver Hub for debugging
-        telemetry.addData("path state", pathState);
+        telemetryMirror.addData("path state", pathState);
         telemetryMirror.addData("x", follower.getPose().getX());
         telemetryMirror.addData("y", follower.getPose().getY());
         telemetryMirror.addData("heading", follower.getPose().getHeading());
@@ -137,11 +137,11 @@ public abstract class AutonomousOpMode extends OpMode {
      **/
     @Override
     public void init_loop() {
-        telemetry.addData("Code Version", BuildConfig.VERSION_NAME);
-        telemetry.addData("Code Build Time", BuildConfig.APP_BUILD_TIME);
-        telemetry.addData(ALLIANCE, alliance.name());
-        telemetry.addData(AUTONOMOUS_OP_MODE, "initialized");
-        telemetry.update();
+        telemetryMirror.addData("Code Version", BuildConfig.VERSION_NAME);
+        telemetryMirror.addData("Code Build Time", BuildConfig.APP_BUILD_TIME);
+        telemetryMirror.addData(ALLIANCE, alliance.name());
+        telemetryMirror.addData(AUTONOMOUS_OP_MODE, "initialized");
+        telemetryMirror.update();
 
         follower.update();
         drawOnlyCurrent();
