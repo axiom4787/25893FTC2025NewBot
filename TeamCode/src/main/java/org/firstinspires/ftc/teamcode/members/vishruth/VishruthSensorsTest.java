@@ -11,7 +11,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Autonomous
 public class VishruthSensorsTest extends OpMode {
-
     TouchSensor touchSensor;
     DistanceSensor distanceSensor;
 
@@ -25,7 +24,7 @@ public class VishruthSensorsTest extends OpMode {
     @Override
     public void loop() {
     telemetry.addData("Is Touch Sensor Pressed",touchSensor.isPressed());
-    telemetry.addData("Object Distance From Sensor in cm",distanceSensor.getDistance(DistanceUnit.CM));
+    telemetry.addData("Object Distance From Sensor in cm",distanceSensor.getDistance(DistanceUnit.INCH));
     telemetry.update();
     }
 }

@@ -8,6 +8,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.FRLib.hardware.Distance2mW;
 import org.firstinspires.ftc.teamcode.utils.Logger;
 import org.firstinspires.ftc.teamcode.FRLib.hardware.MotorW;
 import org.firstinspires.ftc.teamcode.FRLib.hardware.IMUW;
@@ -315,6 +317,51 @@ public class MecanumDrive {
         }
 
         while (opMode.opModeIsActive() && runtime.seconds() < timeout) {
+            // check if any motor isn't finished
+            boolean done = true;
+            for (MotorW m : motors) {
+                if (Math.abs(m.getPosition()) < targetCounts) {
+                    done = false;
+                    break;
+                }
+            }
+
+            // if all motors are done moving to position, exit
+            if (done) break;
+
+            double currentYaw = imu.getYaw() - startYaw;
+            double error = angleDegrees - currentYaw;
+
+            error = AngleUnit.normalizeDegrees(error);
+
+            double correction = kP * error;
+
+            frontLeft.setPower(power + correction);
+            rearLeft.setPower(power + correction);
+
+            frontRight.setPower(power - correction);
+            rearRight.setPower(power - correction);
+        }
+
+        brake(500);
+    }
+
+    public void driveStraightUnlessSeeInches(@NonNull IMUW imu, float angleDegrees, float inches, float power, float timeout, Distance2mW sensor, double tooCloseInches) {
+        double kP = 0.02; // proportional gain
+        double startYaw = imu.getYaw();
+        runtime.reset();
+
+        int targetCounts = (int)(Math.abs(inches) * COUNTS_PER_INCH);
+        double direction = Math.signum(inches); // 1 for forward, -1 for backward
+
+        // Reset encoders, run to position
+        for (MotorW m : motors) {
+            m.resetEncoder();
+            m.runUsingEncoder();
+            m.runToPosition(targetCounts);
+        }
+
+        while (opMode.opModeIsActive() && sensor.getDistance(DistanceUnit.INCH) < tooCloseInches && runtime.seconds() < timeout) {
             // check if any motor isn't finished
             boolean done = true;
             for (MotorW m : motors) {

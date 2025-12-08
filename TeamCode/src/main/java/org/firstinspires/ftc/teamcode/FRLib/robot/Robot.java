@@ -21,6 +21,6 @@ public class Robot {
                 RevHubOrientationOnRobot.LogoFacingDirection.UP,
                 RevHubOrientationOnRobot.UsbFacingDirection.LEFT);
         touchSensor = new TouchSensorW(opMode.hardwareMap, "sensor_touch");
-        distanceSensor = new Distance2mW(opMode.hardwareMap, "sensor_distance");
+        distanceSensor = new Distance2mW(opMode.hardwareMap, "distance_sensor");
     }
 }
