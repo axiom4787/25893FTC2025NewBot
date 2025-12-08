@@ -20,6 +20,8 @@ public class FieldRelative extends LinearOpMode {
     private DcMotor rearLeftDrive = null;
     private DcMotor frontRightDrive = null;
     private DcMotor rearRightDrive = null;
+
+    private double powerMultiplier = 0.25;
     private IMU imu;
 
     @Override
@@ -65,19 +67,19 @@ public class FieldRelative extends LinearOpMode {
         double rearLeftPower = newAxial-newLateral+yaw;
         double rearRightPower = newAxial+newLateral-yaw;
 
-        double max = Math.max(frontLeftPower, frontRightPower);
+      /*  double max = Math.max(frontLeftPower, frontRightPower);
         max = Math.max(max, rearLeftPower);
         max = Math.max(max, rearRightPower);
-        if (max >= 0.3) {
-            max = 2;
+        if (max > 1) {
+            max = 1;
         }
+*/
 
 
-
-        frontLeftDrive.setPower(frontLeftPower/max);
-        frontRightDrive.setPower(frontRightPower/max);
-        rearLeftDrive.setPower(rearLeftPower/max);
-        rearRightDrive.setPower(rearRightPower/max);
+        frontLeftDrive.setPower(frontLeftPower * powerMultiplier);
+        frontRightDrive.setPower(frontRightPower * powerMultiplier);
+        rearLeftDrive.setPower(rearLeftPower* powerMultiplier);
+        rearRightDrive.setPower(rearRightPower * powerMultiplier);
     }
 
 }

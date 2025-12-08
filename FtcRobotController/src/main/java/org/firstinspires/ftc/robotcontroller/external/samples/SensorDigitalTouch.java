@@ -44,7 +44,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
  */
 @TeleOp(name = "Sensor: digital channel", group = "Sensor")
 @Disabled
-public class SensorDigitalTouch extends LinearOpMode {
+public class   SensorDigitalTouch extends LinearOpMode {
     DigitalChannel digitalTouch;  // Digital channel Object
 
     @Override
