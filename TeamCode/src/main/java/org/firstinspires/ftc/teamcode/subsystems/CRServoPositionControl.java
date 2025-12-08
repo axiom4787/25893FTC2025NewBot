@@ -24,7 +24,8 @@ public class CRServoPositionControl
 
     // GLOBAL OFFSET APPLIED ONLY DURING CONTROL
     public static double constantOffset = 0.15;
-    public static final double DEADBAND = 1.67 / degreesPerRev * ticksPerRev;
+    public static double deadbandAngles = 1.67;
+    private double deadband = deadbandAngles / degreesPerRev * ticksPerRev;
 
     // Internal state
     private double integral = 0;
@@ -56,7 +57,7 @@ public class CRServoPositionControl
         // Compute shortest-path error
         double error = shortestError(targetVoltage_offset, measured_offset);
 
-        if (error <= DEADBAND) {
+        if (error <= deadband) {
             crServo.setPower(0);
             timer.reset();
             return;
