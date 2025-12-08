@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 @Autonomous(name="Om - Stop At Object")
 public class DistanceSenseMove extends LinearOpMode {
 
-    private DcMotor frontLeft, frontRight, rearLeft, rearRight;
+    private DcMotor frontLeftDrive, frontRightDrive, rearLeftDrive, rearRightDrive;
     private DistanceSensor distance_sensor;
 
     private static final double POWER = 0.2;        // Slow and safe
@@ -20,17 +20,18 @@ public class DistanceSenseMove extends LinearOpMode {
     public void runOpMode() {
 
         // Map hardware
-        frontLeft  = hardwareMap.get(DcMotor.class, "front_left_motor");
-        frontRight = hardwareMap.get(DcMotor.class, "front_right_motor");
-        rearLeft   = hardwareMap.get(DcMotor.class, "rear_left_motor");
-        rearRight  = hardwareMap.get(DcMotor.class, "rear_right_motor");
+        frontLeftDrive  = hardwareMap.get(DcMotor.class, "front_left_motor");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_motor");
+        rearLeftDrive   = hardwareMap.get(DcMotor.class, "back_left_motor");
+        rearRightDrive  = hardwareMap.get(DcMotor.class, "back_right_motor");
+
         distance_sensor = hardwareMap.get(DistanceSensor.class, "distance_sensor");
 
         // Correct motor directions (standard mecanum)
-        frontLeft.setDirection(DcMotor.Direction.REVERSE);
-        frontRight.setDirection(DcMotor.Direction.FORWARD);
-        rearLeft.setDirection(DcMotor.Direction.REVERSE);
-        rearRight.setDirection(DcMotor.Direction.FORWARD);
+        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
+        rearLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        rearRightDrive.setDirection(DcMotor.Direction.FORWARD);
 
         telemetry.addData("Status", "Ready – Press Play");
         telemetry.update();
@@ -59,19 +60,19 @@ public class DistanceSenseMove extends LinearOpMode {
             }
 
             // Keep driving forward
-            frontLeft.setPower(POWER);
-            frontRight.setPower(POWER);
-            rearLeft.setPower(POWER);
-            rearRight.setPower(POWER);
+            frontLeftDrive.setPower(POWER);
+            frontRightDrive.setPower(POWER);
+            rearLeftDrive.setPower(POWER);
+            rearRightDrive.setPower(POWER);
 
             telemetry.update();
         }
 
         // STOP
-        frontLeft.setPower(0);
-        frontRight.setPower(0);
-        rearLeft.setPower(0);
-        rearRight.setPower(0);
+        frontLeftDrive.setPower(0);
+        frontRightDrive.setPower(0);
+        rearLeftDrive.setPower(0);
+        rearRightDrive.setPower(0);
 
         telemetry.addData("Status", "Finished – Stopped safely");
         telemetry.update();
