@@ -67,17 +67,33 @@ public class CRServoPositionControl
 
         crServo.setPower(output);
     }
+    private double lastRawVoltage = 0;
+    private double unwrappedVoltage = 0;
 
-    /** FILTERED REAL VOLTAGE */
     private double getFilteredVoltage()
     {
+        double raw = encoder.getVoltage();
+
+        double diff = raw - lastRawVoltage;
+
+        // unwrap
+        if (diff > ticksPerRev/2) diff -= ticksPerRev;
+        if (diff < -ticksPerRev/2) diff += ticksPerRev;
+
+        unwrappedVoltage += diff;
+        lastRawVoltage = raw;
+
+        // NOW filter the unwrapped value
         filteredVoltage =
                 (1 - filterAlpha) * filteredVoltage +
-                        filterAlpha * encoder.getVoltage();
-        return filteredVoltage;
-    }
+                        filterAlpha * unwrappedVoltage;
 
-    /** GLOBAL OFFSET APPLICATION (with wrap-around) */
+        // re-wrap filtered value
+        double wrapped = filteredVoltage % ticksPerRev;
+        if (wrapped < 0) wrapped += ticksPerRev;
+
+        return wrapped;
+    }
     private double applyOffset(double voltage)
     {
         double v = voltage + constantOffset;
@@ -86,7 +102,6 @@ public class CRServoPositionControl
         return v;
     }
 
-    /** Minimal difference on circular space */
     private double shortestError(double target, double current)
     {
         double diff = target - current;
@@ -97,14 +112,11 @@ public class CRServoPositionControl
         return diff;
     }
 
-    /** DEG → VOLTAGE (real-world) */
     private double angleToVoltage(double angleDegrees)
     {
         double a = Math.max(0, Math.min(degreesPerRev, angleDegrees));
         return (a / degreesPerRev) * ticksPerRev;
     }
-
-    /** GETTERS */
     public double getActualTargetVoltage()
     {
         return targetVoltage_actual;
