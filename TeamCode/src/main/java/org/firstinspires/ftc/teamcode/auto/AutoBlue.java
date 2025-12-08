@@ -55,43 +55,36 @@ public class AutoBlue extends OpMode {
                 .setLinearHeadingInterpolation(align1Pose.getHeading(), pickup1Pose.getHeading())
                 .build();
 
-        /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         scorePickup1 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup1Pose, scorePose))
                 .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
                 .build();
 
-        /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         alignPickup2 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, align2Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), align2Pose.getHeading())
                 .build();
 
-        /* This is our scorePickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup2 = follower.pathBuilder()
                 .addPath(new BezierLine(align2Pose, pickup2Pose))
                 .setLinearHeadingInterpolation(align2Pose.getHeading(), pickup2Pose.getHeading())
                 .build();
 
-        /* This is our grabPickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         scorePickup2 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup2Pose, scorePose))
                 .setLinearHeadingInterpolation(pickup2Pose.getHeading(), scorePose.getHeading())
                 .build();
 
-        /* This is our grabPickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         alignPickup3 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose, align3Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), align3Pose.getHeading())
                 .build();
 
-        /* This is our scorePickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup3 = follower.pathBuilder()
                 .addPath(new BezierLine(align3Pose, pickup3Pose))
                 .setLinearHeadingInterpolation(align3Pose.getHeading(), pickup3Pose.getHeading())
                 .build();
 
-        /* This is our scorePickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         scorePickup3 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup3Pose, scorePose))
                 .setLinearHeadingInterpolation(pickup3Pose.getHeading(), scorePose.getHeading())
@@ -104,130 +97,87 @@ public class AutoBlue extends OpMode {
                 setPathState(1);
                 break;
             case 1:
-
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy()) {
-                    /* Score Preload */
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    mechController.setState(MechState.SHOOT_STATE); // shoot preload
+                    mechController.setState(MechState.SHOOT_STATE); // Shoot preload
                     follower.followPath(alignPickup1,true);
                     setPathState(2);
                 }
                 break;
             case 2:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
                 if(!follower.isBusy()) {
-                    /* Grab Sample */
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    follower.followPath(grabPickup1,true); //grab 1
-                    mechController.setState(MechState.INTAKE_STATE);
+                    follower.followPath(grabPickup1,true);
+                    mechController.setState(MechState.INTAKE_STATE); //Grab 1
                     setPathState(3);
                 }
                 break;
             case 3:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy()) {
-                    /* Score Sample */
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(scorePickup1,true);
                     setPathState(4);
                 }
                 break;
             case 4:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup2Pose's position */
                 if(!follower.isBusy()) {
-                    /* Grab Sample */
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    mechController.setState(MechState.SHOOT_STATE); // shoot 1
+                    mechController.setState(MechState.SHOOT_STATE); // Shoot 1
                     follower.followPath(alignPickup2,true);
                     setPathState(5);
                 }
                 break;
             case 5:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy()) {
-                    /* Score Sample */
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(grabPickup2,true); // grab 2
-                    mechController.setState(MechState.INTAKE_STATE);
+                    follower.followPath(grabPickup2,true);
+                    mechController.setState(MechState.INTAKE_STATE); // Grab 2
                     setPathState(6);
                 }
                 break;
             case 6:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position */
                 if(!follower.isBusy()) {
-                    /* Grab Sample */
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
                     follower.followPath(scorePickup2, true);
                     setPathState(7);
                 }
                 break;
             case 7:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup2Pose's position */
                 if(!follower.isBusy()) {
-                    /* Grab Sample */
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    mechController.setState(MechState.SHOOT_STATE); // shoot 2
+                    mechController.setState(MechState.SHOOT_STATE); // Shoot 2
                     follower.followPath(alignPickup3,true);
                     setPathState(8);
                 }
                 break;
             case 8:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy()) {
-                    /* Score Sample */
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(grabPickup3,true); // grab 3
-                    mechController.setState(MechState.INTAKE_STATE);
+                    follower.followPath(grabPickup3,true);
+                    mechController.setState(MechState.INTAKE_STATE); // Grab 3
                     setPathState(9);
                 }
                 break;
             case 9:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position */
                 if(!follower.isBusy()) {
-                    /* Grab Sample */
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
                     follower.followPath(scorePickup3, true);
                     setPathState(10);
                 }
                 break;
             case 10:
                 if(!follower.isBusy()) {
-
-                    mechController.setState(MechState.SHOOT_STATE);
+                    mechController.setState(MechState.SHOOT_STATE); // Shoot 3
                     setPathState(11);
                 }
-
+                break;
             case 11:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy()) {
-                    /* Set the state to a Case we won't use or define, so it just stops running an new paths */
                     setPathState(-1);
                 }
                 break;
         }
     }
 
-    /** These change the states of the paths and actions. It will also reset the timers of the individual switches **/
     public void setPathState(int pState) {
         pathState = pState;
         pathTimer.resetTimer();
     }
-    /** This is the main loop of the OpMode, it will run repeatedly after clicking "Play". **/
+
     @Override
     public void loop() {
-
-        // These loop the movements of the robot, these must be called continuously in order to work
-        mechController.update(); // Keeps running states till IDLE
+        mechController.update();
         if (mechController.getCurrentState() != MechState.SHOOT_STATE && !visionController.distanceSensor()) {
             follower.update();
             autonomousPathUpdate();
@@ -237,8 +187,6 @@ public class AutoBlue extends OpMode {
         } else {
             follower.setMaxPower(MechController.FULL_DRIVE_POWER);
         }
-
-        // Feedback to Driver Hub for debugging
         telemetry.addData("path state", pathState);
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
@@ -247,7 +195,6 @@ public class AutoBlue extends OpMode {
         mechController.allTelemetry();
     }
 
-    /** This method is called once at the init of the OpMode. **/
     @Override
     public void init() {
         robot = new RobotHardware(hardwareMap, telemetry);
@@ -274,22 +221,18 @@ public class AutoBlue extends OpMode {
         follower.setStartingPose(startPose);
     }
 
-    /** This method is called continuously after Init while waiting for "play". **/
     @Override
     public void init_loop() {
         mechController.update();
         mechController.allTelemetry();
     }
 
-    /** This method is called once at the start of the OpMode.
-     * It runs all the setup actions, including building paths and starting the path system **/
     @Override
     public void start() {
         opmodeTimer.resetTimer();
         setPathState(0);
     }
 
-    /** We do not use this because everything should automatically disable **/
     @Override
     public void stop() {}
 }

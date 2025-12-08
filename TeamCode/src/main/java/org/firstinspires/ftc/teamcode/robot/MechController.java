@@ -20,15 +20,16 @@ public class MechController {
     public static final double[] SHOOT = {185, 300, 53}; // Indexer 0, 1, 2 @ Shooting Post degrees 180, 270, 60
     private static final double MAX_SERVO_ROTATION = 300.0; // Degrees
     private static final double INTAKE_TICKS_PER_FULL_ROTATION = 537.7; //Encoder Resolution PPR for RPM 312
-    private static final long INTAKE_CUTOFF_MS = 3000;
+    private static final long INTAKE_CUTOFF_MS = 3000; // 3 seconds wait time while searching for artifact
     private static final long POST_ROTATE_WAIT_MS = 1000; // After every rotation
     private static final long MOTOR_WAIT_MS = 2000; // 2 seconds for Shooting motor to reach full speed
     private static final long POST_INDEXER_WAIT_MS = 1000; // 1 second post Indexer rotation
     private static final long LIFT_WAIT_MS = 2000; // 2 seconds for Lifter in Up position for shooting
     private static final long DROP_WAIT_MS = 1000; // 1 second post Lifter in Down position
     private static final long APRIL_TAG_WAIT_MS = 3000; // 3 seconds waiting to detect AprilTag
-    public static final double FULL_DRIVE_POWER = 0.8;
-    public static final double INTAKE_DRIVE_POWER = 0.25;
+    public static final double FULL_DRIVE_POWER = 0.8; // Normal Drive speed
+    public static final double INTAKE_DRIVE_POWER = 0.25; // Drive speed during Intake
+    public static final double shootingMotSP = 6000; // Shooting motor speed max: 6000
 
 
     // Limit constants
@@ -520,7 +521,7 @@ public class MechController {
     }
     public void runShootingMot(double power) {
         if (Math.abs(power) > 0.01) {
-            robot.shootingMot.setPower(6000/6000);
+            robot.shootingMot.setPower(shootingMotSP/6000);
         } else {
             robot.shootingMot.setPower(0);
         }
