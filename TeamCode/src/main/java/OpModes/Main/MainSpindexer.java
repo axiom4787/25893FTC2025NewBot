@@ -60,7 +60,7 @@ public class MainSpindexer extends LinearOpMode {
         indexColors.put(2, "none");
 
         // Initialize exactly as you needed earlier:
-        targetDegrees = MAX_DEGREES;
+        targetDegrees = MAX_DEGREES-40;
         indexServo.setPosition(posFromDeg(targetDegrees));
 
         telemetry.addLine("Ready. Press A to move 60°.");
@@ -68,7 +68,7 @@ public class MainSpindexer extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-        kickerServo.setPosition(0.011);
+        kickerServo.setPosition(0.225);
         while (opModeIsActive()) {
 
             // ---------------- COLOR DETECTION -----------------
@@ -126,8 +126,8 @@ public class MainSpindexer extends LinearOpMode {
             // ---------------- BUTTON B -------------------------
             boolean B = gamepad1.b;
             if (B && !prevB) {
-                targetDegrees = MAX_DEGREES;
-                smoothMoveTo(MAX_DEGREES);
+                targetDegrees = MAX_DEGREES-40;
+                smoothMoveTo(MAX_DEGREES-40);
                 currentDivision = 0;
             }
             prevB = B;
@@ -139,7 +139,7 @@ public class MainSpindexer extends LinearOpMode {
                 //run shooter
                 // Find the division of the next needed color
 
-                int goalDiv = findDivisionWithColor(need_colors[(flag) % need_colors.length]+2);
+                int goalDiv = findDivisionWithColor(need_colors[(flag) % need_colors.length])+2;
                 if (goalDiv > 2){
                     goalDiv -= 3;
                 }
@@ -159,7 +159,7 @@ public class MainSpindexer extends LinearOpMode {
 
 
 
-                kickerServo.setPosition(0.7); //Flick up kicker servo
+                kickerServo.setPosition(0.45); //Flick up kicker servo
                 try {
                     // Pause execution for 1.5 seconds (1000 milliseconds)
                     Thread.sleep(1500);
@@ -167,7 +167,7 @@ public class MainSpindexer extends LinearOpMode {
                     // Handle the InterruptedException if the thread is interrupted while sleeping
                     e.printStackTrace();
                 }
-                kickerServo.setPosition(0.011); //reset kickerServo position
+                kickerServo.setPosition(0.225); //reset kickerServo position
                 //kickerWheelServo.setPower(0); // set kicker wheel servo back to zero
 
                 telemetry.addLine("Ball shot!");
@@ -184,7 +184,7 @@ public class MainSpindexer extends LinearOpMode {
                     indexColors.put(2, "none");
 
                     // Reset servo
-                    targetDegrees = MAX_DEGREES;
+                    targetDegrees = MAX_DEGREES-40;
                     smoothMoveTo(targetDegrees);
 
                     // Reset counters

@@ -23,12 +23,12 @@ public class FlyWheel extends OpMode {
     @Override
     public void loop() {
         // Increase power with Triangle (Y)
-        if (gamepad1.triangle) {
+        if (gamepad1.right_bumper) {
             flywheelPower += 0.1;
         }
 
         // Decrease power with X
-        if (gamepad1.cross) {
+        if (gamepad1.left_bumper) {
             flywheelPower -= 0.1;
         }
 
