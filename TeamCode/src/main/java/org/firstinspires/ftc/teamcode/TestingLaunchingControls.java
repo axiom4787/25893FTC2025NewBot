@@ -94,14 +94,14 @@ public class TestingLaunchingControls extends OpMode
 
         robot.driveTrain.drive(forward, strafe, turn);
         //press the button to start the launcher code
-        if (gamepad1.right_bumper) //if i press the right bumper
+        if (gamepad2.right_bumper) //if i press the right bumper
         {
             //set to full power
             robot.launcher.setFlywheelSpeed(0.75);
             robot.launcher.setAgitatorSpeed(1);
             robot.launcher.setShooterIntakeSpeed(0.5);
         }
-        else if (gamepad1.left_bumper) //if i press the left bumper
+        else if (gamepad2.left_bumper) //if i press the left bumper
         {
             //turn off the launching moter
             robot.launcher.setFlywheelSpeed(0);
