@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
  * Tests the 315 degree rotations (both counterclockwise and clockwise)
  */
 @Autonomous(name = "Test2: Rotation 315deg", group = "Tests")
-@Disabled
+//@Disabled
 public class TTAutoODTest2_Rotation extends LinearOpMode {
     private DcMotor frontleft;
     private DcMotor frontright;

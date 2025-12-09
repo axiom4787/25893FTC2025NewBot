@@ -85,7 +85,7 @@ public class TTAutoODR extends LinearOpMode {
       // Step 9: Shoot collected balls
       shootBalls();
 
-      rotateRelative(TTAutoConstants.ROTATE_TO_COLLECT2, TTAutoConstants.ROTATE_POWER);
+      rotateRelative(TTAutoConstants.ROTATE_TO_COLLECT, TTAutoConstants.ROTATE_POWER);
 
       // Step 4: Strafe left to ball group
       odometry.strafe(-TTAutoConstants.STRAFE_GROUP_2, TTAutoConstants.DRIVE_POWER, 0);

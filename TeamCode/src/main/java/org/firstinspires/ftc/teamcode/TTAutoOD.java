@@ -95,7 +95,7 @@ public class TTAutoOD extends LinearOpMode {
     index.setPower(TTAutoConstants.INDEX_SHOOT_POWER);
     rotate.setPower(TTAutoConstants.ROTATE_SERVO_POWER);
     rotate2.setPower(TTAutoConstants.ROTATE2_SERVO_POWER);
-    sleep(TTAutoConstants.SHOOTING_DURATION);
+    sleep(TTAutoConstants.SHOOTING_DURATION1);
 
     // Stop all mechanisms
     leftlaunch.setPower(0);

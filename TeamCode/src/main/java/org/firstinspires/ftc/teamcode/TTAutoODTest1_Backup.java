@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
  * Tests only the initial backup movement to verify odometry calibration
  */
 @Autonomous(name = "Test1: Backup 68in", group = "Tests")
-@Disabled
+//@Disabled
 public class TTAutoODTest1_Backup extends LinearOpMode {
     private DcMotor frontleft;
     private DcMotor frontright;

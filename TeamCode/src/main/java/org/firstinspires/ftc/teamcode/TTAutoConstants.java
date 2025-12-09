@@ -47,8 +47,8 @@ public class TTAutoConstants {
     public static final double START_HEADING = 45.0;
 
     /** Rotation angle before collecting balls - counterclockwise (degrees) */
-    public static final double ROTATE_TO_COLLECT = 135.0;
-    public static final double ROTATE_TO_COLLECT2 = 132.0;
+    public static final double ROTATE_TO_COLLECT = 124.0;
+    //public static final double ROTATE_TO_COLLECT2 = 132.0;
 
 
     /** Rotation angle after collecting balls - clockwise (degrees) */
@@ -64,7 +64,7 @@ public class TTAutoConstants {
     public static final double DRIVE_POWER_COLLECT = 0.5;
 
     /** Rotation power during turns (0.0 to 1.0) */
-    public static final double ROTATE_POWER = 0.5;
+    public static final double ROTATE_POWER = 0.1;
 
     /** Left launcher motor power during shooting */
     public static final double LEFT_LAUNCH_POWER = 0.82;
@@ -98,7 +98,7 @@ public class TTAutoConstants {
     // ==================== TOLERANCE VALUES ====================
 
     /** Rotation tolerance for odometry turnTo command (degrees) */
-    public static final double ROTATION_TOLERANCE = 6.0;
+    public static final double ROTATION_TOLERANCE = 2.0;
 
     // Private constructor prevents instantiation
     private TTAutoConstants() {
