@@ -4,7 +4,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import OpModes.Main.Components.LauncherComponent;
+import OpModes.Main.Components.Launcher;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 @TeleOp(name="Hood and Shoot Control", group="Individual Test")
 public class ManualHoodAndShoot extends OpMode {
 
-    private LauncherComponent launcherComponent;
+    private Launcher launcherComponent;
     private Limelight3A limelight;
     
     // Odometry tracking via IMU with odometry pods
@@ -62,7 +62,7 @@ public class ManualHoodAndShoot extends OpMode {
 
     @Override
     public void init() {
-        launcherComponent = new LauncherComponent();
+        launcherComponent = new Launcher();
         launcherComponent.initialize(hardwareMap, telemetry);
         launcherComponent.setPower(flywheelPower);
         

@@ -13,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SpindexerComponent {
+public class Spindexer {
     private LinearOpMode opMode;
     private Telemetry telemetry;
 
@@ -216,7 +216,7 @@ public class SpindexerComponent {
 
         // After 3 shots, reset everything
         if (xPressCount >= 3) {
-            //STOP SHOOTER - handled by FlywheelComponent
+            //STOP SHOOTER - handled by Flywheel
             // Reset HashMap
             indexColors.put(0, "none");
             indexColors.put(1, "none");

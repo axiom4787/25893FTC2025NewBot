@@ -5,17 +5,17 @@ package OpModes.Main;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import OpModes.Main.Components.TurretComponent;
-import OpModes.Main.Components.LauncherComponent;
-import OpModes.Main.Components.SpindexerComponent;
-import OpModes.Main.Components.DriveTrainComponent;
+import OpModes.Main.Components.Launcher;
+import OpModes.Main.Components.Spindexer;
+import OpModes.Main.Components.DriveTrain;
 
 @TeleOp(name = "TeleOpMain", group = "Linear OpMode")
 public class TeleOpMain extends LinearOpMode {
     // Components
     private TurretComponent turretComponent;
-    private LauncherComponent launcherComponent;
-    private SpindexerComponent spindexerComponent;
-    private DriveTrainComponent driveTrainComponent;
+    private Launcher launcherComponent;
+    private Spindexer spindexerComponent;
+    private DriveTrain driveTrainComponent;
 
     @Override
     public void runOpMode() {
@@ -23,13 +23,13 @@ public class TeleOpMain extends LinearOpMode {
         turretComponent = new TurretComponent();
         turretComponent.initialize(hardwareMap, telemetry);
 
-        launcherComponent = new LauncherComponent();
+        launcherComponent = new Launcher();
         launcherComponent.initialize(hardwareMap, telemetry);
 
-        spindexerComponent = new SpindexerComponent();
+        spindexerComponent = new Spindexer();
         spindexerComponent.initialize(hardwareMap, telemetry, this);
 
-        driveTrainComponent = new DriveTrainComponent();
+        driveTrainComponent = new DriveTrain();
         driveTrainComponent.initialize(hardwareMap, telemetry);
 
         telemetry.addData("Status", "Initialized");
