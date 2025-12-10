@@ -1,14 +1,15 @@
 package org.firstinspires.ftc.teamcode.field;
 
 import com.pedropathing.geometry.Pose;
-public class Blue {
 
-    // Auto
-    // Start Pose of our robot.
-    public static final Pose START_POSE   = new Pose(63.4, 9, Math.toRadians(90));
+public class Blue_Goal {
+
+    public static final Pose START_POSE   = new Pose(23, 125, Math.toRadians(323));
+
+    public static final Pose APRILTAG_POSE   = new Pose(58, 90, Math.toRadians(90));
 
     // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    public static final Pose SCORE_POSE   = new Pose(58, 90, Math.toRadians(45));
+    public static final Pose SCORE_POSE   = new Pose(58, 90, Math.toRadians(135));
 
     // Highest (First Set) of Artifacts from the Spike Mark.
     public static final Pose ALIGN1_POSE  = new Pose(50, 84, Math.toRadians(0)); // og = 41.5, 84
@@ -30,5 +31,5 @@ public class Blue {
     // Endgame
     public static final Pose ENDGAME_POSE = new Pose(106, 33, Math.toRadians(90));
 
-    private Blue() {}
+    private Blue_Goal() {}
 }
