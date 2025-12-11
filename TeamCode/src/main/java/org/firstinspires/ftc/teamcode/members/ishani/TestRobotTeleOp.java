@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.members.ishani;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-@TeleOp(name = "IS - Robot Class TeleOp (FIXED)", group = "ISDrive")
+@TeleOp(name = "IS - Robot Class TeleOp", group = "ISDrive")
 public class TestRobotTeleOp extends LinearOpMode {
 
     private Robot robot;  // ← your ultimate robot!

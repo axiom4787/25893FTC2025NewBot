@@ -19,7 +19,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class AutoAlignOneSensor extends LinearOpMode {
 
     private DcMotor frontLeft, frontRight, backLeft, backRight;
-    private DistanceSensor sideSensor;   // ← your ONE sensor mounted on the SIDE!
+    private DistanceSensor sideSensor;   //  ONE sensor mounted on the SIDE!
 
     // ———————— SETTINGS (tune these!) ————————
     private static final double TARGET_DISTANCE_INCHES = 8.0;   // how far from backdrop side wall

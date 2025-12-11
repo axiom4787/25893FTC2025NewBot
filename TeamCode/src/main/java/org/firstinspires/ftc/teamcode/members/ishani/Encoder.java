@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-@Autonomous(name = "IS - Encoder Drive 24 Inch", group = "ISDrive")
+@Autonomous(name = "IS - Encoder Drive Some Distance", group = "ISDrive")
 public class Encoder extends LinearOpMode {
 
     // Your four drive motors (change names if yours are different!)
