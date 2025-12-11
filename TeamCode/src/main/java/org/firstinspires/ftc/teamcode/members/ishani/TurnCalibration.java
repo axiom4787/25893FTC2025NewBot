@@ -28,10 +28,10 @@ public class TurnCalibration extends LinearOpMode {
     public void runOpMode() {
 
         // ==== CONNECT MOTORS ====
-        frontLeft  = hardwareMap.get(DcMotor.class, "frontLeft");
-        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
-        backLeft   = hardwareMap.get(DcMotor.class, "backLeft");
-        backRight  = hardwareMap.get(DcMotor.class, "backRight");
+        frontLeft  = hardwareMap.get(DcMotor.class, "front_left_motor");
+        frontRight = hardwareMap.get(DcMotor.class, "front_right_motor");
+        backLeft   = hardwareMap.get(DcMotor.class, "back_left_motor");
+        backRight  = hardwareMap.get(DcMotor.class, "back_right_motor");
 
         frontLeft.setDirection(DcMotor.Direction.REVERSE);
         backLeft.setDirection(DcMotor.Direction.REVERSE);

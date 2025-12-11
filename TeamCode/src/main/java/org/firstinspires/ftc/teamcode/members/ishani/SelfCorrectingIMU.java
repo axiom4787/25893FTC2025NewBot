@@ -112,17 +112,17 @@ public class SelfCorrectingIMU extends LinearOpMode {
 
             // Turn in correct direction
             double turnPower = error > 0 ? power : -power;
-            hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "frontLeft").setPower(-turnPower);
-            hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "backLeft").setPower(-turnPower);
-            hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "frontRight").setPower(turnPower);
-            hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "backRight").setPower(turnPower);
+            hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "front_left_motor").setPower(-turnPower);
+            hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "back_left_motor").setPower(-turnPower);
+            hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "front_right_motor").setPower(turnPower);
+            hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "back_right_motor").setPower(turnPower);
         }
     }
 
     private void stopMotors() {
-        hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "frontLeft").setPower(0);
-        hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "backLeft").setPower(0);
-        hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "frontRight").setPower(0);
-        hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "backRight").setPower(0);
+        hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "front_left_motor").setPower(0);
+        hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "back_left_motor").setPower(0);
+        hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "front_right_motor").setPower(0);
+        hardwareMap.get(com.qualcomm.robotcore.hardware.DcMotor.class, "back_right_motor").setPower(0);
     }
 }

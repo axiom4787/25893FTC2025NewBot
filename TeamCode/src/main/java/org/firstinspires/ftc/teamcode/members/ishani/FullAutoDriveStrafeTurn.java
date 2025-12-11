@@ -25,10 +25,10 @@ public class FullAutoDriveStrafeTurn extends LinearOpMode {
 
         // ———————— STEP 1: CONNECT THE MOTORS ————————
         // These lines "find" your motors by their names in the phone config
-        frontLeft  = hardwareMap.get(DcMotor.class, "frontLeft");
-        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
-        backLeft   = hardwareMap.get(DcMotor.class, "backLeft");
-        backRight  = hardwareMap.get(DcMotor.class, "backRight");
+        frontLeft  = hardwareMap.get(DcMotor.class, "front_left_motor");
+        frontRight = hardwareMap.get(DcMotor.class, "front_right_motor");
+        backLeft   = hardwareMap.get(DcMotor.class, "back_left_motor");
+        backRight  = hardwareMap.get(DcMotor.class, "back_right_motor");
 
         // Reverse the left motors so "forward" works for all
         frontLeft.setDirection(DcMotor.Direction.REVERSE);

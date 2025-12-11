@@ -21,10 +21,10 @@ public class Encoder extends LinearOpMode {
     public void runOpMode() {
 
         // 1. Connect to motors
-        frontLeft  = hardwareMap.get(DcMotor.class, "frontLeft");
-        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
-        backLeft   = hardwareMap.get(DcMotor.class, "backLeft");
-        backRight  = hardwareMap.get(DcMotor.class, "backRight");
+        frontLeft  = hardwareMap.get(DcMotor.class, "front_left_motor");
+        frontRight = hardwareMap.get(DcMotor.class, "front_right_motor");
+        backLeft   = hardwareMap.get(DcMotor.class, "back_left_motor");
+        backRight  = hardwareMap.get(DcMotor.class, "back_right_motor");
 
         // 2. Reverse left side so "forward" is forward for all motors
         frontLeft.setDirection(DcMotor.Direction.REVERSE);

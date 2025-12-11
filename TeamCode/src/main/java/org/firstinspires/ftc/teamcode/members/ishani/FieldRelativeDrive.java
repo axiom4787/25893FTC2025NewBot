@@ -20,10 +20,10 @@ public class FieldRelativeDrive extends LinearOpMode {
     public void runOpMode() {
 
         // ———————— 1. CONNECT MOTORS ————————
-        frontLeft  = hardwareMap.get(DcMotor.class, "frontLeft");
-        frontRight = hardwareMap.get(DcMotor.class, "frontRight");
-        backLeft   = hardwareMap.get(DcMotor.class, "backLeft");
-        backRight  = hardwareMap.get(DcMotor.class, "backRight");
+        frontLeft  = hardwareMap.get(DcMotor.class, "front_left_motor");
+        frontRight = hardwareMap.get(DcMotor.class, "front_right_motor");
+        backLeft   = hardwareMap.get(DcMotor.class, "back_left_motor");
+        backRight  = hardwareMap.get(DcMotor.class, "back_right_motor");
 
         // Reverse left side so pushing both sticks forward = robot goes forward
         frontLeft.setDirection(DcMotor.Direction.REVERSE);
