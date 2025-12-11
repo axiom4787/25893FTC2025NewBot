@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 import static android.provider.SyncStateContract.Helpers.update;
-
 import android.widget.Switch;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -30,7 +28,8 @@ public class SM_test_OpMode extends LinearOpMode {
         SLIDE_UP_AND_STAY,
         SLIDE_DOWN_AND_STAY,
         OFF_THE_WALL,
-        GRAB
+        GRAB,
+        NEWCASE
     }
     private IntakeAndOuttake IOState = IntakeAndOuttake.IDLE;
     private ElapsedTime runtime = new ElapsedTime();
@@ -74,7 +73,9 @@ public class SM_test_OpMode extends LinearOpMode {
 
             case XFER:
                 xfer.setPosition(0);
-                intake.setPosition(0);
+                if (runtime.seconds()-lasttime>1) {
+                    intake.setPosition(0);
+                }
                 intakeTilt.setPosition(0.1);
                 break;
 
@@ -119,6 +120,8 @@ public class SM_test_OpMode extends LinearOpMode {
                     rightIntake.setPosition(0.70);
                     leftIntake.setPosition(0.30);
                 }
+                
+
         }
     }//
     @Override
@@ -190,6 +193,7 @@ public class SM_test_OpMode extends LinearOpMode {
             }
 
             if (gamepad1.square){
+                runtime.reset();
                 IOState = IntakeAndOuttake.EXTEND;
             }
             if (gamepad1.triangle){
