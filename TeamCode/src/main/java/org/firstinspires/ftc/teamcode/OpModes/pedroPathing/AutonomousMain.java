@@ -81,9 +81,9 @@ public class AutonomousMain {
                 y = 72;
                 heading = Math.toRadians(0); // Facing forward
             } else { // RIGHT
-                x = 72;
-                y = -72;
-                heading = Math.toRadians(0);
+                x = 56;
+                y = 8;
+                heading = Math.toRadians(90);
             }
         } else { // BLUE
             if (startingPosition == StartingPosition.LEFT) {
@@ -91,9 +91,9 @@ public class AutonomousMain {
                 y = 72;
                 heading = Math.toRadians(180); // Facing backward (opposite side)
             } else { // RIGHT
-                x = 56;
-                y = 8;
-                heading = Math.toRadians(90);
+                x = -72;
+                y = -72;
+                heading = Math.toRadians(180);
             }
         }
         
@@ -130,18 +130,9 @@ public class AutonomousMain {
      * Follow a PathChain while updating robot systems
      */
     private void followPathChain(PathChain pathChain) {
-        if (pathChain == null) {
-            opMode.telemetry.addLine("ERROR: PathChain is null!");
-            opMode.telemetry.update();
-            return;
-        }
-        
-        opMode.telemetry.addLine("Starting to follow path...");
-        opMode.telemetry.update();
         follower.followPath(pathChain);
         
         // Update follower until path is complete
-        int loopCount = 0;
         while (opMode.opModeIsActive() && follower.isBusy()) {
             follower.update();
             robot.updateTurret(); // Keep turret updated during movement
@@ -150,24 +141,11 @@ public class AutonomousMain {
             Pose current = follower.getPose();
             opMode.telemetry.addData("Following Path", "X: %.1f, Y: %.1f, Heading: %.1f", 
                 current.getX(), current.getY(), Math.toDegrees(current.getHeading()));
-            opMode.telemetry.addData("Is Busy", follower.isBusy());
-            opMode.telemetry.addData("Loop Count", loopCount);
             opMode.telemetry.update();
             opMode.sleep(10);
-            loopCount++;
-            
-            // Safety timeout - if we've been looping for too long, something might be wrong
-            if (loopCount > 10000) { // 100 seconds at 10ms sleep
-                opMode.telemetry.addLine("WARNING: Path following timeout!");
-                opMode.telemetry.update();
-                break;
-            }
         }
         
         opMode.telemetry.addLine("Path segment complete");
-        opMode.telemetry.addData("Final Pose", "X: %.1f, Y: %.1f, Heading: %.1f", 
-            follower.getPose().getX(), follower.getPose().getY(), 
-            Math.toDegrees(follower.getPose().getHeading()));
         opMode.telemetry.update();
         
         // Small delay after path completion
@@ -181,9 +159,9 @@ public class AutonomousMain {
         opMode.telemetry.addLine("Starting Autonomous Sequence");
         opMode.telemetry.update();
         
-        // Check if this is BlueRight - use custom path
-        if (alliance == Alliance.BLUE && startingPosition == StartingPosition.RIGHT) {
-            runBlueRightPath();
+        // Check if this is RedRight - use custom path
+        if (alliance == Alliance.RED && startingPosition == StartingPosition.RIGHT) {
+            runRedRightPath();
         } else {
             // Use generic path for other alliance/position combinations
             runGenericPath();
@@ -196,22 +174,16 @@ public class AutonomousMain {
     }
     
     /**
-     * Run the BlueRight specific path with actions at segment endpoints
+     * Run the RedRight specific path with actions at segment endpoints
      */
-    private void runBlueRightPath() {
-        opMode.telemetry.addLine("Running BlueRight Path");
-        Pose currentPose = follower.getPose();
-        opMode.telemetry.addData("Starting Pose", "X: %.1f, Y: %.1f, Heading: %.1f", 
-            currentPose.getX(), currentPose.getY(), Math.toDegrees(currentPose.getHeading()));
+    private void runRedRightPath() {
+        opMode.telemetry.addLine("Running RedRight Path");
         opMode.telemetry.update();
         
         // Build path chains for each section to allow actions between segments
         // Section 1: Segments 1-2 (align + first shooting)
-        opMode.telemetry.addLine("Building Section 1...");
-        opMode.telemetry.update();
-        PathChain section1 = buildBlueRightPathSection1();
-        opMode.telemetry.addLine("Following Section 1...");
-        opMode.telemetry.update();
+        PathChain section1 = buildRedRightPathSection1();
+
         followPathChain(section1);
         
         // Action after segment 2: Shoot 3 pre-loaded balls
@@ -220,7 +192,7 @@ public class AutonomousMain {
         shootThreeBalls();
         
         // Section 2: Segments 3-9 (align with set 1 + get balls)
-        PathChain section2 = buildBlueRightPathSection2();
+        PathChain section2 = buildRedRightPathSection2();
         // Start intake before moving to balls
         robot.startIntake();
         followPathChain(section2);
@@ -230,7 +202,7 @@ public class AutonomousMain {
         intakeThreeBalls();
         
         // Section 3: Segments 10-12 (reset to shoot + shooting)
-        PathChain section3 = buildBlueRightPathSection3();
+        PathChain section3 = buildRedRightPathSection3();
         followPathChain(section3);
         // Action after segment 12: Shoot 3 balls
         opMode.telemetry.addLine("Shooting 3 balls");
@@ -238,7 +210,7 @@ public class AutonomousMain {
         shootThreeBalls();
         
         // Section 4: Segments 13-19 (align with set 2 + get balls)
-        PathChain section4 = buildBlueRightPathSection4();
+        PathChain section4 = buildRedRightPathSection4();
         // Start intake before moving to balls
         robot.startIntake();
         followPathChain(section4);
@@ -248,7 +220,7 @@ public class AutonomousMain {
         intakeThreeBalls();
         
         // Section 5: Segments 20-22 (reset to shoot + shooting)
-        PathChain section5 = buildBlueRightPathSection5();
+        PathChain section5 = buildRedRightPathSection5();
         followPathChain(section5);
         // Action after segment 22: Shoot 3 balls
         opMode.telemetry.addLine("Shooting 3 balls");
@@ -256,7 +228,7 @@ public class AutonomousMain {
         shootThreeBalls();
         
         // Section 6: Segment 23 (final path)
-        PathChain section6 = buildBlueRightPathSection6();
+        PathChain section6 = buildRedRightPathSection6();
         followPathChain(section6);
     }
     
@@ -311,31 +283,31 @@ public class AutonomousMain {
     }
     
     /**
-     * Build BlueRight path section 1: Segments 1-2 (align + first shooting)
+     * Build RedRight path section 1: Segments 1-2 (align + first shooting)
      */
-    private PathChain buildBlueRightPathSection1() {
-        // Get current pose from follower (should be at starting position)
-        Pose startPose = follower.getPose();
+    private PathChain buildRedRightPathSection1() {
+        Pose currentPose = new Pose(56, 8, Math.toRadians(90));
         
         // Segment 1: "align" - (56,8) to (56,12), linear heading 90→115
         Pose seg1End = new Pose(56, 12, Math.toRadians(115));
+        currentPose = seg1End;
         
         // Segment 2: "shooting" - (56,12) to (56,12), linear heading 115→115
         Pose seg2End = new Pose(56, 12, Math.toRadians(115));
         
         return follower.pathBuilder()
-                .setGlobalDeceleration(1.2)
-                .addPath(new BezierLine(startPose, seg1End))
-                .setLinearHeadingInterpolation(startPose.getHeading(), Math.toRadians(115))
+                .addPath(new BezierLine(new Pose(56, 8, Math.toRadians(90)), seg1End))
+                .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(115))
                 .addPath(new BezierLine(seg1End, seg2End))
                 .setLinearHeadingInterpolation(Math.toRadians(115), Math.toRadians(115))
+                .setGlobalDeceleration()
                 .build();
     }
     
     /**
-     * Build BlueRight path section 2: Segments 3-9 (align with set 1 + get balls)
+     * Build RedRight path section 2: Segments 3-9 (align with set 1 + get balls)
      */
-    private PathChain buildBlueRightPathSection2() {
+    private PathChain buildRedRightPathSection2() {
         Pose currentPose = follower.getPose();
         Pose seg3End = new Pose(40, 39, Math.toRadians(180));
         Pose seg4End = new Pose(35, 39, seg3End.getHeading());
@@ -364,9 +336,9 @@ public class AutonomousMain {
     }
     
     /**
-     * Build BlueRight path section 3: Segments 10-12 (reset to shoot + shooting)
+     * Build RedRight path section 3: Segments 10-12 (reset to shoot + shooting)
      */
-    private PathChain buildBlueRightPathSection3() {
+    private PathChain buildRedRightPathSection3() {
         Pose currentPose = follower.getPose();
         Pose seg10End = new Pose(56, 12, Math.toRadians(115));
         Pose seg11End = new Pose(56, 12, Math.toRadians(115));
@@ -383,9 +355,9 @@ public class AutonomousMain {
     }
     
     /**
-     * Build BlueRight path section 4: Segments 13-19 (align with set 2 + get balls)
+     * Build RedRight path section 4: Segments 13-19 (align with set 2 + get balls)
      */
-    private PathChain buildBlueRightPathSection4() {
+    private PathChain buildRedRightPathSection4() {
         Pose currentPose = follower.getPose();
         Pose seg13End = new Pose(40, 65, Math.toRadians(180));
         Pose seg14End = new Pose(35, 65, seg13End.getHeading());
@@ -414,9 +386,9 @@ public class AutonomousMain {
     }
     
     /**
-     * Build BlueRight path section 5: Segments 20-22 (reset to shoot + shooting)
+     * Build RedRight path section 5: Segments 20-22 (reset to shoot + shooting)
      */
-    private PathChain buildBlueRightPathSection5() {
+    private PathChain buildRedRightPathSection5() {
         Pose currentPose = follower.getPose();
         Pose seg20End = new Pose(56, 110, Math.toRadians(150));
         Pose seg21End = new Pose(56, 110, seg20End.getHeading());
@@ -433,9 +405,9 @@ public class AutonomousMain {
     }
     
     /**
-     * Build BlueRight path section 6: Segment 23 (final path)
+     * Build RedRight path section 6: Segment 23 (final path)
      */
-    private PathChain buildBlueRightPathSection6() {
+    private PathChain buildRedRightPathSection6() {
         Pose currentPose = follower.getPose();
         Pose seg23End = new Pose(56, 50, Math.toRadians(150));
         
