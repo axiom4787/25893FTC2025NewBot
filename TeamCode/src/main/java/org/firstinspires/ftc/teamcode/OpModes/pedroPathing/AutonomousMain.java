@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.OpModes.pedroPathing.Constants;
  * Handles shooting pre-loaded balls, picking up balls, and shooting sequences
  */
 public class AutonomousMain {
+
     public enum Alliance {
         RED, BLUE
     }

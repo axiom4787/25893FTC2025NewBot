@@ -20,18 +20,19 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
+
             .mass(17)
             .forwardZeroPowerAcceleration(-48.66597466319878)
             .lateralZeroPowerAcceleration(-88.17458306285822)
 
-
             .translationalPIDFCoefficients(new PIDFCoefficients(0.055, 0, 0.0001, 0.01))
             .headingPIDFCoefficients(new PIDFCoefficients(2.5, 0, 0.06, 0.01))
-
             .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.08,0,0.001,0.6,0.02))
-            .centripetalScaling(0.005);
+            .centripetalScaling(0.0005);
 
-// breaking strength is 0.95
+
+// breaking start is 1.0
+// breaking strength is 1.2
 
 
 
