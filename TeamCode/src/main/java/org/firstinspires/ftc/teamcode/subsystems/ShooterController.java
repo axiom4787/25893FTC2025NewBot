@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotor;
+
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
@@ -13,7 +16,7 @@ public class ShooterController {
     public enum State { IDLE, SPIN_UP, FEED, SPIN_DOWN, EJECT }
 
     private final DcMotor intake;
-            //intake2;
+    private final Servo intakeArmServo;
     private final DcMotorEx outtakeMotor;
 
     // Tunables
@@ -39,7 +42,8 @@ public class ShooterController {
     public ShooterController(HardwareMap hardwareMap) {
         outtakeMotor = hardwareMap.get(DcMotorEx.class, "outtakeMotor");
         intake = hardwareMap.get(DcMotor.class, "intake");
-        //intake2 = hardwareMap.get(DcMotor.class, "intake2");
+        intakeArmServo = hardwareMap.get(Servo.class, "intakeArmServo");
+
 
         // Encoder logic -------------------------------------------------
         outtakeMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -47,7 +51,7 @@ public class ShooterController {
 
         // Set motor directions (adjust if movement is inverted) ----------
         outtakeMotor.setDirection(DcMotorEx.Direction.REVERSE);
-        intake.setDirection(DcMotor.Direction.FORWARD);
+        intake.setDirection(DcMotor.Direction.REVERSE);
 
         // Set motor behavior ----------------------------------------------
         outtakeMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
@@ -91,7 +95,7 @@ public class ShooterController {
                         state = State.FEED;
                         timer.reset();
                         intake.setPower(intakePower); // push ball into shooter
-                        //intake2.setPower(0);
+                        intakeArmServo.setPosition(0);
                     }
                 } else {
                     if (Math.abs(longShotVelocity - outtakeMotor.getVelocity()) < velocityTolerance) {
@@ -99,7 +103,7 @@ public class ShooterController {
                         state = State.FEED;
                         timer.reset();
                         intake.setPower(intakePower); // push ball into shooter
-                        //intake2.setPower(0);
+                        intakeArmServo.setPosition(0);
                     }
                 }
                 
@@ -112,7 +116,7 @@ public class ShooterController {
                     state = State.FEED;
                     timer.reset();
                     intake.setPower(intakePower); // push ball into shooter
-                    //intake2.setPower(0);
+                    intakeArmServo.setPosition(0);
                 }
                 break;
 
@@ -133,7 +137,7 @@ public class ShooterController {
                     } else {
                         outtakeMotor.setVelocity(longShotVelocity);
                     }
-                    //intake2.setPower(intakePower);
+                    intakeArmServo.setPosition(1);
                     numberOfShots--;
                     //telemetry.addLine("Shots left:" + numberOfShots);
                 }
@@ -168,13 +172,11 @@ public class ShooterController {
         intake.setPower(0);
     }
 
-//    public void startIntake2() {
-//        intake2.setPower(1);
-//    }
-//
-//    public void stopIntake2() {
-//        intake2.setPower(0);
-//    }
+    public void liftBall(){
+        intakeArmServo.setPosition(0.4);
+        intakeArmServo.setPosition(0.6);
+        intakeArmServo.setPosition(0.4);
+    }
 
     public void startLauncher() {
         outtakeMotor.setPower(1);

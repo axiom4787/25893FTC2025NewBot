@@ -59,6 +59,9 @@ public class mainTele extends LinearOpMode {
                 } else {
                     robot.shooter.stopIntake();
                 }
+                if (gamepad2.right_bumper) {
+                    robot.shooter.liftBall();
+                }
                 
                 // Control the second intake
                 if (gamepad2.right_trigger > 0) {
