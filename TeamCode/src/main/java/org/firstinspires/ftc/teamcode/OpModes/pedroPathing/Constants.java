@@ -33,8 +33,6 @@ public class Constants {
 // breaking start is 1.0
 // breaking strength is 1.2
 
-
-
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1.2, 1);
 
     public static Follower createFollower(HardwareMap hardwareMap) {
