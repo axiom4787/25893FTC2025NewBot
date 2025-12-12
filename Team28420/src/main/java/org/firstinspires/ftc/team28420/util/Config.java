@@ -34,6 +34,7 @@ public final class Config {
         public static Telemetry telemetry;
     }
 
-
-
+    public static final class AprilTag {
+        public static int GREEN_POS = -1;
+    }
 }
