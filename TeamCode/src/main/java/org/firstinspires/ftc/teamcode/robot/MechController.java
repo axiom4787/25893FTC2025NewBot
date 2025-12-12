@@ -27,7 +27,7 @@ public class MechController {
     private static final long LIFT_WAIT_MS = 2000; // 2 seconds for Lifter in Up position for shooting
     private static final long DROP_WAIT_MS = 1000; // 1 second post Lifter in Down position
     private static final long APRIL_TAG_WAIT_MS = 3000; // 3 seconds waiting to detect AprilTag
-    public static final double FULL_DRIVE_POWER = 0.8; // Normal Drive speed
+    public static final double FULL_DRIVE_POWER = 0.5; // Normal Drive speed
     public static final double INTAKE_DRIVE_POWER = 0.25; // Drive speed during Intake
     public static final double shootingMotSP = 6000; // Shooting motor speed max: 6000
 
