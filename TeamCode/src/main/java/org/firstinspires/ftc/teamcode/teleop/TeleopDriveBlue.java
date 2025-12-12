@@ -66,7 +66,6 @@ public class TeleopDriveBlue extends OpMode {
     }
 
     @Override
-
     public void init_loop() {
         mechController.update();
         mechController.allTelemetry();
@@ -121,6 +120,50 @@ public class TeleopDriveBlue extends OpMode {
         } else if ((gamepad2.dpad_down) && !buttonPressed) {
             buttonPressed = true;
             mechController.tagPattern = new int[]{23, 1, 1, 2}; // ID 23: PPG
+        }
+
+        //Shooting Pose
+        if (gamepad1.left_trigger > 0.1) {
+            PathChain shootingPath = follower.pathBuilder()
+                    .addPath(new Path(new BezierLine(follower::getPose, scorePose)))
+                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, scorePose.getHeading(), 0.8))
+                    .build();
+            follower.followPath(shootingPath);
+            automatedDrive = true;
+        }
+
+        //Gate Pose
+        if (gamepad1.right_trigger > 0.1) {
+            PathChain gatePath = follower.pathBuilder()
+                    .addPath(new Path(new BezierLine(follower::getPose, gateStartPose)))
+                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, gateStartPose.getHeading(), 0.8))
+                    .addPath(new Path(new BezierLine(follower::getPose, gateEndPose)))
+                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, gateEndPose.getHeading(), 0.8))
+                    .build();
+            follower.followPath(gatePath);
+            automatedDrive = true;
+        }
+
+        //Endgame Pose
+        if (gamepad1.xWasPressed()) {
+            PathChain endgamePath = follower.pathBuilder()
+                    .addPath(new Path(new BezierLine(follower::getPose, endgamePose)))
+                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, endgamePose.getHeading(), 0.8))
+                    .build();
+            follower.followPath(endgamePath);
+            automatedDrive = true;
+        }
+
+        /*Automated PathFollowing
+        if (gamepad1.aWasPressed()) {
+            follower.followPath(pathChain.get());
+            automatedDrive = true;
+        }*/
+
+        //Stop automated following if the follower is done
+        if (automatedDrive && (gamepad1.bWasPressed() || !follower.isBusy())) {
+            follower.startTeleopDrive();
+            automatedDrive = false;
         }
 
         // Reset button press flag when no buttons (except A) are pressed
