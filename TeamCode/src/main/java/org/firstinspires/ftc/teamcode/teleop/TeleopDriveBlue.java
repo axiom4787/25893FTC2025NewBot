@@ -18,12 +18,11 @@ import org.firstinspires.ftc.teamcode.robot.MechController;
 import org.firstinspires.ftc.teamcode.robot.MechState;
 import org.firstinspires.ftc.teamcode.robot.RobotHardware;
 import org.firstinspires.ftc.teamcode.robot.VisionController;
-import org.firstinspires.ftc.vision.VisionPortal;
 
 import java.util.function.Supplier;
 
 @Configurable
-@TeleOp(name = "TeleopBlue", group = "Teleop")
+@TeleOp(name = "TeleopBlue_Pedro", group = "Teleop")
 public class TeleopDriveBlue extends OpMode {
     private Follower follower;
     private final Pose startingPose = Blue.SCORE_POSE;
@@ -39,10 +38,6 @@ public class TeleopDriveBlue extends OpMode {
     RobotHardware robot;
     MechController mechController;
     VisionController visionController;
-    private VisionPortal visionPortal;
-
-    private boolean prevDpadUp = false;
-    private boolean prevDpadDown = false;
     boolean buttonPressed = false;
 
     @Override
@@ -56,7 +51,6 @@ public class TeleopDriveBlue extends OpMode {
 
         visionController = new VisionController(robot);
         visionController.initAprilTag();
-        visionPortal = visionController.getVisionPortal();
 
         mechController = new MechController(robot, visionController);
         mechController.handleMechState(MechState.START);
@@ -81,19 +75,20 @@ public class TeleopDriveBlue extends OpMode {
 
     @Override
     public void loop() {
-        //Call this once per loop
         follower.update();
         telemetryM.update();
-        if (mechController.getCurrentState() == MechState.INTAKE_STATE){
+        mechController.update(); // Keeps running states till IDLE
+
+        MechState state = mechController.getCurrentState();
+        if (state == MechState.SHOOT_STATE || state == MechState.SHOOT_PURPLE || state == MechState.SHOOT_GREEN || visionController.distanceSensor()) {
+            follower.setMaxPower(0.0);
+        } else if (state == MechState.INTAKE_STATE) {
             follower.setMaxPower(MechController.INTAKE_DRIVE_POWER);
         } else {
             follower.setMaxPower(MechController.FULL_DRIVE_POWER);
         }
-        mechController.update(); // Keeps running states till IDLE
 
-        if (gamepad2.aWasPressed()) {
-            mechController.setState(MechState.APRIL_TAG);
-        } else if ((gamepad2.left_trigger > 0.2) && !buttonPressed) {
+        if ((gamepad2.left_trigger > 0.2) && !buttonPressed) {
             buttonPressed = true;
             mechController.setState(MechState.INTAKE_STATE);
         } else if ((gamepad2.right_trigger > 0.2) && !buttonPressed) {
@@ -122,8 +117,23 @@ public class TeleopDriveBlue extends OpMode {
             mechController.tagPattern = new int[]{23, 1, 1, 2}; // ID 23: PPG
         }
 
+        if (!automatedDrive) {
+            if (!slowMode) follower.setTeleOpDrive(
+                    -gamepad1.left_stick_y,
+                    -gamepad1.left_stick_x,
+                    -gamepad1.right_stick_x,
+                    true // Robot Centric
+            );
+
+            else follower.setTeleOpDrive(
+                    -gamepad1.left_stick_y * slowModeMultiplier,
+                    -gamepad1.left_stick_x * slowModeMultiplier,
+                    -gamepad1.right_stick_x * slowModeMultiplier,
+                    true // Robot Centric
+            );
+        }
         //Shooting Pose
-        if (gamepad1.left_trigger > 0.1) {
+        if (gamepad1.right_trigger > 0.1 && !automatedDrive) {
             PathChain shootingPath = follower.pathBuilder()
                     .addPath(new Path(new BezierLine(follower::getPose, scorePose)))
                     .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, scorePose.getHeading(), 0.8))
@@ -133,7 +143,7 @@ public class TeleopDriveBlue extends OpMode {
         }
 
         //Gate Pose
-        if (gamepad1.right_trigger > 0.1) {
+        if (gamepad1.left_trigger > 0.1 && !automatedDrive) {
             PathChain gatePath = follower.pathBuilder()
                     .addPath(new Path(new BezierLine(follower::getPose, gateStartPose)))
                     .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, gateStartPose.getHeading(), 0.8))
@@ -154,19 +164,6 @@ public class TeleopDriveBlue extends OpMode {
             automatedDrive = true;
         }
 
-        /*Automated PathFollowing
-        if (gamepad1.aWasPressed()) {
-            follower.followPath(pathChain.get());
-            automatedDrive = true;
-        }*/
-
-        //Stop automated following if the follower is done
-        if (automatedDrive && (gamepad1.bWasPressed() || !follower.isBusy())) {
-            follower.startTeleopDrive();
-            automatedDrive = false;
-        }
-
-        // Reset button press flag when no buttons (except A) are pressed
         boolean noButtons =
                 !gamepad2.b &&
                         !gamepad2.x &&
@@ -181,64 +178,6 @@ public class TeleopDriveBlue extends OpMode {
 
         if (noButtons) {
             buttonPressed = false;
-        }
-
-        if (!automatedDrive) {
-            //Make the last parameter false for field-centric
-            //In case the drivers want to use a "slowMode" you can scale the vectors
-
-            //This is the normal version to use in the TeleOp
-            if (mechController.getCurrentState() == MechState.SHOOT_STATE ||
-                    mechController.getCurrentState() == MechState.SHOOT_PURPLE ||
-                    mechController.getCurrentState() == MechState.SHOOT_GREEN){
-                follower.setTeleOpDrive(0, 0, 0);
-            } else {
-                if (!slowMode) follower.setTeleOpDrive(
-                        -gamepad1.left_stick_y,
-                        -gamepad1.left_stick_x,
-                        -gamepad1.right_stick_x,
-                        true // Robot Centric
-                );
-
-                    //This is how it looks with slowMode on
-                else follower.setTeleOpDrive(
-                        -gamepad1.left_stick_y * slowModeMultiplier,
-                        -gamepad1.left_stick_x * slowModeMultiplier,
-                        -gamepad1.right_stick_x * slowModeMultiplier,
-                        true // Robot Centric
-                );
-            }
-        }
-        //Shooting Pose
-        if (gamepad1.left_trigger > 0.1) {
-            PathChain shootingPath = follower.pathBuilder()
-                    .addPath(new Path(new BezierLine(follower::getPose, scorePose)))
-                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, scorePose.getHeading(), 0.8))
-                    .build();
-            follower.followPath(shootingPath);
-            automatedDrive = true;
-        }
-
-        //Gate Pose
-        if (gamepad1.right_trigger > 0.1) {
-            PathChain gatePath = follower.pathBuilder()
-                    .addPath(new Path(new BezierLine(follower::getPose, gateStartPose)))
-                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, gateStartPose.getHeading(), 0.8))
-                    .addPath(new Path(new BezierLine(follower::getPose, gateEndPose)))
-                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, gateEndPose.getHeading(), 0.8))
-                    .build();
-            follower.followPath(gatePath);
-            automatedDrive = true;
-        }
-
-        //Endgame Pose
-        if (gamepad1.xWasPressed()) {
-            PathChain endgamePath = follower.pathBuilder()
-                    .addPath(new Path(new BezierLine(follower::getPose, endgamePose)))
-                    .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading, endgamePose.getHeading(), 0.8))
-                    .build();
-            follower.followPath(endgamePath);
-            automatedDrive = true;
         }
 
         /*Automated PathFollowing
@@ -260,24 +199,16 @@ public class TeleopDriveBlue extends OpMode {
 
         //Optional way to change slow mode strength
         if (gamepad1.yWasPressed()) {
-            slowModeMultiplier = Math.min(1.5, slowModeMultiplier + 0.25);
+            slowModeMultiplier += 0.25;
         }
 
         //Optional way to change slow mode strength
-        if (gamepad1.aWasPressed()) {
-            slowModeMultiplier = Math.max(0.1, slowModeMultiplier - 0.25);
+        if (gamepad2.aWasPressed()) {
+            slowModeMultiplier -= 0.25;
         }
 
         telemetryM.debug("position", follower.getPose());
         telemetryM.debug("velocity", follower.getVelocity());
         telemetryM.debug("automatedDrive", automatedDrive);
-        mechController.allTelemetry();
-    }
-
-    @Override
-    public void stop() {
-        if (visionPortal != null) {
-            visionPortal.close();
-        }
     }
 }
