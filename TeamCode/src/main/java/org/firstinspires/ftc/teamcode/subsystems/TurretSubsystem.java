@@ -69,8 +69,6 @@ public class TurretSubsystem {
         telemetry.addLine("----- Turret -----");
         telemetry.addData("Turret State = ", state);
         telemetry.addData("Turret Horizontal Power = ", turntableServo.getPower());
-        telemetry.addData("Turret Vertical Power = ", leftVerticalServo.getPower());
-
 
 
     }
