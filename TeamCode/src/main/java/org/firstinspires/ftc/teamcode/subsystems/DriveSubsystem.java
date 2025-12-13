@@ -9,7 +9,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 public class DriveSubsystem {
 
-    private final DcMotor fl2, fr3, bl0, br1;
+    private final DcMotor frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor;
     private double speedMultiplier = 1.0;
 
     double lastLfPower = 0;
@@ -19,28 +19,28 @@ public class DriveSubsystem {
 
     public DriveSubsystem(HardwareMap hardwareMap) {
         // Initialize motors from hardware map ------------------------
-        fl2  = hardwareMap.get(DcMotor.class, "lf");
-        fr3 = hardwareMap.get(DcMotor.class, "rf");
-        bl0   = hardwareMap.get(DcMotor.class, "lb");
-        br1  = hardwareMap.get(DcMotor.class, "rb");
+        frontLeftMotor = hardwareMap.get(DcMotor.class, "frontLeftMotor");
+        frontRightMotor = hardwareMap.get(DcMotor.class, "frontRightMotor");
+        backLeftMotor = hardwareMap.get(DcMotor.class, "backLeftMotor");
+        backRightMotor = hardwareMap.get(DcMotor.class, "backRightMotor");
 
         // Set motor directions (adjust if movement is inverted) ----------
-        fl2.setDirection(DcMotor.Direction.REVERSE);
-        bl0.setDirection(DcMotor.Direction.REVERSE);
-        fr3.setDirection(DcMotor.Direction.FORWARD);
-        br1.setDirection(DcMotor.Direction.FORWARD);
+        frontLeftMotor.setDirection(DcMotor.Direction.REVERSE);
+        backLeftMotor.setDirection(DcMotor.Direction.REVERSE);
+        frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
+        backRightMotor.setDirection(DcMotor.Direction.FORWARD);
 
         // Set motor behavior ----------------------------------------------
-        fl2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        fr3.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        bl0.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        br1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // Ensure encoders are enabled ----------------------------------------------
-        fl2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        fr3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        bl0.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        br1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void drive(double forward, double strafe, double turn) {
@@ -59,10 +59,10 @@ public class DriveSubsystem {
         lastRbPower = rbPower;
         lastRfPower = rfPower;
 
-        fl2.setPower(lfPower);
-        fr3.setPower(rfPower);
-        bl0.setPower(lbPower);
-        br1.setPower(rbPower);
+        frontLeftMotor.setPower(lfPower);
+        frontRightMotor.setPower(rfPower);
+        backLeftMotor.setPower(lbPower);
+        backRightMotor.setPower(rbPower);
     }
 
     public void toggleSlowMode() {
@@ -70,10 +70,10 @@ public class DriveSubsystem {
     }
 
     public void stop() {
-        fl2.setPower(0);
-        bl0.setPower(0);
-        fr3.setPower(0);
-        br1.setPower(0);
+        frontLeftMotor.setPower(0);
+        backLeftMotor.setPower(0);
+        frontRightMotor.setPower(0);
+        backRightMotor.setPower(0);
     }
 
     public void addTelemetry(Telemetry telemetry) {
@@ -91,36 +91,36 @@ public class DriveSubsystem {
     // ------------------------ AUTONOMOUS HELPERS --------------------
 
     public void resetEncoders() {
-        fl2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        fr3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        bl0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        br1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        fl2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        fr3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        bl0.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        br1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void setRunToPositionMode() {
-        fl2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        fr3.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        bl0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        br1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
     }
 
     public void setTargetForwardInches(double inches, double power) {
         int moveTicks = (int) Math.round(inches * TICKS_PER_INCH);
 
-        fl2.setTargetPosition(fl2.getCurrentPosition() + moveTicks);
-        fr3.setTargetPosition(fr3.getCurrentPosition() + moveTicks);
-        bl0.setTargetPosition(bl0.getCurrentPosition() + moveTicks);
-        br1.setTargetPosition(br1.getCurrentPosition() + moveTicks);
+        frontLeftMotor.setTargetPosition(frontLeftMotor.getCurrentPosition() + moveTicks);
+        frontRightMotor.setTargetPosition(frontRightMotor.getCurrentPosition() + moveTicks);
+        backLeftMotor.setTargetPosition(backLeftMotor.getCurrentPosition() + moveTicks);
+        backRightMotor.setTargetPosition(backRightMotor.getCurrentPosition() + moveTicks);
 
-        fl2.setPower(power);
-        fr3.setPower(power);
-        bl0.setPower(power);
-        br1.setPower(power);
+        frontLeftMotor.setPower(power);
+        frontRightMotor.setPower(power);
+        backLeftMotor.setPower(power);
+        backRightMotor.setPower(power);
     }
 }
