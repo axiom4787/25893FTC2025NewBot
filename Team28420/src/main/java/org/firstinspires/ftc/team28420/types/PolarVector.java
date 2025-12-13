@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.team28420.types;
 
 import org.firstinspires.ftc.team28420.util.Config;
+import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 
 public class PolarVector {
     public static PolarVector fromPos(Position pos) {
@@ -30,6 +31,10 @@ public class PolarVector {
     public PolarVector(double theta, double abs) {
         this.theta = theta;
         this.abs = abs;
+    }
+
+    public PolarVector(AprilTagPoseFtc ftcPose) {
+
     }
 
     public PolarVector rotate(double angle) {

@@ -2,12 +2,15 @@ package org.firstinspires.ftc.team28420.module;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.team28420.types.AprilTags;
+import org.firstinspires.ftc.team28420.types.PolarVector;
 import org.firstinspires.ftc.team28420.util.Config;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
+import java.util.Optional;
 
 public class Camera {
     private final AprilTagProcessor aprilTag;
@@ -42,8 +45,25 @@ public class Camera {
         }
     }
 
+    public Optional<AprilTagDetection> getBinTag() {
+        return getDetections().stream()
+                .filter(d -> AprilTags.getAprilTagFromId(d) == AprilTags.BLUE
+                        || AprilTags.getAprilTagFromId(d) == AprilTags.RED)
+                .findAny();
+    }
+
+    public AprilTagPoseFtc getPosOfBinTag() {
+        Optional<AprilTagDetection> binTag = getBinTag();
+
+        if (!binTag.isPresent() || binTag.get().ftcPose == null) {
+            return new AprilTagPoseFtc(0, 0, 0, 0, 0, 0, 0, 0, 0);
+        }
+
+
+        return binTag.get().ftcPose;
+    }
+
     public void setGreenPos(int pos) {
-        if (Config.AprilTag.GREEN_POS == -1)
-            Config.AprilTag.GREEN_POS = pos;
+        if (Config.AprilTag.GREEN_POS == -1) Config.AprilTag.GREEN_POS = pos;
     }
 }

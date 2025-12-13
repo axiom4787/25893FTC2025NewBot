@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.team28420.module.Camera;
 import org.firstinspires.ftc.team28420.util.Config;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 
 @TeleOp(name = "camera class", group = "test")
 public class CameraClassTest extends LinearOpMode {
@@ -19,8 +21,28 @@ public class CameraClassTest extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            camera.update();
-            telemetry.addData("detections", Config.AprilTag.GREEN_POS);
+            AprilTagDetection detection = camera.getBinTag().orElse(null);
+            if (detection == null) {
+                continue;
+            }
+
+//            AprilTagPoseFtc pose = detection.ftcPose;
+//
+//            if (pose == null) {
+//                continue;
+//            }
+
+//            telemetry.addData("x", pose.x);
+//            telemetry.addData("y", pose.y);
+//            telemetry.addData("z", pose.z);
+//            telemetry.addData("range", pose.range);
+//            telemetry.addData("pitch", pose.pitch);
+
+
+            telemetry.addData("x", detection.robotPose.getPosition().x);
+            telemetry.addData("y", detection.robotPose.getPosition().y);
+            telemetry.addData("z", detection.robotPose.getPosition().z);
+            telemetry.update();
         }
     }
 }
