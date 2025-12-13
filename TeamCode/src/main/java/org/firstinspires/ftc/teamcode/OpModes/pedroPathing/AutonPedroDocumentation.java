@@ -106,7 +106,7 @@ public class AutonPedroDocumentation extends OpMode {
                 follower.followPath(Path1);
                 setPathState(1);
                 break;
-            case 1:
+            /*case 1:
                 if(!follower.isBusy()) {
                     robot.startIntake(); // Start intake before aligning with set 1
                     startWait();
@@ -192,7 +192,7 @@ public class AutonPedroDocumentation extends OpMode {
                     // Set the state to a Case we won't use or define, so it just stops running any new paths
                     setPathState(-1);
                 }
-                break;
+                break;*/
         }
     }
     

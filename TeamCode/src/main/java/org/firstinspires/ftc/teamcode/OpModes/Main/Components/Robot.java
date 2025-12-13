@@ -86,7 +86,6 @@ public class Robot {
     public void startFlywheel(double power) {
         launcher.setPower(power);
         launcher.setSpinning(true);
-        launcher.update();
     }
 
     /**
@@ -226,6 +225,33 @@ public class Robot {
      */
     public void rotateSpindexer() {
         spindexer.rotateOneDivision();
+    }
+
+
+    /**
+     * Shoot three balls in sequence: purple, purple, green
+     * Starts flywheel, waits for spin-up, shoots all three balls, then stops flywheel
+     */
+    public void shoot_three_balls() {
+        // Start flywheel at full power
+        startFlywheel(1.0);
+        
+        // Wait for flywheel to spin up to full speed (typically 1-2 seconds)
+        // This ensures the first ball shoots at the correct velocity
+        try {
+            Thread.sleep(1500); // 1.5 second spin-up time
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        
+        // Shoot all three balls in sequence
+        // Each call will: spindex to needed ball, shoot, advance flag to next color
+        spindexer.shoot_ball_new(); // First ball (purple)
+        spindexer.shoot_ball_new(); // Second ball (purple)
+        spindexer.shoot_ball_new(); // Third ball (green)
+        
+        // Stop flywheel after all shots are complete
+        stopFlywheel();
     }
 
     // ==================== TURRET DIRECT ACCESS ====================
