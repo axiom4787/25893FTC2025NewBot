@@ -62,21 +62,6 @@ public class TurretSubsystem {
         state = State.AUTO;
         busy = true;
 
-
-        currentHorizontalPosition = turntableServo.getPower();
-
-//        targetHorizontalPosition = 0;
-//        targetVerticalPosition = 0;
-//        if (targetHorizontalPosition > 0){
-//            while (targetHorizontalPosition != currentHorizontalPosition) {
-//                //null_motor.setPower(0.5);
-//            }
-//        } else {
-//            while (targetHorizontalPosition != currentHorizontalPosition) {
-//                //null_motor.setPower(-0.5);
-//            }
-//        }
-//        lefVerticalServo.setPosition(targetVerticalPosition);
     }
 
 
