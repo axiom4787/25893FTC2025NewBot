@@ -1,237 +1,190 @@
-package org.firstinspires.ftc.teamcode.members.ishani;
+package org.firstinspires.ftc.teamcode.members.om;
 
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
-import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@Autonomous(name = "IS - Obstacle Avoidance ", group = "ISSensor")
+@Autonomous(name="IS - Obstacle Avoidance")
 public class ISObstacleAvoidance extends LinearOpMode {
 
-    //  YOUR ROBOT PARTS 
-    private DcMotor frontLeft, frontRight, backLeft, backRight;
-    private DistanceSensor frontSensor;
-    private IMU imu;
+    private DcMotor frontLeftDrive;
+    private DcMotor backLeftDrive;
+    private DcMotor frontRightDrive;
+    private DcMotor backRightDrive;
 
-    //  SETTINGS  
-    private static final double DRIVE_POWER          = 0.2;
-    private static final double MAX_TRAVEL_INCHES    = 84.0;  // 7 feet max
-    private static final double SAFE_DISTANCE_INCHES = 18.0;  // Turn if closer
-    private static final double TURN_DEGREES         = 90.0;
-    private static final double COUNTS_PER_INCH      = 28.0;  // Need to update this.
+    private DistanceSensor distance_sensor;
 
-    private double totalTraveled = 0.0;
+    static final double COUNTS_PER_MOTOR_REV = 537.7;
+    static final double DRIVE_GEAR_REDUCTION = 1.0;
+    static final double WHEEL_DIAMETER_INCHES = 4.0;
+    static final double COUNTS_PER_INCH = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
+            (WHEEL_DIAMETER_INCHES * Math.PI);
+
+    static final double DRIVE_SPEED = 0.2;
+    static final double TURN_SPEED = 0.2;
+
+    static final double COUNTS_PER_90_DEGREE = 1050;
+
+    static final double OBSTACLE_THRESHOLD_INCHES = 16.0;
+    static final double DETOUR_SIDE_INCHES = 18.0;
+    static final double TOTAL_FORWARD_INCHES = 60.0; // 5 feet
 
     @Override
     public void runOpMode() {
 
-        // 1. CONNECT MOTORS
-        frontLeft  = hardwareMap.get(DcMotor.class, "front_left_motor");
-        frontRight = hardwareMap.get(DcMotor.class, "front_right_motor");
-        backLeft   = hardwareMap.get(DcMotor.class, "back_left_motor");
-        backRight  = hardwareMap.get(DcMotor.class, "back_right_motor");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "front_left_motor");
+        backLeftDrive = hardwareMap.get(DcMotor.class, "back_left_motor");
+        frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_motor");
+        backRightDrive = hardwareMap.get(DcMotor.class, "back_right_motor");
 
-        frontLeft.setDirection(DcMotor.Direction.REVERSE);
-        backLeft.setDirection(DcMotor.Direction.REVERSE);
+        distance_sensor = hardwareMap.get(DistanceSensor.class, "distance_sensor");
 
-        // 2. RESET ENCODERS
-        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        resetEncoders();
 
-        //  3. CONNECT DISTANCE SENSOR
-        frontSensor = hardwareMap.get(DistanceSensor.class, "distance");
-
-        //  4. CONNECT IMU
-        imu = hardwareMap.get(IMU.class, "imu");
-        imu.initialize(new IMU.Parameters(
-                new RevHubOrientationOnRobot(
-                        RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                        RevHubOrientationOnRobot.UsbFacingDirection.LEFT
-                )
-        ));
-        imu.resetYaw();
-
-
-        // 5. UPDATE TELEMETRY
-        telemetry.addData("OBSTACLE AVOIDANCE FIXED", "Power 0.2 | Max 7 feet");
-        telemetry.addData("Safe distance", "%.0f inches", SAFE_DISTANCE_INCHES);
-        telemetry.addData("Turn degrees", "%.0f°", TURN_DEGREES);
-        telemetry.addData("Press PLAY → let's go safely!", "");
+        telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         waitForStart();
 
-        while (opModeIsActive() && totalTraveled < MAX_TRAVEL_INCHES) {
+        double distanceTraveled = 0.0;
 
-            double distance = frontSensor.getDistance(DistanceUnit.INCH);
+        while (opModeIsActive() && distanceTraveled < TOTAL_FORWARD_INCHES) {
 
-            telemetry.addData("Distance Ahead", "%.1f inches", distance);
-            telemetry.addData("Total Traveled", "%.1f / %.0f inches", totalTraveled, MAX_TRAVEL_INCHES);
+            double distance = distance_sensor.getDistance(DistanceUnit.INCH);
 
-            //  STOP IF MAX TRAVELED INCHES REACHED!
-            if (totalTraveled >= MAX_TRAVEL_INCHES) {
-                stopDriving();
-                telemetry.addData("MAX REACHED", "Stopping!");
-                telemetry.update();
-                break;
-            }
-
-            //  OBSTACLE DETECTED!
-            if (distance < SAFE_DISTANCE_INCHES) {
-                stopDriving();
-                telemetry.addData("OBSTACLE!", "Turning %.0f°...", TURN_DEGREES);
-                telemetry.update();
-
-                turnDegrees(TURN_DEGREES);  // Turn left
-                driveForwardInches(12, DRIVE_POWER);  // Move forward
-                totalTraveled += 12;  // Add to total
-                telemetry.addData("First turn complete", "Driving forward 12 inches at a time");
-
-                turnDegrees(-TURN_DEGREES);  // Turn right
-                driveForwardInches(12, DRIVE_POWER);  // Move forward
-                totalTraveled += 12;  // Add to total
-                telemetry.addData("Second turn complete", "Driving forward 12 inches at a time");
-
-                turnDegrees(-TURN_DEGREES);  // Turn right
-                driveForwardInches(12, DRIVE_POWER);  // Move forward
-                totalTraveled += 12;  // Add to total
-                telemetry.addData("Third turn complete", "Driving forward 12 inches at a time");
-
-                turnDegrees(TURN_DEGREES);  // Turn left
-                telemetry.addData("Forth and final turn complete", "Continue driving forward");            }
-
-            //  IF NO OBSTACLE, PATH CLEAR,  DRIVE FORWARD
-            else {
-                // Drive a small step (1 inch) accurately, then check again
-                driveForwardInches(1, DRIVE_POWER);
-                totalTraveled += 1;
-                telemetry.addData("CLEAR", "Driving forward 1 inch at a time");
-            }
-
-            telemetry.addData("Heading", "%.1f°", imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
+            telemetry.addData("Distance", "%.1f in", distance);
+            telemetry.addData("Progress", "%.1f / 84.0 in", distanceTraveled);
             telemetry.update();
 
-            sleep(100);  // Small pause to not rush
+            if (distance < OBSTACLE_THRESHOLD_INCHES && distance > 0) {
+
+                stopMotors();
+
+                turnRight90();
+                driveStraight(DETOUR_SIDE_INCHES);
+                turnLeft90();
+                driveStraight(DETOUR_SIDE_INCHES + 15.0); // pass the object
+                turnLeft90();
+                driveStraight(DETOUR_SIDE_INCHES - 6.0);
+                turnRight90();
+
+                distanceTraveled += DETOUR_SIDE_INCHES;
+
+                if (distanceTraveled > TOTAL_FORWARD_INCHES) {
+                    distanceTraveled = TOTAL_FORWARD_INCHES;
+                    stopMotors();
+                }
+            } else {
+
+                double remaining = TOTAL_FORWARD_INCHES - distanceTraveled;
+                double chunk = Math.min(10.0, remaining);
+
+                driveStraight(chunk);
+                distanceTraveled += chunk;
+            }
         }
 
-        stopDriving();
-        telemetry.addData("DONE", "Traveled %.1f inches safely! Great job!", totalTraveled);
+        stopMotors();
+        telemetry.addData("Path", "Complete - 7 feet traveled");
         telemetry.update();
     }
 
-    //  HELPER FUNCTION: DRIVE FORWARD EXACT INCHES USING ENCODERS
-    private void driveForwardInches(double inches, double power) {
-        int target = (int) (inches * COUNTS_PER_INCH);  // Calculate encoder target
 
-        // Reset encoders
-        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    public void driveStraight(double inches) {
+        int target = (int)(inches * COUNTS_PER_INCH);
 
-        // Set targets
-        frontLeft.setTargetPosition(target);
-        frontRight.setTargetPosition(target);
-        backLeft.setTargetPosition(target);
-        backRight.setTargetPosition(target);
+        frontLeftDrive.setTargetPosition(frontLeftDrive.getCurrentPosition() + target);
+        frontRightDrive.setTargetPosition(frontRightDrive.getCurrentPosition() + target);
+        backLeftDrive.setTargetPosition(backLeftDrive.getCurrentPosition() + target);
+        backRightDrive.setTargetPosition(backRightDrive.getCurrentPosition() + target);
 
-        // Switch to RUN_TO_POSITION mode
-        frontLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        setRunToPosition();
+        setPower(DRIVE_SPEED);
 
-        // Start moving
-        frontLeft.setPower(power);
-        frontRight.setPower(power);
-        backLeft.setPower(power);
-        backRight.setPower(power);
-
-        // Wait until done (check if busy)
-        while (opModeIsActive() &&
-                (frontLeft.isBusy() || frontRight.isBusy() || backLeft.isBusy() || backRight.isBusy())) {
-            telemetry.addData("Driving", "To %.0f inches...", inches);
+        while (opModeIsActive() && motorsBusy()) {
+            telemetry.addData("Driving", "%.1f in", inches);
             telemetry.update();
         }
 
-        stopDriving();
-
-        // Back to RUN_USING_ENCODER for next time
-        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        stopMotors();
+        resetEncoders();
     }
 
-    // HELPER FUNCTION: TURN EXACT DEGREES (IMU)
-    private void turnDegrees(double degrees) {
+    public void turnRight90() {
+        int target = (int)COUNTS_PER_90_DEGREE;
 
-        // Step 1: Figure out where we want to end up
-        double currentHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
-        double targetHeading = currentHeading + degrees;
+        frontLeftDrive.setTargetPosition(frontLeftDrive.getCurrentPosition() + target);
+        frontRightDrive.setTargetPosition(frontRightDrive.getCurrentPosition() - target);
+        backLeftDrive.setTargetPosition(backLeftDrive.getCurrentPosition() + target);
+        backRightDrive.setTargetPosition(backRightDrive.getCurrentPosition() - target);
 
-        // Step 2: How far off are we right now? or error correction
-        double error = targetHeading - currentHeading;
+        setRunToPosition();
+        setPower(TURN_SPEED);
 
-        // Step 3: Fix the "circle problem" - always turn the short way
-        if (error > 180) {
-            error = error - 360;
-        } else if (error < -180) {
-            error = error + 360;
-        }
+        while (opModeIsActive() && motorsBusy()) {}
 
-        // Step 4: Keep turning until we're close enough (within 3 degrees is good!)
-        while (opModeIsActive() && Math.abs(error) > 3.0) {
-
-            double turnPower = 0.25;  //  medium speed when turning
-
-            // Decide which way to turn
-            if (error > 0) {
-                // Need to turn LEFT
-                frontLeft.setPower(-turnPower);
-                backLeft.setPower(-turnPower);
-                frontRight.setPower(turnPower);
-                backRight.setPower(turnPower);
-            } else {
-                // Need to turn RIGHT
-                frontLeft.setPower(turnPower);
-                backLeft.setPower(turnPower);
-                frontRight.setPower(-turnPower);
-                backRight.setPower(-turnPower);
-            }
-
-            // Check again how far we are from the target
-            currentHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
-            error = targetHeading - currentHeading;
-
-            // Fix the circle problem again
-            if (error > 180) {
-                error = error - 360;
-            } else if (error < -180) {
-                error = error + 360;
-            }
-        }
-
-        // Step 5: Stop the motors when we're done
-        stopDriving();
+        stopMotors();
+        resetEncoders();
     }
 
-    //  HELPER: STOP ALL MOTORS 
-    private void stopDriving() {
-        frontLeft.setPower(0);
-        frontRight.setPower(0);
-        backLeft.setPower(0);
-        backRight.setPower(0);
+    public void turnLeft90() {
+        int target = (int)COUNTS_PER_90_DEGREE;
+
+        frontLeftDrive.setTargetPosition(frontLeftDrive.getCurrentPosition() - target);
+        frontRightDrive.setTargetPosition(frontRightDrive.getCurrentPosition() + target);
+        backLeftDrive.setTargetPosition(backLeftDrive.getCurrentPosition() - target);
+        backRightDrive.setTargetPosition(backRightDrive.getCurrentPosition() + target);
+
+        setRunToPosition();
+        setPower(TURN_SPEED);
+
+        while (opModeIsActive() && motorsBusy()) {}
+
+        stopMotors();
+        resetEncoders();
+    }
+
+    public void setPower(double power) {
+        frontLeftDrive.setPower(Math.abs(power));
+        frontRightDrive.setPower(Math.abs(power));
+        backLeftDrive.setPower(Math.abs(power));
+        backRightDrive.setPower(Math.abs(power));
+    }
+
+    public void setRunToPosition() {
+        frontLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backLeftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    public boolean motorsBusy() {
+        return frontLeftDrive.isBusy() || frontRightDrive.isBusy() ||
+                backLeftDrive.isBusy() || backRightDrive.isBusy();
+    }
+
+    public void stopMotors() {
+        frontLeftDrive.setPower(0);
+        frontRightDrive.setPower(0);
+        backLeftDrive.setPower(0);
+        backRightDrive.setPower(0);
+    }
+
+    public void resetEncoders() {
+        frontLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        frontLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeftDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRightDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 }
