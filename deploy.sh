@@ -11,7 +11,6 @@ export PATH="/Users/$(whoami)/Library/Android/sdk/platform-tools:$PATH"
 
 # Ensure adb server is healthy
 adb kill-server >/dev/null 2>&1
-sleep 3
 adb start-server >/dev/null
 
 echo "Connecting to device: $DEVICE_IP"
@@ -29,9 +28,9 @@ done
 
 # Verify connection
 if adb devices | grep -q "$DEVICE_IP.*device"; then
-    echo "✅ ADB connected to $DEVICE_IP"
+    echo "ADB connected to $DEVICE_IP"
 else
-    echo "❌ Failed to connect to $DEVICE_IP"
+    echo "Failed to connect to $DEVICE_IP"
     adb devices
     exit 1
 fi
