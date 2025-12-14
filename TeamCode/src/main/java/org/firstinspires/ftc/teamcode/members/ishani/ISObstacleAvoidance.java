@@ -93,15 +93,27 @@ public class ISObstacleAvoidance extends LinearOpMode {
                 telemetry.addData("OBSTACLE!", "Turning %.0f°...", TURN_DEGREES);
                 telemetry.update();
 
-                turnDegrees(TURN_DEGREES);  // Turn away
-                driveForwardInches(12, DRIVE_POWER);  // Move forward a bit to clear
+                turnDegrees(TURN_DEGREES);  // Turn left
+                driveForwardInches(12, DRIVE_POWER);  // Move forward
                 totalTraveled += 12;  // Add to total
-                // If you want to turn back, add: turnDegrees(-TURN_DEGREES);
-            }
+                telemetry.addData("First turn complete", "Driving forward 12 inches at a time");
+
+                turnDegrees(-TURN_DEGREES);  // Turn right
+                driveForwardInches(12, DRIVE_POWER);  // Move forward
+                totalTraveled += 12;  // Add to total
+                telemetry.addData("Second turn complete", "Driving forward 12 inches at a time");
+
+                turnDegrees(-TURN_DEGREES);  // Turn right
+                driveForwardInches(12, DRIVE_POWER);  // Move forward
+                totalTraveled += 12;  // Add to total
+                telemetry.addData("Third turn complete", "Driving forward 12 inches at a time");
+
+                turnDegrees(TURN_DEGREES);  // Turn left
+                telemetry.addData("Forth and final turn complete", "Continue driving forward");            }
 
             //  IF NO OBSTACLE, PATH CLEAR,  DRIVE FORWARD
             else {
-                // NEW: Drive a small step (1 inch) accurately, then check again
+                // Drive a small step (1 inch) accurately, then check again
                 driveForwardInches(1, DRIVE_POWER);
                 totalTraveled += 1;
                 telemetry.addData("CLEAR", "Driving forward 1 inch at a time");
