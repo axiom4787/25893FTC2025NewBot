@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@TeleOp
+@TeleOp(name = "Bala TestOTOS")
 public class TestOTOS extends LinearOpMode {
 
     SparkFunOTOS otos;

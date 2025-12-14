@@ -6,7 +6,7 @@ import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.tel
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-@TeleOp()
+@TeleOp(name = "Turbo Button")
 public class turboButton extends OpMode {
 
     public void init() {
@@ -27,6 +27,7 @@ public class turboButton extends OpMode {
         telemetry.update();
     }
     }
+
 
 
 

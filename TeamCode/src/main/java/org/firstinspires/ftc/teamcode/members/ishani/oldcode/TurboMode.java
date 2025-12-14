@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-@TeleOp(name = "TurboMode")
+@TeleOp(name = "IS TurboMode")
 public class TurboMode extends LinearOpMode {
     private DcMotor frontLeftMotor;
     private DcMotor frontRightMotor;
