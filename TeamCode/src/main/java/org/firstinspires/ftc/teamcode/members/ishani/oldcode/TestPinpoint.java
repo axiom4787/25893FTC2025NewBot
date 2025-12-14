@@ -12,7 +12,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
 
-@TeleOp
+@TeleOp(name = "IS test pin point")
+
 public class TestPinpoint extends LinearOpMode {
 
     GoBildaPinpointDriver pinPoint;

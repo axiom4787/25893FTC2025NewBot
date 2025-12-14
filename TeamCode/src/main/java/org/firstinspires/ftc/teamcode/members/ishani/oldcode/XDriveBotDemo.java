@@ -17,7 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
  * Example OpMode. Demonstrates use of gyro, color sensor, encoders, and telemetry.
  *
  */
-@TeleOp(name = "XDriveBot demo", group = "XBot")
+@TeleOp(name = "IS XDriveBot demo", group = "XBot")
 public class XDriveBotDemo extends LinearOpMode {
 
     DcMotor m1, m2, m3, m4;

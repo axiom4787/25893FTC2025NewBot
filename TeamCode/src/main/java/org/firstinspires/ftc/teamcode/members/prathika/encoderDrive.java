@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
-@Autonomous
+@Autonomous(name="Encoder Drive Prathika")
 
 public class encoderDrive extends LinearOpMode {
 
