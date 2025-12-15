@@ -417,8 +417,6 @@ public class CPUplsCookExpansive extends LinearOpMode {
                     Example placeholder:
                     private OdometrySystem odometrySystem;
                     
-
-
                     // Field Centric Driving using odometry system instead of IMU
                     /** 
                     else if (!wheelBreak && field_centric) {
