@@ -668,6 +668,13 @@ public class CPUplsCookExpansive extends LinearOpMode {
         packet.put("PID Power", pid);
         packet.put("Integral", integral);
 
+        packet.put("robot centric", robot_centric);
+        packet.put("field centric", field_centric);
+        packet.put("intake in", intakeIn);
+        packet.put("shooter up", shooterUp);
+        packet.put("slow mode", slow_mode);
+        packet.put("wheel break", wheelBreak);
+
         dashboard.sendTelemetryPacket(packet);
 
 
