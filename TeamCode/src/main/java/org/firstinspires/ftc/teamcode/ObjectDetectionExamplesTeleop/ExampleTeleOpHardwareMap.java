@@ -1,61 +1,24 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.ObjectDetectionExamplesTeleop;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.dashboard.canvas.Canvas;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-
+import org.firstinspires.ftc.teamcode.ObeliskIntakeSystem;
 
 /**
- * Drive Train 432 x2    2x motor  need to fix equation
-Drive Train 1100? x2     2x motor  need to fix equation
-shooter motor x1         1x Motor  ✅
-shooter hinge x1 x2?     1x position servo  ✅ one programmed
-intake servo x2          2x position rotation servo ✅ 
-mag x2?                  2x continuous rotation servo  ✅
-vision                   1x webcam         not implemented
-husky lens               1x Husky Lens     not implemented
-color sensor             2x color sensor   not implemented
-
-total                   5x motors
-                            2x 1100ish ✅
-                            2x 435     ✅
-                            1x 6000    ✅
-                        5x servos
-                            2x continuous rotation servos  
-                            3x position servo
-                        2x sensors
-                        1x webcam
-                        1x Husky Lens
-
-                        drive motors control hub
-                        odometry 123 expansion hub
-                        shooter 0 expansion hub
-                        left is 1
-                        right is 2
-                        perp is 3
+ * Example TeleOp that uses the ObeliskIntakeSystem class
+ * 
+ * This demonstrates how to integrate the intake system into your existing TeleOp code
  */
-
-@TeleOp(name="CPUplsCookUpdated", group="Drive Train")
-@Config
-// @Disabled
-public class CPUplsCookExpansive extends LinearOpMode {
-
-    // --- Gamepad 1 drive motors ---
-    private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
+@TeleOp(name = "TeleOp with Intake System", group = "Examples")
+public class ExampleTeleOpHardwareMap extends LinearOpMode {
+    
+    // Your existing robot hardware
+    private DcMotor leftDrive;
+    private DcMotor rightDrive;
+    private DcMotor intakeMotor;
+    
+        private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
 
     // --- Wheel brake ---
     public static boolean wheelBreak = false;
@@ -67,7 +30,7 @@ public class CPUplsCookExpansive extends LinearOpMode {
     // --- Odometry encoders (no motors attached, just encoder readings) ---
     private DcMotor flywheel, odoleft, odoright, odoperp;
     // private DcMotorEx flywheel;
-//    private Servo shooterHinge;
+    //    private Servo shooterHinge;
     private CRServo intakeToShooter, intakeToShooter2, intake, intake2;
 
     public static boolean intakeIn = false;
@@ -186,12 +149,18 @@ public class CPUplsCookExpansive extends LinearOpMode {
         heading += dHeading;
     }
 
+
+
+    // The intake decision system - just one line!
+    private ObeliskIntakeSystem intakeSystem;
+    
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        // --- Hardware Mapping ---
+
+        // Initialize your existing hardware
         frontLeftDrive = hardwareMap.get(DcMotor.class, "frontl");
         frontRightDrive = hardwareMap.get(DcMotor.class, "frontr");
         backLeftDrive = hardwareMap.get(DcMotor.class, "backl");
@@ -206,7 +175,15 @@ public class CPUplsCookExpansive extends LinearOpMode {
         intakeToShooter2 = hardwareMap.get(CRServo.class, "its2");
         intake = hardwareMap.get(Servo.class, "i");
         intake2 = hardwareMap.get(Servo.class, "i2");
-
+        
+        // Initialize the intake system - just one line!
+        intakeSystem = new ObeliskIntakeSystem(hardwareMap);
+        
+        // Check if it initialized properly
+        if (!intakeSystem.isInitialized()) {
+            telemetry.addData("ERROR", "Intake system failed to initialize!");
+            telemetry.update();
+        }
 
         // --- Odometry encoder setup ---
         telemetry.addData("Before Reset - Left", odoleft.getCurrentPosition());
@@ -250,16 +227,14 @@ public class CPUplsCookExpansive extends LinearOpMode {
         frontRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         backLeftDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         backRightDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-
+        
         dashboard = FtcDashboard.getInstance();
         telemetry.addLine("Waiting for start...");
         telemetry.update();
         waitForStart();
         runtime.reset();
 
-
-
-        // Retrieve the IMU from the hardware map
+                // Retrieve the IMU from the hardware map
         IMU imu = hardwareMap.get(IMU.class, "imu");
         // Adjust the orientation parameters to match your robot
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
@@ -268,20 +243,14 @@ public class CPUplsCookExpansive extends LinearOpMode {
         // Without this, the REV Hub's orientation is assumed to be logo up / USB forward
         imu.initialize(parameters);
 
-
-//        shooter = hardwareMap.get(DcMotorEx.class, "shooter");
-        // shooter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        // shooter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        // shooter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-
-        // lastPosition = shooter.getCurrentPosition();
         dtTimer.reset();
 
         // Initialize dashboard
         dashboard = FtcDashboard.getInstance();
-
-
+        
         while (opModeIsActive()) {
+            
+            // ========== YOUR EXISTING DRIVE CODE ==========
             updateOdometry();
             double batteryVoltage = getBatteryVoltage();
 
@@ -313,8 +282,6 @@ public class CPUplsCookExpansive extends LinearOpMode {
 
             dashboard.sendTelemetryPacket(packet);
 
-
-            // --- Wheel brake toggle ---
             if (gamepad1.left_stick_button && gamepad1.right_stick_button && !wheelBreak) {
                 wheelBreak = true;
                 sleep(200);
@@ -361,9 +328,7 @@ public class CPUplsCookExpansive extends LinearOpMode {
 
             }
 
-
-            // --- Wheel brake control ---
-            if (wheelBreak) {
+             if (wheelBreak) {
                 applyWheelBrake(frontLeftDrive, wheelBreakTargetFL);
                 applyWheelBrake(frontRightDrive, wheelBreakTargetFR);
                 applyWheelBrake(backLeftDrive, wheelBreakTargetBL);
@@ -405,10 +370,9 @@ public class CPUplsCookExpansive extends LinearOpMode {
                 double y = -gamepad1.left_stick_y * nerf; // Remember, Y stick value is reversed
                 double x = gamepad1.left_stick_x * nerf;
                 double rx = gamepad1.right_stick_x * nerf;
+                
 
-                // This button choice was made so that it is hard to hit on accident,
-                // it can be freely changed based on preference.
-                // The equivalent button is start on Xbox-style controllers.
+                // Field Centric Driving using odometry system instead of IMU 
                 if (gamepad1.start) {
                     imu.resetYaw();
                     // ... other code ...
@@ -470,7 +434,6 @@ public class CPUplsCookExpansive extends LinearOpMode {
 
 
                 }
-
                 double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
                 // Rotate the movement direction counter to the bot's rotation
@@ -494,28 +457,40 @@ public class CPUplsCookExpansive extends LinearOpMode {
                 backRightDrive.setPower(backRightPower * nerf);
             }
 
-
-
-            // --- Gamepad 2 controls ---
-            
             handleIntake();
             handleShooter();
             handleShooterHinge();
-
+            // Control intake based on the decision
+            if (intakeSystem.shouldPickup()) {
+                intake.setPosition(1.0);  // Run intake
+                intake2.setPosition(1.0);
+            } else {
+                intake.setPosition(0);  // Run intake
+                intake2.setPosition(0);  // Stop or reverse intake
+            }
+            
+            intakeSystem.update();
             // --- Dashboard telemetry ---
             sendDashboardTelemetry(batteryVoltage);
-
+            intakeSystem.sendTelemetry(telemetry);
             telemetry.update();
             sleep(20);
+            
+        
         }
     }
 
-    private void applyWheelBrake(DcMotor motor, int target) {
-        int error = target - motor.getCurrentPosition();
-        error = Math.max(-maxError, Math.min(maxError, error));
-        double power = kP * error;
-        power = Math.max(-maxPower, Math.min(maxPower, power));
-        motor.setPower(power);
+
+
+
+
+
+        private void applyWheelBrake(DcMotor motor, int target) {
+            int error = target - motor.getCurrentPosition();
+            error = Math.max(-maxError, Math.min(maxError, error));
+            double power = kP * error;
+            power = Math.max(-maxPower, Math.min(maxPower, power));
+            motor.setPower(power);
     }
 
 
@@ -594,8 +569,22 @@ public class CPUplsCookExpansive extends LinearOpMode {
            shooterHinge.setPosition(shooterUp ? 1 : 0);
        }
    }
+    private void sendDashboardTelemetry(double batteryVoltage) {
+         TelemetryPacket packet = new TelemetryPacket();
+         packet.put("Odometry X (in)", xPos);
+         packet.put("Odometry Y (in)", yPos);
+         packet.put("Odometry Heading (rad)", heading);
+         packet.put("Shooter Target RPM", targetRPM);
+         packet.put("Shooter Current RPM", currentRPM);
+         packet.put("Shooter Error", error);
+         packet.put("Shooter Output", output);
+         packet.put("Battery Voltage", batteryVoltage);
+         dashboard.sendTelemetryPacket(packet);
+    }
 
     private void sendDashboardTelemetry(double batteryVoltage) {
+
+
         TelemetryPacket packet = new TelemetryPacket();
         Canvas canvas = packet.fieldOverlay();
 
@@ -715,5 +704,18 @@ public class CPUplsCookExpansive extends LinearOpMode {
         telemetry.addData("shooter up", shooterUp);
         telemetry.addData("slow mode", slow_mode);
         telemetry.addData("wheel break", wheelBreak);
-    }
+            
+            telemetry.update();
+            sleep(20);
+    }   
+        
+        // Cleanup
+        // intakeSystem.stop();
+        // do i need this? ^
+
+
 }
+
+    
+
+
