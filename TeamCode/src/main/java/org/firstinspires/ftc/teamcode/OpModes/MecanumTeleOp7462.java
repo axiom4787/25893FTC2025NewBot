@@ -57,12 +57,6 @@ import org.firstinspires.ftc.teamcode.Shooter;
 //@Disabled //comment this out when ready to add to android phone
 public class MecanumTeleOp7462 extends OpMode {
     GoalTagLimelight limelight;
-    // This declares the four motors needed
-    DcMotor frontLeftDrive;
-    DcMotor frontRightDrive;
-    DcMotor backLeftDrive;
-    DcMotor backRightDrive;
-
     Shooter collectorBack;
     Shooter collectorFront;
     Shooter shooterLeft;
@@ -71,68 +65,45 @@ public class MecanumTeleOp7462 extends OpMode {
     Servo launchFlapLeft;
     Servo launchFlapRight;
     Servo flipper;
-    //GoalTag goalTag;
 
     // Timers
     ElapsedTime timerLeft = new ElapsedTime();
     ElapsedTime timerRight = new ElapsedTime();
     ElapsedTime timerFlipper = new ElapsedTime();
 
-    // Just for tuning
-    private double Kvelo;
     Chassis ch;
     private double idlePower = 20;
-    private double lastError = 0;
-    private double frontVel = 15;
-    private double backVel = 15;
     private double kP = 0.3; // was 0.14 before adding 0 breaking
-    private double kD = 0.038;
     private boolean leftIsRunning;
     private boolean rightIsRunning;
     private boolean emergencyMode = false;
-    private double maxPower = 1.0;
-    private double maxSpeed = 1.0;
-    private double collectorPower = 0.5;
-
-    // This declares the IMU needed to get the current direction the robot is facing
-//    IMU imu;
-
 
     @Override
     public void init() {
-        //hardwareMap is just so our code names can actually connect to what the android phone understands
         launchFlapLeft = hardwareMap.get(Servo.class, "launchFlapLeft");
         launchFlapRight = hardwareMap.get(Servo.class, "launchFlapRight");
         flipper = hardwareMap.get(Servo.class, "flipper");
 
         ch = new Chassis(hardwareMap);
 
-        collectorFront = new Shooter(hardwareMap,"collectorFront", false);
-        //collectorFront.setControllerValues(0.3,0.0243);
-        //collectorFront.targetVelocity = frontVel;
+        collectorFront = new Shooter(hardwareMap, "collectorFront", false);
+        collectorBack = new Shooter(hardwareMap, "collectorBack", false);
 
-        collectorBack = new Shooter(hardwareMap,"collectorBack", false);
-//        collectorBack.setControllerValues(0.3,0.0243);
-//        collectorBack.targetVelocity = backVel;
+        shooterLeft = new Shooter(hardwareMap, "shooterLeft", true);
+        shooterLeft.setControllerValues(0.3, 0.0243);
 
-        shooterLeft = new Shooter(hardwareMap,"shooterLeft", true);
-        shooterLeft.setControllerValues(0.3,0.0243);
-
-        shooterRight = new Shooter(hardwareMap,"shooterRight", false);
-        shooterRight.setControllerValues(0.3,0.0243);
+        shooterRight = new Shooter(hardwareMap, "shooterRight", false);
+        shooterRight.setControllerValues(0.3, 0.0243);
 
         limelight = new GoalTagLimelight();
         limelight.init(hardwareMap, telemetry);
 
         if ((GlobalStorage.getAlliance() != -1)) {
-            //goalTag.targetAprilTagID = GlobalStorage.getAlliance();
             limelight.setTeam(GlobalStorage.getAlliance());
         }
         timerLeft.reset();
         timerRight.reset();
         timerFlipper.reset();
-
-
 
 
     }
@@ -144,6 +115,7 @@ public class MecanumTeleOp7462 extends OpMode {
         telemetry.addData("Pattern", limelight.getObelisk());
         telemetry.addData("team ID", limelight.getID());
 
+        telemetry.addLine("Bumpers to shoot, a to turntotag");
         telemetry.addLine("Press b for red, x for blue");
         telemetry.update();
         if (gamepad1.bWasPressed()) {
@@ -182,26 +154,22 @@ public class MecanumTeleOp7462 extends OpMode {
         telemetry.addData("collectorFrontCurrentPower", collectorFront.getPower());
         telemetry.addData("collectorBackCurrentPower", collectorBack.getPower());
         telemetry.addData("Kp", kP);
-        //telemetry.addData("KD", kD);
         telemetry.addData("TimerLeft", timerLeft.seconds());
-        ch.getMotorSpeed(telemetry);
-        telemetry.addLine("Bumpers to shoot, a to turntotag");
         telemetry.update();
-
 
 
         // Driver Controlstelemetry.addData("Is Tag Recent", limelight.seeObelisk);
         if (gamepad1.leftBumperWasPressed() && (limelight.isDataCurrent || emergencyMode)) {
             // do math here
-            shooterLeft.targetVelocity = (limelight.getRange() + 202.17 - 10) / 8.92124;
-            //shooterLeft.targetVelocity = 0.1067*limelight.getRange()+24.336;
+            //shooterLeft.targetVelocity = (limelight.getRange() + 202.17 - 10) / 8.92124;
+            shooterLeft.targetVelocity = (limelight.getRange()+100.99)/7.3712;
             leftIsRunning = true;
             timerLeft.reset();
         }
         if (gamepad1.rightBumperWasPressed() && (limelight.isDataCurrent || emergencyMode)) {
             // do math here
-            shooterRight.targetVelocity = (limelight.getRange() + 202.17 - 10) / 8.92124;
-            //shooterRight.targetVelocity = 0.1067*limelight.getRange()+24.336;
+            //shooterRight.targetVelocity = (limelight.getRange() + 202.17 - 10) / 8.92124;
+            shooterRight.targetVelocity = (limelight.getRange()+100.99)/7.3712;
             rightIsRunning = true;
             timerRight.reset();
         }
@@ -222,26 +190,20 @@ public class MecanumTeleOp7462 extends OpMode {
             collectorBack.setPower(0.6);
         }
         if (gamepad1.a && limelight.isDataCurrent) {
-            turnToAprilTagLimelight();
+            ch.turnTo(limelight.getTx(), 0);
         }
 //        if (gamepad2.yWasPressed()) {
 //            collectorPower += 0.05;
 //
 //        } else if (gamepad2.aWasPressed()) {
 //            collectorPower -= 0.05;
-//        } //else if (gamepad2.bWasPressed()) {
-//            kD += 0.0005;
-//        } else if (gamepad2.xWasPressed()) {
-//            kD -= 0.0005;
-//        }
+
         // Parking mode
-//        if (gamepad1.right_trigger == 1) {
-//            maxPower = 0.5;
-//            maxSpeed = 0.5;
-//        } else {
-//            maxPower = 1.0;
-//            maxSpeed = 1.0;
-//        }
+        if (gamepad1.right_trigger == 1) {
+            ch.setMaxSpeed(0.5);
+        } else {
+            ch.setMaxSpeed(1);
+        }
         ch.drive(-gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
 
         // Shoot when at speed
@@ -290,22 +252,5 @@ public class MecanumTeleOp7462 extends OpMode {
 //            }
 //        }
 //    }
-    public void turnToAprilTagLimelight() {
-        turnTo(0,0);
-    }
-    private void turnTo(double variance, double setPoint) {
-        double currentAngle = limelight.getTx();
-        double error = setPoint - currentAngle;
-        //if (Math.abs(error) > variance) {
-        double power = kP*error;
 
-        telemetry.addData("turn power", power);
-        ch.moveAllMotors(-power,power,-power,power);
-//            if (error > rightBound) { // rotate left
-//                moveAllMotors(-power,power,-power,power);
-//            } else if (error < leftBound) { // rotate right
-//                moveAllMotors(power,-power,power,-power);
-//            }
-        //}
-    }
 }

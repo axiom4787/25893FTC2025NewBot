@@ -10,11 +10,12 @@ public class Chassis {
 
     private double maxPower = 1.0;
     private double maxSpeed = 1.0;  // make this slower for outreaches
+    private double kPTurn = 0.14;
 
     public DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
 
     public Chassis(HardwareMap hardwareMap) {
-        frontLeftDrive = hardwareMap.get(DcMotor .class, "leftFront");
+        frontLeftDrive = hardwareMap.get(DcMotor.class, "leftFront");
         frontRightDrive = hardwareMap.get(DcMotor.class, "rightFront");
         backLeftDrive = hardwareMap.get(DcMotor.class, "leftBack");
         backRightDrive = hardwareMap.get(DcMotor.class, "rightBack");
@@ -48,25 +49,11 @@ public class Chassis {
         double backRightPower  = forward + right - rotate;
         double backLeftPower   = forward - right + rotate;
 
-        // This is needed to make sure we don't pass > 1.0 to any wheel
-        // It allows us to keep all of the motors in proportion to what they should
-        // be and not get clipped
-//        maxPower = Math.max(maxPower, Math.abs(frontLeftPower));
-//        maxPower = Math.max(maxPower, Math.abs(frontRightPower));
-//        maxPower = Math.max(maxPower, Math.abs(backRightPower));
-//        maxPower = Math.max(maxPower, Math.abs(backLeftPower));
-
-        // We multiply by maxSpeed so that it can be set lower for outreaches
-        // When a young child is driving the robot, we may not want to allow full
-        // speed.
         frontLeftDrive.setPower(maxSpeed * frontLeftPower);
         frontRightDrive.setPower(maxSpeed * frontRightPower);
         backLeftDrive.setPower(maxSpeed * backLeftPower);
         backRightDrive.setPower(maxSpeed * backRightPower);
-//        frontLeftDrive.setPower(frontLeftPower);
-//        frontRightDrive.setPower(frontRightPower);
-//        backLeftDrive.setPower(backLeftPower);
-//        backRightDrive.setPower(backRightPower);
+
     }
 
     public void setMaxPower(double maxPower) {
@@ -107,10 +94,7 @@ public class Chassis {
         timer.reset();
 
         while (timer.milliseconds() < mseconds) {
-            frontLeftDrive.setPower(power);
-            backLeftDrive.setPower(power);
-            frontRightDrive.setPower(power);
-            backRightDrive.setPower(power);
+            moveAllMotors(power,power,power,power);
         }
 
         stopMotors();
@@ -119,6 +103,12 @@ public class Chassis {
         telemetry.addData("fleft",frontLeftDrive.getPower());
         telemetry.addData("fright",frontRightDrive.getPower());
         telemetry.addData("lback",backLeftDrive.getPower());
-        telemetry.addData("lRIGHT",backRightDrive.getPower());
+        telemetry.addData("rback",backRightDrive.getPower());
+    }
+    public void turnTo(double currentAngle, double setPoint) {
+        double error = setPoint - currentAngle;
+
+        double power = kPTurn*error;
+        moveAllMotors(-power,power,-power,power);
     }
 }
