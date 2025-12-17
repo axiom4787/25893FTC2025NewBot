@@ -440,7 +440,7 @@ public class FrontAuto12Balls extends OpMode
                     rightFrontDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     rightBackDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     autonomousState = AutonomousState.DRIVING2;
-                    intake.setPower(1.5);
+                    intake.setPower(2);
 
 
                 }
