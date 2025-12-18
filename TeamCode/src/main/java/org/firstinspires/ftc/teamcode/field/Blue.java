@@ -6,8 +6,8 @@ public class Blue {
 
     // Auto
     // Start Pose of our robot.
-    public static final Pose START_POSE   = new Pose(63.4, 9, Math.toRadians(90));
-    public static final Pose APRILTAG_POSE = new Pose(33,37, Math.toRadians(90));
+    public static final Pose START_POSE   = new Pose(64, 9, Math.toRadians(90));
+    public static final Pose APRILTAG_POSE = new Pose(58,90, Math.toRadians(90));
 
     // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     public static final Pose SCORE_POSE   = new Pose(58, 90, Math.toRadians(135));
