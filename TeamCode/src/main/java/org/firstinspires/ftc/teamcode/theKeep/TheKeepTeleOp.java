@@ -1,6 +1,10 @@
-// The Keep Version 2.0
+/*
+The Keep Version 2.1.0
+Changelog:
+Added the changelog to keep track of what was added in this update
+Added a function to shoot all three artifacts
+*/
 package org.firstinspires.ftc.teamcode.theKeep;
-
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.hardware.Motors;
@@ -61,8 +65,8 @@ public class TheKeepTeleOp extends OpMode {
             pathing.automatedDrive = true;
         }
 
-        // The tringle button will be changed in the future but for now is used as an emergency stop - Jason
-        if (pathing.automatedDrive && (gamepad1.triangleWasPressed() || !pathing.follower.isBusy())) {
+        // The dpad down button is used as an emergency stop - Jason
+        if (pathing.automatedDrive && (gamepad1.dpadDownWasPressed() || !pathing.follower.isBusy())) {
             pathing.follower.startTeleopDrive();
             pathing.automatedDrive = false;
         } // Switches to TeleOp drive if the follower is done - Jason
@@ -104,8 +108,20 @@ public class TheKeepTeleOp extends OpMode {
         if (gamepad1.squareWasPressed()) {
             motors.intake.setPower(0);
         }
+        // This if loop makes the robot shoot all the artifacts - Nikola
+        if (gamepad1.triangleWasPressed()){
+
+            motors.shootAllBalls();
+
+        }
 
 
+       /* if(motors.intake.getPower() == 1) {
+
+            motors.fidgetTech.getPosition();
+            motors.fidgetTech.setPosition();
+        }
+        */
         // These lines grab the april tag data then write any tags data to the telemetry - Jason
         vision.getAprilTagData();
         if (vision.blueBase != null) telemetry.addData("Blue Base Range", vision.blueBase.ftcPose.range);

@@ -7,11 +7,19 @@ import com.arcrobotics.ftclib.controller.PIDFController;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 
 public class Motors {
+    // Sets up a variable used for the loop to shoot three artifacts - Nikola
+    private int shootAll = 0;
+
+    ElapsedTime time = new ElapsedTime();
+
 
     public DcMotor intake = null;
     public DcMotorEx flywheel = null;
+    public DcMotor shooter = null;
     public Servo ballEjector = null;
     public Servo fidgetTech = null;
     PIDFController velocityController;
@@ -31,6 +39,7 @@ public class Motors {
 
     public void initMotors(HardwareMap hardwareMap) {
         // maps the motors and servos using the hardware map when called - Jason
+        shooter = hardwareMap.get(DcMotor.class, "Shooter");
         intake = hardwareMap.get(DcMotor.class, "intake");
         ballEjector = hardwareMap.get(Servo.class, "ballEjector");
         fidgetTech = hardwareMap.get(Servo.class, "spinIndexer");
@@ -51,5 +60,27 @@ public class Motors {
         flywheel.setPower(power);
 
     }
+    //This public void adds a function to shoot all three artifacts - Nikola
+    public void shootAllBalls (){
+        // Code to shoot all three artifacts when △ is pressed.
+            spinPosition = 1; shootAll = 0; while(shootAll < 3){
+            spinPosition += 2;
+            shooter.setPower(0.7);
+            time.reset();
+            fidgetTech.setPosition(spinPositions[spinPosition]);
+            while(time.seconds() < 4 ){
+                //just chill
+            }
+            ballEjector.setPosition(0.3);
+            time.reset();
+            while (time.seconds() < 1) {
+                //you get to chill again
+            }
+            ballEjector.setPosition(0);
 
+            shootAll += 1;
+        }
+
+
+    }
 }
