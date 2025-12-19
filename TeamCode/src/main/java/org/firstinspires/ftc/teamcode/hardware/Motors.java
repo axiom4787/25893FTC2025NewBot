@@ -11,23 +11,20 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 
 public class Motors {
-    // Sets up a variable used for the loop to shoot three artifacts - Nikola
-    private int shootAll = 0;
 
     ElapsedTime time = new ElapsedTime();
 
-
     public DcMotor intake = null;
-    public DcMotorEx flywheel = null;
+    private DcMotorEx flywheel = null;
     public DcMotor shooter = null;
     public Servo ballEjector = null;
     public Servo fidgetTech = null;
     PIDFController velocityController;
     //PID controller constants
-    private double kP = 0.5;  // P = proportional
-    private double kI = 0.05; // I = integral
-    private double kD = 0;    // D = derivative
-    private double kF = 0;    // F = feedForward
+    private final double kP = 0.5;  // P = proportional
+    private final double kI = 0.05; // I = integral
+    private final double kD = 0;    // D = derivative
+    private final double kF = 0;    // F = feedForward
 
 
     public int spinPosition;
@@ -60,10 +57,14 @@ public class Motors {
         flywheel.setPower(power);
 
     }
+
     //This public void adds a function to shoot all three artifacts - Nikola
     public void shootAllBalls (){
-        // Code to shoot all three artifacts when △ is pressed.
-            spinPosition = 1; shootAll = 0; while(shootAll < 3){
+        // Code to shoot all three artifacts when △ is pressed
+        // Sets up a variable used for the loop to shoot three artifacts - Nikola
+        int shootAll = 0;
+        spinPosition = 1;
+        while(shootAll < 3){
             spinPosition += 2;
             shooter.setPower(0.7);
             time.reset();
