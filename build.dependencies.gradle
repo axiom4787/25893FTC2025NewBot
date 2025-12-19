@@ -2,6 +2,7 @@ repositories {
     mavenCentral()
     google() // Needed for androidx
 
+    // Needed for Panels and Pedro Pathing
     maven { url = "https://mymaven.bylazar.com/releases" }
 }
 
@@ -16,9 +17,14 @@ dependencies {
     implementation 'org.firstinspires.ftc:Vision:11.0.0'
     implementation 'androidx.appcompat:appcompat:1.2.0'
 
+    // Pedro Pathing library
     implementation 'com.pedropathing:ftc:2.0.4'
     implementation 'com.pedropathing:telemetry:1.0.0'
 
+    // For Panels
     implementation 'com.bylazar:fullpanels:1.0.6'
+
+    // Marrow library
+    implementation 'io.github.skeleton-army.marrow:core:0.1.2'
 }
 
