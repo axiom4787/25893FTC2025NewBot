@@ -3,8 +3,15 @@ package org.firstinspires.ftc.teamcode.hardware;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 
 public class Motors {
+    // Sets up a variable used for the loop to shoot three artifacts - Nikola
+    private int shootAll = 0;
+
+    ElapsedTime time = new ElapsedTime();
+
 
     public DcMotor intake = null;
     public DcMotor shooter = null;
@@ -26,5 +33,27 @@ public class Motors {
 
         spinPosition = 13;
     }
+    //This public void adds a function to shoot all three artifacts - Nikola
+    public void shootAllBalls (){
+        // Code to shoot all three artifacts when △ is pressed.
+            spinPosition = 1; shootAll = 0; while(shootAll < 3){
+            spinPosition += 2;
+            shooter.setPower(0.7);
+            time.reset();
+            fidgetTech.setPosition(spinPositions[spinPosition]);
+            while(time.seconds() < 4 ){
+                //just chill
+            }
+            ballEjector.setPosition(0.3);
+            time.reset();
+            while (time.seconds() < 1) {
+                //you get to chill again
+            }
+            ballEjector.setPosition(0);
 
+            shootAll += 1;
+        }
+
+
+    }
 }
