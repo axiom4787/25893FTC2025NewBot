@@ -44,29 +44,38 @@ public class PedroPathingVisualizer extends LinearOpMode {
     Shooter collectorBack;
     Shooter collectorFront;
     Servo flipper;
-    Pinpoint pinpoint;
+    //Pinpoint pinpoint;
     GoalTagLimelight limelight;
+
+    ElapsedTime collectTimerLeft = new ElapsedTime();
+    ElapsedTime collectTimerRight = new ElapsedTime();
+    boolean collectingLeft = false;
+    boolean collectingRight = false;
+    boolean ranAlready = false;
+
     private int startDelay = 0;
     private int teamID;
     private boolean testingMode = false;
     private boolean shooting = false;
     private double collectorPower = 0.53;
-    private double maxPower = 0.5;
+    private double maxPower = 0.7;
+    ElapsedTime timer = new ElapsedTime();
 
     private final Pose startPose = new Pose(61.850, 8.348, Math.toRadians(90));
-    private final Pose launchPose = new Pose(60.592, 19.324);
-    private final Pose readyPickUp1 = new Pose(40.222, 35.289);
-    private final Pose collectLine1 = new Pose(15.368, 35.478);
-    private final Pose readyPickUp2 = new Pose(40.032, 59.763);
+    private final Pose launchPose = new Pose(57.598, 19.324);
+    private final Pose readyPickUp1 = new Pose(30, 35.478);
+    private final Pose line11 = new Pose(25, 35.478);
+    private final Pose line12 = new Pose(20, 35.478);
+    private final Pose line13 = new Pose(15, 35.478);
+    private final Pose readyPickUp2 = new Pose(40.222, 59.763);
     private final Pose collectLine2 = new Pose(15.368, 59.763);
 
-    private PathChain Path1, Path2, Path3, Path4, Path5, Path6, Path7;
+    private PathChain Path1, Path2, Path3, Path4, Path5, Path6, Path7, Path8, Path9, Path10;
 
 
     @Override
     public void runOpMode() {
         setPathState(0);
-
 
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
@@ -80,7 +89,7 @@ public class PedroPathingVisualizer extends LinearOpMode {
 
         ch = new Chassis(hardwareMap);
         
-        pinpoint = new Pinpoint(hardwareMap,ch,telemetry,false);
+        //pinpoint = new Pinpoint(hardwareMap,ch,telemetry,false);
 
         collectorFront = new Shooter(hardwareMap,"collectorFront", false);
 
@@ -96,24 +105,23 @@ public class PedroPathingVisualizer extends LinearOpMode {
 
         launchFlapRight = hardwareMap.get(Servo.class, "launchFlapRight");
 
-        pinpoint.setEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED,
-                GoBildaPinpointDriver.EncoderDirection.REVERSED);
-
-        pinpoint.odo.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES,0));
+//        pinpoint.setEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED,
+//                GoBildaPinpointDriver.EncoderDirection.REVERSED);
+//
+//        pinpoint.odo.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.DEGREES,0));
 
         limelight = new GoalTagLimelight();
         limelight.init(hardwareMap,telemetry);
 
-        pinpoint.odo.resetPosAndIMU();
-        pinpoint.odo.recalibrateIMU();
-
-        Pose2D pose = pinpoint.odo.getPosition();
+//        pinpoint.odo.resetPosAndIMU();
+//        pinpoint.odo.recalibrateIMU();
+//
+//        Pose2D pose = pinpoint.odo.getPosition();
 
         GlobalStorage.setPattern(null);
         GlobalStorage.setAlliance(-1);
 
         do {
-            pinpoint.odo.update();
             limelight.readObelisk(telemetry);
             GlobalStorage.setPattern(limelight.getObelisk());
 
@@ -140,17 +148,17 @@ public class PedroPathingVisualizer extends LinearOpMode {
             } else if (gamepad1.leftStickButtonWasPressed()) {
                 testingMode = true;
             }
-
-            telemetry.addData("Heading Scalar", pinpoint.odo.getYawScalar());
-            telemetry.addData("Initial X", "%.2f", pinpoint.odo.getPosX(DistanceUnit.INCH));
-            telemetry.addData("Initial Y", "%.2f", pinpoint.odo.getPosY(DistanceUnit.INCH));
-            telemetry.addData("Initial Heading (deg) MAKE SURE ITS 0", "%.1f", pose.getHeading(AngleUnit.DEGREES));
-            telemetry.addData("Status", pinpoint.odo.getDeviceStatus());
+//
+//            telemetry.addData("Heading Scalar", pinpoint.odo.getYawScalar());
+//            telemetry.addData("Initial X", "%.2f", pinpoint.odo.getPosX(DistanceUnit.INCH));
+//            telemetry.addData("Initial Y", "%.2f", pinpoint.odo.getPosY(DistanceUnit.INCH));
+//            telemetry.addData("Initial Heading (deg) MAKE SURE ITS 0", "%.1f", pose.getHeading(AngleUnit.DEGREES));
+//            telemetry.addData("Status", pinpoint.odo.getDeviceStatus());
             telemetry.update();
         } while (opModeInInit());
 
         while (opModeIsActive()) {
-            sleep(1000*startDelay);
+            //sleep(1000*startDelay);
 
             limelight.setTeam(teamID);
 
@@ -169,7 +177,29 @@ public class PedroPathingVisualizer extends LinearOpMode {
             panelsTelemetry.debug("Y", follower.getPose().getY());
             panelsTelemetry.debug("Heading", follower.getPose().getHeading());
             panelsTelemetry.update(telemetry);
-            break;
+
+//            if (collectingLeft) {
+//                if (collectTimerLeft.seconds() > 1 && collectTimerLeft.seconds() <= 2) {
+//                    flipper.setPosition(1);
+//                }
+//                else if (collectTimerLeft.seconds() > 2) {
+//                    flipper.setPosition(0.525);
+//                    follower.resumePathFollowing();
+//                    collectingLeft = false;
+//                }
+//            }
+//            if (collectingRight) {
+//                if (collectTimerRight.seconds() > 1 && collectTimerRight.seconds() <= 2) {
+//                    flipper.setPosition(0.1);
+//                }
+//                else if (collectTimerRight.seconds() > 2) {
+//                    flipper.setPosition(0.525);
+//                    follower.resumePathFollowing();
+//                    collectingRight = false;
+//                }
+//            }
+
+
         }
     }
 
@@ -179,32 +209,46 @@ public class PedroPathingVisualizer extends LinearOpMode {
                     .addPath(
                             new BezierLine(startPose, launchPose)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(115))
+                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(110))
                     .build();
             Path2 = follower
                     .pathBuilder()
                     .addPath(
                             new BezierLine(launchPose, readyPickUp1)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(180))
+                    .setLinearHeadingInterpolation(Math.toRadians(110), Math.toRadians(180))
                     .build();
 
             Path3 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(readyPickUp1, collectLine1)
+                            new BezierLine(readyPickUp1, line11)
                     )
-                    .addParametricCallback(30, collectLeft)
-                    .addParametricCallback(60, collectRight)
                     .setTangentHeadingInterpolation()
                     .build();
+
+            Path8 = follower
+                    .pathBuilder()
+                    .addPath(
+                            new BezierLine(line11, line12)
+                    )
+                    .setTangentHeadingInterpolation()
+                    .build();
+
+            Path9 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(line12, line13)
+                )
+                .setTangentHeadingInterpolation()
+                .build();
 
             Path4 = follower
                     .pathBuilder()
                     .addPath(
-                            new BezierLine(collectLine1, launchPose)
+                            new BezierLine(line13, launchPose)
                     )
-                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(115))
+                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(110))
                     .build();
 
             Path5 = follower
@@ -220,8 +264,8 @@ public class PedroPathingVisualizer extends LinearOpMode {
                     .addPath(
                             new BezierLine(readyPickUp2, collectLine2)
                     )
-                    .addParametricCallback(30, collectLeft)
-                    .addParametricCallback(60, collectRight)
+                    //.addParametricCallback(30, collectLeft)
+                    //.addParametricCallback(60, collectRight)
                     .setTangentHeadingInterpolation()
                     .build();
 
@@ -230,9 +274,8 @@ public class PedroPathingVisualizer extends LinearOpMode {
                     .addPath(
                             new BezierLine(collectLine2, launchPose)
                     )
-                    .setTangentHeadingInterpolation()
+                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(110))
                     .build();
-
     }
 
     public int autonomousPathUpdate() {
@@ -249,54 +292,55 @@ public class PedroPathingVisualizer extends LinearOpMode {
             */
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if (!follower.isBusy()) {
-                    /* Score Preload */
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
 
                     fireVolleySorted();
-                    follower.followPath(Path2, maxPower, true);
+                    follower.followPath(Path2, maxPower, false);
                     setPathState(2);
                 }
                 break;
             case 2:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
                 if (!follower.isBusy()) {
-                    /* Grab Sample */
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
+
                     follower.followPath(Path3, maxPower, true);
+                    timer.reset();
                     setPathState(3);
                 }
                 break;
             case 3:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
+
                 if (!follower.isBusy()) {
-                    /* Score Sample */
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(Path4, maxPower, true);
-                    setPathState(4);
+                    flipper.setPosition(1);
+                    if (timer.seconds() > 1) {
+                        flipper.setPosition(0.525);
+                        follower.followPath(Path8, maxPower, true);
+                        setPathState(8);
+                    }
+
                 }
                 break;
             case 4:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup2Pose's position */
                 if (!follower.isBusy()) {
-                    /* Grab Sample */
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
+
                     follower.followPath(Path5, maxPower, true);
+
                     setPathState(5);
                 }
                 break;
             case 5:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if (!follower.isBusy()) {
-                    /* Score Sample */
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+
+                    fireVolleySorted();
                     follower.followPath(Path6, maxPower,true);
                     setPathState(6);
                 }
                 break;
             case 6:
                 if (!follower.isBusy()) {
-                    /* Score Sample */
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+
                     follower.followPath(Path7, maxPower, true);
                     setPathState(7);
                 }
@@ -304,11 +348,23 @@ public class PedroPathingVisualizer extends LinearOpMode {
             case 7:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if (!follower.isBusy()) {
+                    fireVolleySorted();
                     /* Set the state to a Case we won't use or define, so it just stops running an new paths */
                     setPathState(-1);
                 }
                 break;
-
+            case 8:
+                if (!follower.isBusy()) {
+                    follower.followPath(Path9, maxPower, true);
+                    setPathState(9);
+                }
+                break;
+            case 9:
+                if (!follower.isBusy()) {
+                    follower.followPath(Path4, maxPower, true);
+                    setPathState(5);
+                }
+                break;
         }
         return pathState;
     }
@@ -333,6 +389,7 @@ public class PedroPathingVisualizer extends LinearOpMode {
             flipper.setPosition(1);
             sleep(1000);
             fireShooterLeft(velLeft);
+            flipper.setPosition(0.525);
         } else if (limelight.getObelisk().equals("GPP") && !testingMode) {
             fireShooterRight(velRight);
             fireShooterLeft(velLeft);
@@ -340,6 +397,7 @@ public class PedroPathingVisualizer extends LinearOpMode {
             flipper.setPosition(1);
             sleep(1000);
             fireShooterLeft(velLeft);
+            flipper.setPosition(0.525);
         } else if (limelight.getObelisk().equals("PPG") && !testingMode) {
             fireShooterLeft(velLeft);
             sleep(1000);
@@ -347,6 +405,7 @@ public class PedroPathingVisualizer extends LinearOpMode {
             sleep(1000);
             fireShooterLeft(velLeft);
             fireShooterRight(velRight);
+            flipper.setPosition(0.525);
         }
     }
     public void fireShooterLeft(double velocity) {
@@ -385,15 +444,20 @@ public class PedroPathingVisualizer extends LinearOpMode {
             shooterRight.overridePower();
         }
     }
+//    Runnable collectLeft = () -> {
+//        follower.pausePathFollowing();
+//        if (ranAlready) return;
+//
+//        ranAlready = true;
+//        follower.pausePathFollowing();
+//        collectTimerLeft.reset();
+//        collectingLeft = true;
 
-    Runnable collectLeft = () -> {
-        flipper.setPosition(1);
-        sleep(500);
-        flipper.setPosition(0.525);
-    };
-    Runnable collectRight = () -> {
-        flipper.setPosition(0.1);
-        sleep(500);
-        flipper.setPosition(0.525);
-    };
+   // };
+//    Runnable collectRight = () -> {
+//        follower.pausePathFollowing();
+//        collectTimerRight.reset();
+//        collectingRight = true;
+//    };
 }
+

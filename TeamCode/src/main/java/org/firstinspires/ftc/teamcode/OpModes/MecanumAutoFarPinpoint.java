@@ -79,7 +79,7 @@ public class MecanumAutoFarPinpoint extends LinearOpMode {
     public void runOpMode() {
         ch = new Chassis(hardwareMap);
 
-        pinpoint = new Pinpoint(hardwareMap,ch,telemetry,false);
+        //pinpoint = new Pinpoint(hardwareMap,ch,telemetry,false);
 
         collectorFront = new Shooter(hardwareMap,"collectorFront", false);
 

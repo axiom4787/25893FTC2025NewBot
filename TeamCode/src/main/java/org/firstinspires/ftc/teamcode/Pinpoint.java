@@ -43,7 +43,7 @@ public class Pinpoint {
         telemetry = tele;
         logData = log;
 
-        odo = hw.get(GoBildaPinpointDriver.class,"odo");
+        odo = hw.get(GoBildaPinpointDriver.class,"pinpoint");
         /*
         Set the odometry pod positions relative to the point that the odometry computer tracks around.
         The X pod offset refers to how far sideways from the tracking point the
