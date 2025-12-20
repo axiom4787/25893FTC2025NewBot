@@ -82,6 +82,14 @@ public class   TeleOpMode extends HwInit {
             intake.setPower(0);
         }
 
+        if (intake_clear)
+        {
+            intake.setPower(0.50);
+        }else
+        {
+            intake.setPower(0.0);
+        }
+
         if (shooter_mid_on > 0.23)
         {
             shooter_on_mid();
