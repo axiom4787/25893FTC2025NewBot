@@ -10,8 +10,8 @@ public class TeleopServoTest extends LinearOpMode {
     private Servo indexer;
 
     // GoBilda 2000-series Angular Servo range
-    private static final double SERVO_MAX_DEGREES = 300.0;
-    private static final double SERVO_OFFSET = 0;
+    private static final double SERVO_MAX_DEGREES = 1800.0;
+    private static final double SERVO_OFFSET = 238;
 
     // Micro-step size (in degrees)
     private static final double MICRO_STEP = 1.0;
@@ -35,7 +35,7 @@ public class TeleopServoTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        indexer = hardwareMap.get(Servo.class, "lifter");
+        indexer = hardwareMap.get(Servo.class, "indexer");
 
         telemetry.addLine("Indexer Angle Tester with Micro-Adjustment");
         telemetry.addLine("LB = Toggle Micro Mode");
@@ -62,12 +62,12 @@ public class TeleopServoTest extends LinearOpMode {
                 // ---------------------------
                 //
 
-                if (gamepad1.a) currentAngleDeg = 0 + SERVO_OFFSET;
-                if (gamepad1.b) currentAngleDeg = 119 + SERVO_OFFSET;
-                if (gamepad1.x) currentAngleDeg = 267 + SERVO_OFFSET;
-                if (gamepad1.y) currentAngleDeg = 198 + SERVO_OFFSET;
-                if (gamepad1.dpad_up) currentAngleDeg = 327 + SERVO_OFFSET;
-                if (gamepad1.dpad_down) currentAngleDeg = 460 + SERVO_OFFSET;
+                if (gamepad1.a) currentAngleDeg = 0 + SERVO_OFFSET; // Intake 0 | 0
+                if (gamepad1.b) currentAngleDeg = 194 + SERVO_OFFSET; // Shoot 0 | 180
+                if (gamepad1.x) currentAngleDeg = 138 + SERVO_OFFSET; // Intake 1 | 120
+                if (gamepad1.y) currentAngleDeg = 334 + SERVO_OFFSET; // Shoot 1 | 300
+                if (gamepad1.dpad_up) currentAngleDeg = 271 + SERVO_OFFSET; // Intake 2 | 240
+                if (gamepad1.dpad_down) currentAngleDeg = 466 + SERVO_OFFSET; // Shoot 2 | 460
 
             } else {
                 //

@@ -16,9 +16,9 @@ public class MechController {
 
 
     // Hardware constants
-    private static final double SERVO_OFFSET = 51;
-    public static final double[] INTAKE = {0 + SERVO_OFFSET, 119 + SERVO_OFFSET, 267 + SERVO_OFFSET}; // Indexer 0, 1, 2 @ Intake Post degrees
-    public static final double[] SHOOT = {198 + SERVO_OFFSET, 327 + SERVO_OFFSET, 460 + SERVO_OFFSET}; // Indexer 0, 1, 2 @ Shooting Post degrees 180, 270, 60
+    private static final double SERVO_OFFSET = 238;
+    public static final double[] INTAKE = {0 + SERVO_OFFSET, 138 + SERVO_OFFSET, 271 + SERVO_OFFSET}; // Indexer 0, 1, 2 @ Intake Post degrees
+    public static final double[] SHOOT = {194 + SERVO_OFFSET, 334 + SERVO_OFFSET, 466 + SERVO_OFFSET}; // Indexer 0, 1, 2 @ Shooting Post degrees 180, 270, 60
     private static final double MAX_LIFTER_ROTATION = 300.0; // Degrees
     private static final double MAX_INDEXER_ROTATION = 1800.0; // Degrees
     private static final double INTAKE_TICKS_PER_FULL_ROTATION = 537.7; //Encoder Resolution PPR for RPM 312
@@ -32,6 +32,7 @@ public class MechController {
     public static final double FULL_DRIVE_POWER = 0.5; // Normal Drive speed
     public static final double INTAKE_DRIVE_POWER = 0.25; // Drive speed during Intake
     public static final double shootingMotSP = 6000; // Shooting motor speed max: 6000
+    private static final double INDEXER_SPEED_INTAKE = 0.015;
 
 
     // Limit constants
@@ -79,7 +80,7 @@ public class MechController {
             case START:
                 currentState = MechState.START;
                 setLifter(0);
-                setIndexer(0);
+                setIndexer(INTAKE[0]);
                 setState(MechState.APRIL_TAG);
                 break;
 
@@ -500,6 +501,21 @@ public class MechController {
             pos = Math.max(0, Math.min(1, pos));
             robot.indexer.setPosition(pos);
             lastIndexer = targetDegrees;
+        }
+    }
+
+    public void setIndexerIntake(double targetDegrees) {
+        double targetPos = targetDegrees / MAX_INDEXER_ROTATION;
+        targetPos = Math.max(0, Math.min(1, targetPos));
+
+        if (Math.abs(targetPos - lastIndexer) > 0.001) { // only move if not already there
+            // Move incrementally toward target
+            if (lastIndexer < targetPos) {
+                lastIndexer = Math.min(lastIndexer + INDEXER_SPEED_INTAKE, targetPos);
+            } else {
+                lastIndexer = Math.max(lastIndexer - INDEXER_SPEED_INTAKE, targetPos);
+            }
+            robot.indexer.setPosition(lastIndexer);
         }
     }
 
