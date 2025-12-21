@@ -195,8 +195,25 @@ public class MechController {
                             setState(MechState.IDLE);
                             break;
                         }
+                        //Slow indexer start
+                        if (artifactCount < 1) {
+                            setIndexer(INTAKE[intakeTargetIndex]);
+                        } else {
+                            double current = statusIndexer();          // Current indexer position in degrees
+                            double target = INTAKE[intakeTargetIndex]; // Target position in degrees
+                            double step = 1.0;                         // Degrees per update (smaller = slower)
 
-                        setIndexer(INTAKE[intakeTargetIndex]);
+                            // Move slowly toward target
+                            if (Math.abs(target - current) <= step) {
+                                setIndexer(target); // Close enough -> snap to target
+                            } else if (current < target) {
+                                setIndexer(current + step); // Move up slowly
+                            } else {
+                                setIndexer(current - step); // Move down slowly
+                            }
+                        }
+                        //Slow indexer stop
+                        //setIndexer(INTAKE[intakeTargetIndex]); // Original code
                         intakeStageStart = System.currentTimeMillis();
                         intakeStage = 1;
                         break;
@@ -501,21 +518,6 @@ public class MechController {
             pos = Math.max(0, Math.min(1, pos));
             robot.indexer.setPosition(pos);
             lastIndexer = targetDegrees;
-        }
-    }
-
-    public void setIndexerIntake(double targetDegrees) {
-        double targetPos = targetDegrees / MAX_INDEXER_ROTATION;
-        targetPos = Math.max(0, Math.min(1, targetPos));
-
-        if (Math.abs(targetPos - lastIndexer) > 0.001) { // only move if not already there
-            // Move incrementally toward target
-            if (lastIndexer < targetPos) {
-                lastIndexer = Math.min(lastIndexer + INDEXER_SPEED_INTAKE, targetPos);
-            } else {
-                lastIndexer = Math.max(lastIndexer - INDEXER_SPEED_INTAKE, targetPos);
-            }
-            robot.indexer.setPosition(lastIndexer);
         }
     }
 
