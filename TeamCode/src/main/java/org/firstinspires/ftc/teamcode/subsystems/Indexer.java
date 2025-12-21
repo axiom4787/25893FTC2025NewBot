@@ -1,12 +1,10 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.AnalogInput;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 @Config
 public class Indexer {
@@ -25,14 +23,19 @@ public class Indexer {
         }
 
         public IndexerState next() {
-            return values()[(this.index + 1) % 3];
+            return values()[(index + 1) % values().length];
         }
     }
 
+    //dashboard controlling nd such
+    public static boolean dashAdvance = false;
+
+    public static int dashTargetSlot = -1; // -1 = disabled and 0/1/2 = slot
+
     // config
+
     public static double offsetAngle = 17;
     public static double outtakeOffsetAngle = 5;
-    public static double targetAngle = 0;
 
     // scan timing
     private static final double msPerDegree = 0.6;
@@ -40,74 +43,86 @@ public class Indexer {
     private static final double maxWait = 300;
 
     // objects
+
     private final ColorSensorSystem colorSensor;
-    private final CRServoPositionControl indexerServoControl;
-    private final AnalogInput indexerAnalog;
-    private final Actuator actuator;
+    private final CRServoPositionControl servoControl;
 
     // internal state
+
     private IndexerState state = IndexerState.zero;
     private boolean intaking = true;
 
-    private ArtifactColor[] artifacts = {
+    private final ArtifactColor[] artifacts = {
             ArtifactColor.unknown,
             ArtifactColor.unknown,
             ArtifactColor.unknown
     };
 
+    // scan scheduling
     private final ElapsedTime scanTimer = new ElapsedTime();
     private boolean scanPending = false;
-    private double scanDelay;
+    private double scanDelayMs;
+
+    // dashboard edge detection
+    private boolean lastDashAdvance = false;
+    private int lastDashTargetSlot = -1;
 
     public Indexer(HardwareMap hardwareMap) {
         CRServo servo = hardwareMap.get(CRServo.class, "index");
-        indexerAnalog = hardwareMap.get(AnalogInput.class, "indexAnalog");
+        AnalogInput analog = hardwareMap.get(AnalogInput.class, "indexAnalog");
 
-        actuator = new Actuator(hardwareMap);
-        indexerServoControl = new CRServoPositionControl(servo, indexerAnalog);
+        servoControl = new CRServoPositionControl(servo, analog);
         colorSensor = new ColorSensorSystem(hardwareMap);
     }
 
     // getters
-    public IndexerState getState() { return state; }
-    public boolean getIntaking() { return intaking; }
 
-    // Only use isBusy() when color sensing fully works
-    public boolean isBusy() { return scanPending; }
-    public double getActualMeasuredVoltage() { return indexerAnalog.getVoltage(); }
-
-    public String getIntakingOrOuttaking() {
-        return intaking ? "Intaking" : "Outtaking";
+    public IndexerState getState() {
+        return state;
     }
 
+    public boolean isIntaking() {
+        return intaking;
+    }
+
+    public boolean isBusy() {
+        return scanPending;
+    }
+
+    public double getVoltage()
+    {
+        return servoControl.getVoltage();
+    }
+
+    public double getTargetVoltage()
+    {
+        return servoControl.getTargetVoltage();
+    }
+
+    public ArtifactColor getColorAt(IndexerState s) {
+        return artifacts[s.index];
+    }
+
+    //api
     public void setIntaking(boolean isIntaking) {
         if (this.intaking != isIntaking) {
             this.intaking = isIntaking;
             moveTo(state);
         }
     }
-    // artifact color helpers
-    public ArtifactColor stateToColor(IndexerState s) {
-        return artifacts[s.index];
-    }
 
-    public void scanArtifact() {
-        artifacts[state.index] = colorSensor.getColor();
+    public void moveToColor(ArtifactColor color) {
+        for (IndexerState s : IndexerState.values()) {
+            if (artifacts[s.index] == color) {
+                moveTo(s);
+                return;
+            }
+        }
     }
 
     // movement
-    public void moveToColor(ArtifactColor color) {
-        if (artifacts[0] == color) moveTo(IndexerState.zero);
-        else if (artifacts[1] == color) moveTo(IndexerState.one);
-        else if (artifacts[2] == color) moveTo(IndexerState.two);
-    }
-
     public void moveTo(IndexerState newState) {
-
-        if (newState == state && !scanPending) {
-            return;
-        }
-
+        if (newState == state && !scanPending) return;
         // Slot = 0, 1, 2
         //120 per position
         double wrappedTargetAngle = newState.index * 120.0;
@@ -119,51 +134,59 @@ public class Indexer {
         wrappedTargetAngle += offsetAngle;
 
         // Normalize to 0, 360
-        wrappedTargetAngle %= 360.0;
-        if (wrappedTargetAngle < 0) wrappedTargetAngle += 360.0;
+        wrappedTargetAngle = mod(wrappedTargetAngle, 360.0);
 
         //they see me rolling
-        double currentWrapped =
-                indexerServoControl.getCurrentContinuousAngle() % 360.0;
-        if (currentWrapped < 0) currentWrapped += 360.0;
+        double currentWrapped = mod(
+                servoControl.getCurrentAngle(),
+                360.0
+        );
 
-        double delta = wrappedTargetAngle - currentWrapped;
-        if (delta < 0) delta += 360.0; // CW distance
+        double deltaCW = wrappedTargetAngle - currentWrapped;
+        if (deltaCW < 0) deltaCW += 360.0;
 
-        double wait = Math.min(
-                maxWait,
-                Math.max(minWait, delta * msPerDegree)
+        scanDelayMs = clamp(
+                deltaCW * msPerDegree,
+                minWait,
+                maxWait
         );
 
         scanTimer.reset();
-        scanDelay = wait;
         scanPending = true;
 
-        // ---------------- Command motion ----------------
-        indexerServoControl.moveToAngle(wrappedTargetAngle);
-
+        servoControl.moveToAngle(wrappedTargetAngle);
         state = newState;
     }
 
-
-
-
-
-    public void reset(Telemetry telem)
-    {
-        indexerServoControl.reset(telem);
-    }
-
     public void update() {
-        if (scanPending && scanTimer.milliseconds() >= scanDelay) {
-            scanArtifact();
+        if (dashAdvance && !lastDashAdvance) {
+            moveTo(state.next());
+        }
+        lastDashAdvance = dashAdvance;
+
+        if (dashTargetSlot != lastDashTargetSlot) {
+            if (dashTargetSlot >= 0 && dashTargetSlot <= 2) {
+                moveTo(IndexerState.values()[dashTargetSlot]);
+            }
+            lastDashTargetSlot = dashTargetSlot;
+        }
+
+        if (scanPending && scanTimer.milliseconds() >= scanDelayMs) {
+            artifacts[state.index] = colorSensor.getColor();
             scanPending = false;
         }
-        indexerServoControl.update();
 
+        servoControl.update();
     }
 
-    public IndexerState nextState() {
-        return state.next();
+    //util
+
+    private double clamp(double v, double min, double max) {
+        return Math.max(min, Math.min(max, v));
+    }
+
+    private double mod(double v, double m) {
+        double r = v % m;
+        return r < 0 ? r + m : r;
     }
 }
