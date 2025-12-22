@@ -41,9 +41,11 @@ public class SigmaTeleop extends LinearOpMode {
         outtake = new Outtake(hardwareMap, Outtake.Mode.RPM);
         movement = new Movement(hardwareMap);
 
+        /*
         aprilTag = new AprilTag(hardwareMap);
         aprilAimer = new AprilTagAimer(hardwareMap);
 
+         */
         GamepadEx gp1 = new GamepadEx(gamepad1);
         GamepadEx gp2 = new GamepadEx(gamepad2);
 
@@ -70,6 +72,7 @@ public class SigmaTeleop extends LinearOpMode {
         //apriltag turn correction
         double turnCorrection = 0;
 
+        /*
         if (continuousAprilTagLock) {
             long now = System.currentTimeMillis();
 
@@ -88,6 +91,8 @@ public class SigmaTeleop extends LinearOpMode {
 
             turnCorrection = 0.9 * lastTurnCorrection;  // smooth decay
         }
+
+         */
 
         //drivetrain control
         if (fieldCentric) {
@@ -131,8 +136,7 @@ public class SigmaTeleop extends LinearOpMode {
         // spindexer control
         // Advance state
         if (g2.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
-            indexer.moveTo(indexer.nextState());
-            telemetry.addLine("Indexer moving");
+            indexer.moveTo(indexer.getState().next());
         }
 
         //actuator control
@@ -144,23 +148,26 @@ public class SigmaTeleop extends LinearOpMode {
         }
 
         // Scan obelisk
+        /*
         if (g2.wasJustPressed(GamepadKeys.Button.DPAD_LEFT)) {
             aprilTag.scanObeliskTag();
             telemetry.addData("Obelisk ID", aprilTag.getObeliskId());
         }
 
+         */
+
         // Set intaking ON
         if (g2.wasJustPressed(GamepadKeys.Button.A) && !actuator.isActivated()) {
-            if (!indexer.isBusy()) indexer.setIntaking(true);
+            indexer.setIntaking(true);
         }
 
         // Set intaking OFF
         if (g2.wasJustPressed(GamepadKeys.Button.B)) {
-            if (!indexer.isBusy()) indexer.setIntaking(false);
+            indexer.setIntaking(false);
         }
-
         indexer.update();
 
+        /*
         // Begin continuous lock
         if (g2.wasJustPressed(GamepadKeys.Button.X)) {
             continuousAprilTagLock = true;
@@ -172,11 +179,16 @@ public class SigmaTeleop extends LinearOpMode {
             continuousAprilTagLock = false;
         }
 
+         */
+
+        /*
         // Alliance selection
         if (g2.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER))
             aprilTag.setGoalTagID(20); // blue
         if (g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER))
             aprilTag.setGoalTagID(24); // red
+
+         */
 
 
 
@@ -185,9 +197,8 @@ public class SigmaTeleop extends LinearOpMode {
         telemetry.addData("April Lock", continuousAprilTagLock);
         telemetry.addData("Turn Correction", turnCorrection);
         telemetry.addData("Indexer State", indexer.getState());
-        telemetry.addData("Next State", indexer.nextState());
-        telemetry.addData("Indexer Voltage", indexer.getVoltageAnalog());
-        telemetry.addData("target voltage", indexer.getTargetVoltage());
+        telemetry.addData("Voltage", indexer.getVoltage());
+        telemetry.addData("Target Voltage", indexer.getTargetVoltage());
         telemetry.addData("Outtake Power", outtake.getPower());
         telemetry.addData("measured RPM",outtake.getRPM());
         telemetry.addData("target RPM",outtake.getTargetRPM());
