@@ -1,32 +1,80 @@
 package org.firstinspires.ftc.teamcode.testing;
 
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp(name = "Color Finder", group = "Teleop")
-public class ColorTester extends LinearOpMode {
-    ColorSensor colorSensor;
+import org.firstinspires.ftc.teamcode.subsystems.Indexer;
+import org.firstinspires.ftc.teamcode.subsystems.Indexer.IndexerState;
+
+@Config
+@TeleOp(name = "Color Finder", group = "Testing")
+public class ColorTester extends OpMode {
+
+    private Indexer indexer;
 
     @Override
-    public void runOpMode(){
-        colorSensor = hardwareMap.get(ColorSensor.class, "color");
-        waitForStart();
-        while(opModeIsActive()){
-            telemetry.addData("Light Detected:",((OpticalDistanceSensor) colorSensor).getLightDetected());
-            telemetry.addData("Red", colorSensor.red());
-            telemetry.addData("Green", colorSensor.green());
-            telemetry.addData("Blue", colorSensor.blue());
-            //checks if purple
-            if(colorSensor.red() > 100 && colorSensor.blue() > 100 && colorSensor.green() < 80){
-                telemetry.addData("Color Detected:", "Purple");
-            }
-            //checks if green
-            else if(colorSensor.green() > 100 && colorSensor.red() < 80 && colorSensor.blue() < 80) {
-                telemetry.addData("Color Detected:", "Green");
-            }
-            telemetry.update();
+    public void init() {
+        telemetry = new MultipleTelemetry(
+                telemetry,
+                FtcDashboard.getInstance().getTelemetry()
+        );
+
+        indexer = new Indexer(hardwareMap);
+        indexer.setTelemetry(telemetry);   // <-- THIS
+
+        telemetry.addLine("Indexer Debug Initialized");
+        telemetry.addLine("Rotate indexer by hand");
+        telemetry.update();
+    }
+
+    @Override
+    public void loop() {
+
+        // Run logic
+        indexer.update();
+
+        double angle = indexer.getMeasuredAngle();
+        IndexerState closest = indexer.debugClosestSlot();
+        double closestErr = indexer.debugClosestSlotErrorDeg();
+        double secondErr = indexer.debugSecondClosestSlotErrorDeg();
+
+        telemetry.addLine("===== INDEXER STATE =====");
+        telemetry.addData("Measured Angle (deg)", "%.2f", angle);
+        telemetry.addData("Intaking Mode", indexer.isIntaking());
+        telemetry.addLine();
+        telemetry.addLine("===== SLOT ALIGNMENT =====");
+        telemetry.addData("Closest Slot", closest);
+        telemetry.addData("Closest Error (deg)", "%.2f", closestErr);
+        telemetry.addData("2nd Closest Error (deg)", "%.2f", secondErr);
+        telemetry.addData("Assignment Reason", indexer.debugAssignmentReason());
+
+        telemetry.addLine();
+        telemetry.addLine("===== SLOT CONTENTS =====");
+        for (IndexerState s : IndexerState.values()) {
+            telemetry.addData(
+                    "Slot " + s.index,
+                    "%s  (err=%.1f°)",
+                    indexer.getColorAt(s),
+                    indexer.debugSlotErrorDeg(s)
+            );
         }
+
+        telemetry.addLine();
+        telemetry.addLine("===== SERVO DEBUG =====");
+        telemetry.addData("Voltage", "%.3f", indexer.getVoltage());
+        telemetry.addData("Target Voltage", "%.3f", indexer.getTargetVoltage());
+
+        telemetry.addLine();
+        telemetry.addLine("===== INSTRUCTIONS =====");
+        telemetry.addLine("• Rotate indexer slowly by hand");
+        telemetry.addLine("• Insert balls while slot is over sensor");
+        telemetry.addLine("• Leave slot → observe classification");
+        telemetry.addLine("• Try intake vs outtake modes");
+
+        telemetry.update();
     }
 }
