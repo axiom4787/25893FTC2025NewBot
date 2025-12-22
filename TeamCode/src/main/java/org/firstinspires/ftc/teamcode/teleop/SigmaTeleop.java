@@ -204,7 +204,4 @@ public class SigmaTeleop extends LinearOpMode {
         telemetry.addData("target RPM",outtake.getTargetRPM());
         telemetry.update();
     }
-
-
 }
-
