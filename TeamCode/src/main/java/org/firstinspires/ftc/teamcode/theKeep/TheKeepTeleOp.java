@@ -49,14 +49,14 @@ public class TheKeepTeleOp extends OpMode {
 
         // Updates the follower - Jason
         pathing.follower.update();
-
+        motors.update();
         // This tells the follower to activate manual drive mode if it is not following a path -Jason
         if (!pathing.automatedDrive) {
             pathing.follower.setTeleOpDrive(
                     -gamepad1.left_stick_y,
                     -gamepad1.left_stick_x,
                     -gamepad1.right_stick_x,
-                    TheKeepAuto.robotCentric // Robot Centric
+                    true // Robot Centric
             );
         }
         // Turns the bots heading to face the alliance goal - Jason
@@ -91,8 +91,10 @@ public class TheKeepTeleOp extends OpMode {
 
         // These lines set the shooter's power to 80% if the circle button is pressed and 0% if its not
         if (gamepad1.left_trigger > 0) {
-            motors.setFlywheelVelocity(4200);
-            motors.intake.setPower(0);
+            if (vision.blueBase != null) {
+                motors.setFlywheelVelocity(5*Math.sqrt(398210.4444*vision.blueBase.ftcPose.range*0.0254)-450*Math.sqrt(vision.blueBase.ftcPose.range*0.0254)+450);
+                motors.intake.setPower(0);
+            }
         } else motors.setFlywheelVelocity(0);
 
         /* These lines check to see if the fidget tech is in the way of the ball ejector if it's not, when
@@ -135,6 +137,7 @@ public class TheKeepTeleOp extends OpMode {
         }
 
         // These lines add the fidget tech's position and the bot's position to the telemetry - Jason
+        telemetry.addData("Flywheel Speed", motors.flywheel.getVelocity());
         telemetry.addData("Fidget Tech Position", motors.spinPositions[motors.spinPosition]);
         telemetry.addData("Bot Position", pathing.follower.getPose());
         telemetry.update();

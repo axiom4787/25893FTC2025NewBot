@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.hardware;
 
+import com.bylazar.configurables.annotations.Configurable;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -9,22 +12,24 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-
-public class Motors {
+@Configurable
+@TeleOp(name = "Do Not Use", group = "Motors")
+public class Motors extends OpMode {
 
     ElapsedTime time = new ElapsedTime();
 
     public DcMotor intake = null;
-    private DcMotorEx flywheel = null;
+    public DcMotorEx flywheel = null;
     public DcMotor shooter = null;
     public Servo ballEjector = null;
     public Servo fidgetTech = null;
     PIDFController velocityController;
     //PID controller constants
-    private final double kP = 0.5;  // P = proportional
-    private final double kI = 0.05; // I = integral
-    private final double kD = 0;    // D = derivative
-    private final double kF = 0;    // F = feedForward
+    public static double kP = 0.0003;
+    public static double kI = 0.0;
+    public static double kD = 0.0;
+    public static double kF = 0.00025;
+
 
 
     public int spinPosition;
@@ -82,6 +87,16 @@ public class Motors {
             shootAll += 1;
         }
 
+
+    }
+
+    @Override
+    public void init() {
+
+    }
+
+    @Override
+    public void loop() {
 
     }
 }
