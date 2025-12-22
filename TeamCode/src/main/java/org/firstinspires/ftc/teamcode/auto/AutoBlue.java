@@ -104,8 +104,10 @@ public class AutoBlue extends OpMode {
                 setPathState(1);
                 break;
             case 1:
-                follower.followPath(scorePreload);
-                setPathState(2);
+                if(!follower.isBusy()) {
+                    follower.followPath(scorePreload, true);
+                    setPathState(2);
+                }
                 break;
             case 2:
                 if(!follower.isBusy()) {

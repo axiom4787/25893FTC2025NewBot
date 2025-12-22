@@ -39,6 +39,7 @@ public class MechController {
     // “Close enough” in degrees
     private static final double INDEXER_EPS_DEG = 2.0;
     private double intakeIndexerTargetDeg = -1;   // sentinel: not set yet
+    private boolean lastIntake = false;
 
     // Limit constants
     private static final int lifterDown = 13; // Lifter down angle degrees
@@ -197,41 +198,42 @@ public class MechController {
                     case 0:
                         intakeTargetIndex = getEmptyIndex();
                         if (intakeTargetIndex == -1) { // Stop intake stage
-                            setState(MechState.IDLE);
-                            break;
+                            if (!lastIntake) {
+                                setState(MechState.IDLE);
+                                break;
+
+                            } else { //Slow indexer start
+                                if (intakeIndexerTargetDeg < 0) {
+                                    intakeIndexerTargetDeg = (INTAKE[2] + 60);
+                                    indexerLastUpdateMs = 0;
+                                }
+                                if (setIndexerIntake(intakeIndexerTargetDeg)) {
+                                    intakeStage = 1;
+                                    intakeIndexerTargetDeg = -1;
+                                    intakeStageStart = System.currentTimeMillis();
+                                    lastIntake = false;
+                                    setState(MechState.IDLE);
+                                }
+                                break;
+                            }
                         }
-                        //Slow indexer start
+
                         if (artifactCount < 1) {
                             setIndexer(INTAKE[intakeTargetIndex]);
                         } else {
-                            // 1) Pick the target ONCE (when we first enter case 0)
                             if (intakeIndexerTargetDeg < 0) {
-                                intakeIndexerTargetDeg = INTAKE[intakeTargetIndex]; // whatever slot you want
+                                intakeIndexerTargetDeg = INTAKE[intakeTargetIndex];
+                                indexerLastUpdateMs = 0;
                             }
-                            // 2) Step toward it EVERY loop
-                            setIndexerIntake(intakeIndexerTargetDeg);
-                            // 3) Only advance when done
-                            if (Math.abs(lastIndexer - intakeIndexerTargetDeg) <= INDEXER_EPS_DEG) {
-                                intakeStage++;                 // move to next stage
-                                intakeIndexerTargetDeg = -1;   // reset for next time you use case 0
-                                indexerLastUpdateMs = 0;       // optional: clean timing for next move
+                            if (setIndexerIntake(intakeIndexerTargetDeg)) {
+                                intakeStage = 1;
+                                intakeIndexerTargetDeg = -1;
+                                intakeStageStart = System.currentTimeMillis();
+                                if (statusIndexer() >= INTAKE[2]) {
+                                    lastIntake = true;
+                                }
                             }
                             break;
-//                            double current = statusIndexer();          // Current indexer position in degrees
-//                            double target = INTAKE[intakeTargetIndex]; // Target position in degrees
-//                            double step = 1.0;                         // Degrees per update (smaller = slower)
-//
-//                            // Move slowly toward target
-//                            while (current != target) {
-//                                if (Math.abs(target - current) <= step) {
-//                                    setIndexer(target); // Close enough -> snap to target
-//                                } else if (current < target) {
-//                                    setIndexer(current + step); // Move up slowly
-//                                } else {
-//                                    setIndexer(current - step); // Move down slowly
-//                                }
-//                            }
-                            //setIndexerIntake(INTAKE[intakeTargetIndex]);
                         }
                         //Slow indexer stop
                         //setIndexer(INTAKE[intakeTargetIndex]); // Original code
@@ -465,6 +467,9 @@ public class MechController {
                 targetPos = robot.intakeMot.getCurrentPosition();
                 intakeStage = 0;
                 intakeTargetIndex = -1;
+                intakeIndexerTargetDeg = -1;
+                indexerLastUpdateMs = 0;
+                lastIntake = false;
                 break;
 
             case SHOOT_STATE:
@@ -542,32 +547,27 @@ public class MechController {
         }
     }
 
-    public void setIndexerIntake(double targetDegrees) {
-        // Clamp target degrees
+    public boolean setIndexerIntake(double targetDegrees) {
         targetDegrees = Math.max(0, Math.min(MAX_INDEXER_ROTATION, targetDegrees));
         long now = System.currentTimeMillis();
-        // If first call, pretend dt is one loop tick so we move immediately
         double dt;
         if (indexerLastUpdateMs == 0) {
             dt = 0.02; // 20ms
         } else {
             dt = (now - indexerLastUpdateMs) / 1000.0;
-            // Clamp dt so a lag spike doesn’t cause a huge jump
-            dt = Math.max(0.0, Math.min(0.05, dt)); // 0–50ms
+            dt = Math.max(0.0, Math.min(0.05, dt));
         }
         indexerLastUpdateMs = now;
-        double currentDeg = lastIndexer; // degrees (because setIndexer stores degrees)
+        double currentDeg = statusIndexer();
         double error = targetDegrees - currentDeg;
-        // Close enough → snap
         if (Math.abs(error) <= INDEXER_EPS_DEG) {
             setIndexer(targetDegrees);
-            return;
+            return true;
         }
-        // Step toward target at a limited rate
         double maxStep = INDEXER_DEG_PER_SEC_INTAKE * dt;
         double step = Math.max(-maxStep, Math.min(maxStep, error));
-        double nextDeg = currentDeg + step;
-        setIndexer(nextDeg);
+        setIndexer(currentDeg + step);
+        return false;
     }
 
     public void runIntakeMot(double power) {
