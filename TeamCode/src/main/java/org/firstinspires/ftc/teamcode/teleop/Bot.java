@@ -56,7 +56,7 @@ public class Bot {
 
     public void teleopInit()
     {
-        indexer.startIntake();
+        indexer.setIntaking(true);
         state = FSM.Intake;
     }
 
@@ -85,8 +85,8 @@ public class Bot {
 
         // Telem (most sigma ever)
         telemetry.addData("Field Centric:", fieldCentric);
-        telemetry.addData("Indexer States:", "Current State: %s , Next State: %s",indexer.getState(), indexer.nextState());
-        telemetry.addData("Indexer Voltages:", "Target: %.3f , Actual: %.3f" , indexer.getTargetVoltage(), indexer.getVoltageAnalog());
+        telemetry.addData("Indexer States:", "Current State: %s , Next State: %s",indexer.getState(), indexer.getState().next());
+        telemetry.addData("Indexer Voltages:", "Target: %.3f , Actual: %.3f" , indexer.getTargetVoltage(), indexer.getVoltage());
         telemetry.addData("Outtake RPM:", "Target: %.1f, Actual: %.1f", outtake.getTargetRPM(),outtake.getRPM());
         telemetry.addData("Actuator up?: ", actuator.isActivated());
         telemetry.update();
@@ -152,9 +152,9 @@ public class Bot {
                 new SleepAction(1),
                 new InstantAction(() -> actuator.up()), //ball 1 already on indexer gets shot immediately
                 new SleepAction(actuator.getWaitTime()),
-                new InstantAction(()->indexer.moveTo(indexer.nextState())), // feed ball 2
+                new InstantAction(()->indexer.moveTo(indexer.getState().next())), // feed ball 2
                 new SleepAction(ballRespinWait),
-                new InstantAction(() -> indexer.moveTo(indexer.nextState())), //feed ball 3
+                new InstantAction(() -> indexer.moveTo(indexer.getState().next())), //feed ball 3
                 new SleepAction(ballRespinWait)
                 );
     }
