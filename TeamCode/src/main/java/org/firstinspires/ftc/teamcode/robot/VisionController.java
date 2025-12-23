@@ -2,20 +2,26 @@ package org.firstinspires.ftc.teamcode.robot;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import android.graphics.Color;
+
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+
+import java.util.List;
+import java.util.Locale;
 
 public class VisionController {
     private final RobotHardware robot;
     private final Telemetry telemetry;
     private AprilTagProcessor aprilTag;
     private VisionPortal visionPortal;
-    private final double MIN_INTAKE_COLOR_DETECTION_DISTANCE = 10.0; // Minimum distance for detecting color in MM
+    private final double MIN_INTAKE_COLOR_DETECTION_DISTANCE = 12.0; // Minimum distance for detecting color in MM
 
     // Constructor
     public VisionController(RobotHardware RoboRoar) {
@@ -58,6 +64,52 @@ public class VisionController {
             }
         }
         return new int[]{0, 0, 0, 0};
+    }
+
+    public Pose getRobotPoseFromCamera() {
+        if (aprilTag == null || aprilTag.getDetections().isEmpty()) return null;
+        else {
+            List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+            for (AprilTagDetection detection : currentDetections) {
+                if (detection.metadata != null) {
+                    if (!detection.metadata.name.contains("Obelisk")) {
+                        double x = ((detection.robotPose.getPosition().y) + 72);
+                        double y = ((-detection.robotPose.getPosition().x) + 72);
+                        double heading = detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES);
+                        return new Pose(x, y, Math.toRadians(heading));
+                    }
+                }
+            }
+            return null;
+        }
+    }
+
+    public void telemetryAprilTag() {
+        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        telemetry.addData("# AprilTags Detected", currentDetections.size());
+
+        for (AprilTagDetection detection : currentDetections) {
+            if (detection.metadata != null) {
+                telemetry.addLine(String.format(Locale.US,"\n==== (ID %d) %s", detection.id, detection.metadata.name));
+                if (!detection.metadata.name.contains("Obelisk")) {
+                    telemetry.addLine(String.format(Locale.US,"Field XYZ %6.1f %6.1f %6.1f  (inch)",
+                            detection.robotPose.getPosition().x,
+                            detection.robotPose.getPosition().y,
+                            detection.robotPose.getPosition().z));
+                    telemetry.addLine(String.format(Locale.US,"Field PRY %6.1f %6.1f %6.1f  (deg)",
+                            detection.robotPose.getOrientation().getPitch(AngleUnit.DEGREES),
+                            detection.robotPose.getOrientation().getRoll(AngleUnit.DEGREES),
+                            detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
+                    telemetry.addLine(String.format(Locale.US,"Pedro XYH %6.1f %6.1f %6.1f  (inch inch deg)",
+                            ((detection.robotPose.getPosition().y)+72),
+                            ((-detection.robotPose.getPosition().x)+72),
+                            detection.robotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
+                }
+            } else {
+                telemetry.addLine(String.format(Locale.US,"\n==== (ID %d) Unknown", detection.id));
+                telemetry.addLine(String.format(Locale.US,"Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
+            }
+        }
     }
 
     public void aprilTagTelemetry() {

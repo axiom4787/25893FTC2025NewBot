@@ -31,19 +31,20 @@ public class MechController {
     private static final long APRIL_TAG_WAIT_MS = 3000; // 3 seconds waiting to detect AprilTag
     public static final double FULL_DRIVE_POWER = 0.75; // Normal Drive speed
     public static final double INTAKE_DRIVE_POWER = 0.25; // Drive speed during Intake
-    public static final double shootingMotSP = 6000; // Shooting motor speed max: 6000
+    public static final double SHOOTING_MOTOR_SPEED_NEAR = 4800; // Shooting motor speed max: 6000
+    public static final double SHOOTING_MOTOR_SPEED_FAR = 6000; // Shooting motor speed max: 6000
 
     private long indexerLastUpdateMs = 0;
     // Tune this: degrees per second while “intaking”
-    private static final double INDEXER_DEG_PER_SEC_INTAKE = 200.0;
+    private static final double INDEXER_DEG_PER_SEC_INTAKE = 120.0;
     // “Close enough” in degrees
-    private static final double INDEXER_EPS_DEG = 2.0;
+    private static final double INDEXER_EPS_DEG = 50.0; //Degrees to rotate slowly
     private double intakeIndexerTargetDeg = -1;   // sentinel: not set yet
     private boolean lastIntake = false;
 
     // Limit constants
     private static final int lifterDown = 13; // Lifter down angle degrees
-    private static final int lifterUp = 100; // Lifter up angle degrees
+    private static final int lifterUp = 110; // Lifter up angle degrees
 
     // Offset constants
 
@@ -70,6 +71,7 @@ public class MechController {
     private int humanIndex = -1;
     private long humanStateStart = 0;
     private int targetPos;
+    private double fastIndexerDeg;
 
 
     // Constructor
@@ -201,10 +203,10 @@ public class MechController {
                             if (!lastIntake) {
                                 setState(MechState.IDLE);
                                 break;
-
                             } else { //Slow indexer start
                                 if (intakeIndexerTargetDeg < 0) {
-                                    intakeIndexerTargetDeg = (INTAKE[2] + 60);
+                                    intakeIndexerTargetDeg = (statusIndexer() + 60);
+                                    fastIndexerDeg = intakeIndexerTargetDeg - INDEXER_EPS_DEG;
                                     indexerLastUpdateMs = 0;
                                 }
                                 if (setIndexerIntake(intakeIndexerTargetDeg)) {
@@ -223,15 +225,13 @@ public class MechController {
                         } else {
                             if (intakeIndexerTargetDeg < 0) {
                                 intakeIndexerTargetDeg = INTAKE[intakeTargetIndex];
+                                fastIndexerDeg = intakeIndexerTargetDeg - INDEXER_EPS_DEG;
                                 indexerLastUpdateMs = 0;
                             }
                             if (setIndexerIntake(intakeIndexerTargetDeg)) {
                                 intakeStage = 1;
                                 intakeIndexerTargetDeg = -1;
                                 intakeStageStart = System.currentTimeMillis();
-                                if (statusIndexer() >= INTAKE[2]) {
-                                    lastIntake = true;
-                                }
                             }
                             break;
                         }
@@ -258,6 +258,9 @@ public class MechController {
                             runIntakeMot(0);
                             indexer[intakeTargetIndex] = color;
                             artifactCount++;
+                            if (artifactCount == 3) { //Checks for last intake
+                                lastIntake = true;
+                            }
                             intakeStageStart = System.currentTimeMillis(); // Resets timer
                             intakeStage = 3;
                             break;
@@ -560,7 +563,7 @@ public class MechController {
         indexerLastUpdateMs = now;
         double currentDeg = statusIndexer();
         double error = targetDegrees - currentDeg;
-        if (Math.abs(error) <= INDEXER_EPS_DEG) {
+        if (Math.abs(error) <= fastIndexerDeg) {
             setIndexer(targetDegrees);
             return true;
         }
@@ -590,7 +593,11 @@ public class MechController {
     }
     public void runShootingMot(double power) {
         if (Math.abs(power) > 0.01) {
-            robot.shootingMot.setPower(shootingMotSP/6000);
+            if (robot.pinpoint.getPosY(DistanceUnit.INCH) < 72.0) {
+                robot.shootingMot.setPower(SHOOTING_MOTOR_SPEED_NEAR /6000);
+            } else {
+                robot.shootingMot.setPower(SHOOTING_MOTOR_SPEED_FAR /6000);
+            }
         } else {
             robot.shootingMot.setPower(0);
         }

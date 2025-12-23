@@ -31,7 +31,7 @@ public class AutoBlue extends OpMode {
 
     private final Pose startPose = Blue.START_POSE;
     private final Pose aprilTagPose = Blue.APRILTAG_POSE;
-    private final Pose scorePose = Blue.SCORE_POSE;
+    private final Pose scorePose = Blue.SCORE_POSE_NEAR;
     private final Pose align1Pose = Blue.ALIGN1_POSE;
     private final Pose pickup1Pose = Blue.PICKUP1_POSE;
     private final Pose align2Pose = Blue.ALIGN2_POSE;
@@ -249,5 +249,9 @@ public class AutoBlue extends OpMode {
     }
 
     @Override
-    public void stop() {}
+    public void stop() {
+        visionPortal.stopStreaming();
+        mechController.setLifter(0);
+        mechController.setIndexer(MechController.INTAKE[0]);
+    }
 }
