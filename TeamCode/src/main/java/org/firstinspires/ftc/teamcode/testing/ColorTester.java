@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.testing;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.arcrobotics.ftclib.gamepad.GamepadEx;
+import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -15,6 +17,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Indexer.IndexerState;
 public class ColorTester extends OpMode {
 
     private Indexer indexer;
+    GamepadEx gp2;
 
     @Override
     public void init() {
@@ -29,10 +32,15 @@ public class ColorTester extends OpMode {
         telemetry.addLine("Indexer Debug Initialized");
         telemetry.addLine("Rotate indexer by hand");
         telemetry.update();
+
+        gp2 = new GamepadEx(gamepad2);
     }
 
     @Override
     public void loop() {
+
+        gp2.readButtons();
+
 
         // Run logic
         indexer.update();
@@ -74,6 +82,15 @@ public class ColorTester extends OpMode {
         telemetry.addLine("• Insert balls while slot is over sensor");
         telemetry.addLine("• Leave slot → observe classification");
         telemetry.addLine("• Try intake vs outtake modes");
+
+        if (gp2.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) {
+            indexer.moveTo(indexer.getState().next());
+        }
+
+        if(gp2.wasJustPressed(GamepadKeys.Button.A))
+            indexer.moveToColor(Indexer.ArtifactColor.PURPLE);
+        if(gp2.wasJustPressed(GamepadKeys.Button.B))
+            indexer.moveToColor(Indexer.ArtifactColor.GREEN);
 
         telemetry.update();
     }
