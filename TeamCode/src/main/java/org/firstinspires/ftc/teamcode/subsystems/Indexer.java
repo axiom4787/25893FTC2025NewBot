@@ -397,7 +397,7 @@ public class Indexer {
     private SlotState slot(IndexerState s) { return slots[s.index]; }
 
     private static class SlotState {
-        ArtifactColor color = ArtifactColor.UNKNOWN;
+        ArtifactColor color = ArtifactColor.EMPTY;
         SlotObservation obs = new SlotObservation();
         boolean wasEmpty = true;
         boolean advanceConsumed = false;
