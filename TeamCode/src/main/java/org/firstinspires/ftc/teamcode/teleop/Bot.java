@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Movement;
 import org.firstinspires.ftc.teamcode.subsystems.Outtake;
 
+@Config
 public class Bot {
     private final Intake intake;
     private final Indexer indexer;
@@ -40,10 +42,11 @@ public class Bot {
 
     public FSM state;
 
-    private static final double TRIGGER_DEADZONE = 0.05;
-    private static final double SHOOTER_RPM = 5000;
-    private static final double NON_INDEX_SPIN_TIME = 0.6;//seconds of full-power indexer blast
-    private static final double SHOOTER_SPINUP = 0.75;
+    public static double TRIGGER_DEADZONE = 0.05;
+    public static double SHOOTER_RPM = 5000;
+    public static double NON_INDEX_SPIN_TIME = 2;//seconds of full-power indexer blast
+    public static double SHOOTER_SPINUP = 0.75;
+    public static double FULL_BLAST_POWER =1.0;
 
     public Bot(HardwareMap hardwareMap, Telemetry tele, Gamepad gamepad1, Gamepad gamepad2) {
         intake = new Intake(hardwareMap);
@@ -103,9 +106,11 @@ public class Bot {
     }
 
     private void handleIntakeState() {
+        indexer.setIntaking(true);
         double leftTrigger = g2.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER);
         if (leftTrigger > TRIGGER_DEADZONE) intake.run();
         else intake.stop();
+        if (g2.wasJustPressed(GamepadKeys.Button.DPAD_RIGHT)) indexer.moveTo(indexer.getState().next());
 
         if (g2.wasJustPressed(GamepadKeys.Button.A)) state = FSM.QuickOuttake;
         if (g2.wasJustPressed(GamepadKeys.Button.B)) state = FSM.SortOuttake;
@@ -114,12 +119,13 @@ public class Bot {
 
     private void handleQuickOuttakeState() {
         if (g2.wasJustPressed(GamepadKeys.Button.X)) {
-            Actions.runBlocking(actionNonIndexedDump());
+            Actions.runBlocking(fireWithPeriodic(actionNonIndexedDump()));
         }
         if (g2.wasJustPressed(GamepadKeys.Button.A)) state = FSM.Intake;
     }
 
     private void handleSortOuttakeState() {
+        indexer.setIntaking(false);
         if (g2.wasJustPressed(GamepadKeys.Button.X)) {
             Actions.runBlocking(fireWithPeriodic(actionFireGreen()));
         }
@@ -148,7 +154,7 @@ public class Bot {
                 new InstantAction(actuator::upQuick),                 // lower up position for quick dump
                 new InstantAction(() -> outtake.set(SHOOTER_RPM)),
                 new SleepAction(SHOOTER_SPINUP),                      // spin up shooter
-                new InstantAction(() -> indexer.setIndexerPower(1.0)),// full blast
+                new InstantAction(() -> indexer.setIndexerPower(FULL_BLAST_POWER)),// full blast
                 new SleepAction(NON_INDEX_SPIN_TIME),
                 new InstantAction(indexer::stopIndexerPower),
                 new InstantAction(outtake::stop),
