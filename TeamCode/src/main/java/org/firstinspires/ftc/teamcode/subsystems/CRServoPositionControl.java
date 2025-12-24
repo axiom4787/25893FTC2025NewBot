@@ -11,19 +11,32 @@ public class CRServoPositionControl {
     public static double maxVoltage = 3.26;
     public static double degreesPerRev = 360.0;
 
-    // gains (will be set via preset)
+    // gains
     public static double kP = 0.002;
     public static double kI = 0.0;
     public static double kD = 0.0;
     public static double kS = 0.07; //voerriden later
 
     public static double maxPower = 1.0;
-    public static double stiffnessGain = 1.0;
+    public static double stiffnessGain = 1.0; //1.0 is normal behavior
     public static double brakeZoneDeg = 20.0;
 
     // deadbands
     public static double deadbandDeg = 1.5;
     public static boolean rotateClockwise = true;
+
+    // Preset gains
+    public static double unloaded_kP = 0.002;
+    public static double unloaded_kI = 0.0;
+    public static double unloaded_kD = 0.0;
+    public static double unloaded_kS = 0.0;
+
+    public static double loaded_kP = 0.002;
+    public static double loaded_kI = 0.00009;
+    public static double loaded_kD = 0.0;
+    public static double loaded_kS = 0.08;
+
+    private boolean loaded = false;
 
     // hardware
     private final CRServo servo;
@@ -52,18 +65,21 @@ public class CRServoPositionControl {
 
     //mroe balls is more gains
     public void setLoaded(boolean hasBalls) {
+        this.loaded = hasBalls;
         if (hasBalls) {
-            kP = 0.002;
-            kI = 0.00009;
-            kD = 0.0;
-            kS = 0.7;
+            kP = loaded_kP;
+            kI = loaded_kI;
+            kD = loaded_kD;
+            kS = loaded_kS;
         } else {
-            kP = 0.002;
-            kI = 0.0;
-            kD = 0.0;
-            kS = 0.7;
+            kP = unloaded_kP;
+            kI = unloaded_kI;
+            kD = unloaded_kD;
+            kS = unloaded_kS;
         }
     }
+
+    public boolean isLoaded() { return loaded; }
 
     public void update() {
         updateContinuousAngle();
@@ -88,23 +104,23 @@ public class CRServoPositionControl {
         lastTimeNs = now;
 
         double output;
+
+        //slowing velocity dampening near target
         if (absErr < brakeZoneDeg) {
-            output = kP * error * stiffnessGain
-                    - kD * velocity
-                    + kI * error; // simple I contribution
+            output = kP * error * stiffnessGain - kD * velocity + kI * error;
         } else {
-            output = kP * error * stiffnessGain
-                    - kD * velocity
-                    + kI * error;
+            output = kP * error * stiffnessGain - kD * velocity + kI * error;
         }
 
-        // static friction compensation toward target
+        // apply static friction compensation ONLY when driving toward target
         if (Math.signum(output) == Math.signum(error)) {
             double sign = Math.signum(output);
             output = sign * Math.max(Math.abs(output), kS);
         }
 
+        // clamp
         output = clamp(output, -maxPower, maxPower);
+
         servo.setPower(output);
     }
 
@@ -117,6 +133,7 @@ public class CRServoPositionControl {
         if (delta > 180)  delta -= 360;
         if (delta < -180) delta += 360;
 
+        // rotation direction
         if (rotateClockwise && delta < 0) delta += 360;
         if (!rotateClockwise && delta > 0) delta -= 360;
 
@@ -135,10 +152,12 @@ public class CRServoPositionControl {
         servo.setPower(0);
     }
 
+    //bencoder
     private void updateContinuousAngle() {
         double wrapped = getWrappedAngle();
         double delta = wrapped - lastWrappedDeg;
 
+        // unwrap
         if (delta > 180)  delta -= 360;
         if (delta < -180) delta += 360;
 
@@ -151,25 +170,20 @@ public class CRServoPositionControl {
         return (v / maxVoltage) * degreesPerRev;
     }
 
-    private double clamp(double v, double min, double max) {
-        return Math.max(min, Math.min(max, v));
-    }
-
+    /* ================= UTIL ================= */
+    private double clamp(double v, double min, double max) { return Math.max(min, Math.min(max, v)); }
     private double mod(double v, double m) {
         double r = v % m;
         return (r < 0) ? r + m : r;
     }
 
+    /* ================= DEBUG ================= */
     public double getCurrentAngle() { return continuousDeg; }
     public double getTargetAngle() { return targetDeg; }
-
     public double getTargetVoltage() {
         double wrappedDeg = targetDeg % degreesPerRev;
         if (wrappedDeg < 0) wrappedDeg += degreesPerRev;
         return (wrappedDeg / degreesPerRev) * maxVoltage;
     }
-
-    public double getVoltage() {
-        return encoder.getVoltage();
-    }
+    public double getVoltage() { return encoder.getVoltage(); }
 }

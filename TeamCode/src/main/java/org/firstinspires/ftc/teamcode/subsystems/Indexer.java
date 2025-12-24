@@ -11,22 +11,12 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 @Config
 public class Indexer {
 
-    public enum ArtifactColor {
-        GREEN,
-        PURPLE,
-        EMPTY,
-        UNKNOWN
-    }
+    public enum ArtifactColor { GREEN, PURPLE, EMPTY, UNKNOWN }
 
     public enum IndexerState {
-        zero(0),
-        one(1),
-        two(2);
-
+        zero(0), one(1), two(2);
         public final int index;
-
         IndexerState(int index) { this.index = index; }
-
         public IndexerState next() { return values()[(index + 1) % values().length]; }
     }
 
@@ -34,31 +24,31 @@ public class Indexer {
     public static boolean dashAdvance = false;
     public static int dashTargetSlot = -1; // -1 = disabled; 0/1/2 = slot
 
-    //Global toggle for autoadvance
+    // Global toggle for auto-advance
     public static boolean ENABLE_AUTO_ADVANCE = false;
 
-    // config
+    // Config
     public static double offsetAngle = 17.0;
     public static double outtakeOffsetAngle = 180.0;
 
-    //slot spacing for color sensing
+    // Slot spacing for color sensing
     private static final double SLOT_SPACING_DEG = 120.0;
     private static final double SLOT_ASSIGN_TOLERANCE = 15.0;
 
-    // scan timing
+    // Scan timing
     private static final double msPerDegree = 0.6;
     private static final double minWait = 100;
     private static final double maxWait = 300;
 
-    // thresholds
-    public static double GREEN_THRESHOLD = 0.1;
-    public static double PURPLE_THRESHOLD = 0.1;
+    // Thresholds
+    public static double GREEN_THRESHOLD = 0.2;
+    public static double PURPLE_THRESHOLD = 0.2;
     public static double EMPTY_THRESHOLD = 0.9;
     public static double UNKNOWN_THRESHOLD = 0.6;
 
-    //Minimum hits before allowing a color change
+    // Minimum hits before allowing a color change
     public static int MIN_HITS_FOR_DECISION = 4;
-    //Cap samples to keep responsiveness
+    // Cap samples to keep responsiveness
     public static int MAX_HITS_TO_KEEP = 20;
 
     public static int NON_EMPTY_HITS_TO_ADVANCE = 5;
@@ -75,13 +65,10 @@ public class Indexer {
     // Internal state
     private IndexerState state = IndexerState.zero;
     private boolean intaking = true;
+    private boolean loaded = false; // reflects current detection of any ball
 
     // Per-slot state
-    private final SlotState[] slots = {
-            new SlotState(),
-            new SlotState(),
-            new SlotState()
-    };
+    private final SlotState[] slots = { new SlotState(), new SlotState(), new SlotState() };
 
     // Scan scheduling
     private final ElapsedTime scanTimer = new ElapsedTime();
@@ -91,25 +78,21 @@ public class Indexer {
     private boolean lastDashAdvance = false;
     private int lastDashTargetSlot = -1;
 
-    // const
     public Indexer(HardwareMap hardwareMap) {
         CRServo servo = hardwareMap.get(CRServo.class, "index");
         AnalogInput analog = hardwareMap.get(AnalogInput.class, "indexAnalog");
-
         servoControl = new CRServoPositionControl(servo, analog);
         colorSensor = new ColorSensorSystem(hardwareMap);
     }
 
     // getters
     public IndexerState getState() { return state; }
-
     public boolean isIntaking() { return intaking; }
-
     public ArtifactColor getColorAt(IndexerState s) { return slot(s).color; }
+    public boolean isLoaded() { return loaded; } // telemetry/debug helper
 
     /** Initialize all slots to the given color (default UNKNOWN) and reset observations/flags. */
     public void initializeColors() { initializeColors(ArtifactColor.UNKNOWN); }
-
     public void initializeColors(ArtifactColor initialColor) {
         for (SlotState slot : slots) {
             slot.color = initialColor;
@@ -140,7 +123,6 @@ public class Indexer {
         if (newState == state) return;
 
         double targetAngle = getSlotCenterAngle(newState);
-
         double currentWrapped = getMeasuredAngle();
         double deltaCW = targetAngle - currentWrapped;
         if (deltaCW < 0) deltaCW += 360.0;
@@ -166,9 +148,8 @@ public class Indexer {
             lastDashTargetSlot = dashTargetSlot;
         }
 
-        servoControl.update();
-
-        boolean hasAnyBall = colorSensor.hasArtifact(); // immediate sensor read
+        // Determine loaded state BEFORE control update
+        boolean hasAnyBall = colorSensor.hasArtifact();
         for (SlotState slot : slots) {
             ArtifactColor col = slot.color;
             if (col == ArtifactColor.GREEN || col == ArtifactColor.PURPLE) {
@@ -176,20 +157,26 @@ public class Indexer {
                 break;
             }
         }
-        servoControl.setLoaded(hasAnyBall);
+        loaded = hasAnyBall;
+        servoControl.setLoaded(loaded);
 
-        updateSlotClassification();
+        servoControl.update();
+        IndexerState currentClosest = debugClosestSlot();
+
+        // finalize hits when a slot rotates away
+        if (lastClosestSlot != null && currentClosest != lastClosestSlot) {
+            finalizeSlot(lastClosestSlot); // clears hits for previous slot
+        }
+        lastClosestSlot = currentClosest;
+
+        updateSlotClassification(currentClosest); // pass current slot for telemetry
     }
 
-    // slot geometry
+    //slot geometry
     private double getSlotCenterAngle(IndexerState s) {
         double angle = s.index * SLOT_SPACING_DEG;
         angle += offsetAngle;
-
-        if (!intaking) {
-            angle += outtakeOffsetAngle; // NOT 180 unless confirmed mechanically
-        }
-
+        if (!intaking) angle += outtakeOffsetAngle; // NOT 180 unless confirmed mechanically
         return mod(angle, 360.0);
     }
 
@@ -198,7 +185,8 @@ public class Indexer {
     }
 
     // classification
-    private void updateSlotClassification() {
+    private IndexerState lastClosestSlot = null;
+    private void updateSlotClassification(IndexerState currentSlot) {
         double current = getMeasuredAngle();
 
         for (IndexerState s : IndexerState.values()) {
@@ -212,7 +200,7 @@ public class Indexer {
                     ? colorSensor.classifyColorOnly()
                     : ArtifactColor.EMPTY;
 
-            // If we just went from empty to non-empty start a fresh count
+            // If we just went from empty -> non-empty, start a fresh count
             if (slot.wasEmpty && hasArtifact) {
                 slot.obs.reset();
             }
@@ -233,7 +221,7 @@ public class Indexer {
 
                 ArtifactColor currentColor = slot.color;
 
-                // Prevent from overwriting a known color
+                // Prevent UNKNOWN/EMPTY from overwriting a known color
                 boolean protectKnown = (candidate == ArtifactColor.UNKNOWN || candidate == ArtifactColor.EMPTY) &&
                         (currentColor == ArtifactColor.GREEN || currentColor == ArtifactColor.PURPLE);
 
@@ -242,7 +230,7 @@ public class Indexer {
                 }
             }
 
-            // Autoadvance is guarded by toggle
+            // Auto-advance (guarded by toggle)
             if (ENABLE_AUTO_ADVANCE && s == state && intaking && isWithinTargetDegrees(ADVANCE_ANGLE_TOLERANCE)) {
                 boolean slotAlreadyFull = (slot.color == ArtifactColor.GREEN || slot.color == ArtifactColor.PURPLE);
                 if (!slotAlreadyFull && slot.wasEmpty && hasArtifact && !slot.advanceConsumed) {
@@ -251,15 +239,16 @@ public class Indexer {
                 }
             }
 
-            // Update empty memory +advance gating
+            // Update empty memory / advance gating
             slot.wasEmpty = !hasArtifact;
             if (slot.wasEmpty) {
                 slot.advanceConsumed = false; // allow next fill to advance
             }
 
             // telemetry for current slot
-            if (telemetry != null && s == debugClosestSlot()) {
+            if (telemetry != null && s == currentSlot) {
                 int totalHits = slot.obs.totalHits();
+                telemetry.addData("Loaded", loaded);
                 telemetry.addData("Slot " + s + " hit %",
                         String.format(
                                 "G: %.0f%%, P: %.0f%%, E: %.0f%%, U: %.0f%%",
@@ -273,14 +262,35 @@ public class Indexer {
         }
     }
 
-    //debug
+    private void finalizeSlot(IndexerState s) {
+        ArtifactColor resolved = observations[s.index].resolveWithThreshold(
+                GREEN_THRESHOLD,
+                PURPLE_THRESHOLD,
+                EMPTY_THRESHOLD,
+                UNKNOWN_THRESHOLD
+        );
 
+        ArtifactColor previous = artifacts[s.index];
+
+        // override porotection
+        if (!((resolved == ArtifactColor.UNKNOWN || resolved == ArtifactColor.EMPTY) &&
+                (previous == ArtifactColor.GREEN || previous == ArtifactColor.PURPLE))) {
+            artifacts[s.index] = resolved;
+        }
+
+        // Update empty memory only if confidently empty
+        slotWasEmpty[s.index] = (artifacts[s.index] == ArtifactColor.EMPTY);
+        if (slotWasEmpty[s.index]) {
+            advanceConsumed[s.index] = false; // allow next fill to advance
+        }
+        observations[s.index].reset();
+    }
+
+    //debug
     public IndexerState debugClosestSlot() {
         double current = getMeasuredAngle();
-
         IndexerState best = null;
         double bestErr = Double.MAX_VALUE;
-
         for (IndexerState s : IndexerState.values()) {
             double err = angleError(current, getSlotCenterAngle(s));
             if (err < bestErr) {
@@ -307,10 +317,7 @@ public class Indexer {
     public String debugAssignmentReason() {
         IndexerState s = debugClosestSlot();
         double err = debugClosestSlotErrorDeg();
-
-        if (err > SLOT_ASSIGN_TOLERANCE) {
-            return "Between slots (err=" + String.format("%.1f", err) + "dergees)";
-        }
+        if (err > SLOT_ASSIGN_TOLERANCE) return "Between slots (err=" + String.format("%.1f", err) + "dergees)";
         return "Aligned with " + s;
     }
 
@@ -318,7 +325,6 @@ public class Indexer {
         double current = getMeasuredAngle();
         double best = Double.MAX_VALUE;
         double second = Double.MAX_VALUE;
-
         for (IndexerState s : IndexerState.values()) {
             double err = angleError(current, getSlotCenterAngle(s));
             if (err < best) {
@@ -332,50 +338,45 @@ public class Indexer {
     }
 
     public double getVoltage() { return servoControl.getVoltage(); }
-
     public double getTargetVoltage() { return servoControl.getTargetVoltage(); }
 
     /* =========================
        UTIL
        ========================= */
 
-    //finds best slot for desired color
+    // old arrays
+    private final ArtifactColor[] artifacts = { ArtifactColor.UNKNOWN, ArtifactColor.UNKNOWN, ArtifactColor.UNKNOWN };
+    private final SlotObservation[] observations = { new SlotObservation(), new SlotObservation(), new SlotObservation() };
+    private final boolean[] slotWasEmpty = { true, true, true };
+    private final boolean[] advanceConsumed = { false, false, false };
+
     private IndexerState findBestSlotForColor(ArtifactColor desired) {
         IndexerState best = null;
         int bestScore = -1;
-
         for (IndexerState s : IndexerState.values()) {
-            ArtifactColor slotColor = slot(s).color;
+            ArtifactColor slotColor = artifacts[s.index];
             int score = scoreSlotForTarget(desired, slotColor);
-
             if (score > bestScore) {
                 bestScore = score;
                 best = s;
             }
         }
-
         if (bestScore <= 0) return null;
         return best;
     }
 
-
-
-    //gives preferences
     private int scoreSlotForTarget(ArtifactColor desired, ArtifactColor slotColor) {
         if (slotColor == desired) return 100;
-
         if (desired == ArtifactColor.GREEN) {
             if (slotColor == ArtifactColor.UNKNOWN) return 80;
             if (slotColor == ArtifactColor.PURPLE) return 60;
             if (slotColor == ArtifactColor.EMPTY) return 0;
         }
-
         if (desired == ArtifactColor.PURPLE) {
             if (slotColor == ArtifactColor.UNKNOWN) return 80;
             if (slotColor == ArtifactColor.GREEN) return 60;
             if (slotColor == ArtifactColor.EMPTY) return 0;
         }
-
         return 0;
     }
 
@@ -385,10 +386,7 @@ public class Indexer {
         return angleError(measured, target) <= toleranceDeg;
     }
 
-    private double clamp(double v, double min, double max) {
-        return Math.max(min, Math.min(max, v));
-    }
-
+    private double clamp(double v, double min, double max) { return Math.max(min, Math.min(max, v)); }
     private double mod(double v, double m) {
         double r = v % m;
         return r < 0 ? r + m : r;
@@ -397,7 +395,7 @@ public class Indexer {
     private SlotState slot(IndexerState s) { return slots[s.index]; }
 
     private static class SlotState {
-        ArtifactColor color = ArtifactColor.EMPTY;
+        ArtifactColor color = ArtifactColor.UNKNOWN;
         SlotObservation obs = new SlotObservation();
         boolean wasEmpty = true;
         boolean advanceConsumed = false;
@@ -409,18 +407,13 @@ public class Indexer {
         int emptyHits = 0;
         int unknownHits = 0;
 
-        void reset() {
-            greenHits = 0;
-            purpleHits = 0;
-            emptyHits = 0;
-            unknownHits = 0;
-        }
+        void reset() { greenHits = purpleHits = emptyHits = unknownHits = 0; }
 
         void record(ArtifactColor c) {
             switch (c) {
-                case GREEN:  greenHits++;  break;
+                case GREEN: greenHits++; break;
                 case PURPLE: purpleHits++; break;
-                case EMPTY:  emptyHits++;  break;
+                case EMPTY: emptyHits++; break;
                 case UNKNOWN: unknownHits++; break;
             }
         }
@@ -440,12 +433,10 @@ public class Indexer {
         ArtifactColor resolveWithThreshold(double greenThresh, double purpleThresh, double emptyThresh, double unknownThresh) {
             int total = totalHits();
             if (total == 0) return ArtifactColor.EMPTY;
-
             if (greenHits  / (double) total >= greenThresh)  return ArtifactColor.GREEN;
             if (purpleHits / (double) total >= purpleThresh) return ArtifactColor.PURPLE;
             if (emptyHits  / (double) total >= emptyThresh)  return ArtifactColor.EMPTY;
             if (unknownHits / (double) total >= unknownThresh) return ArtifactColor.UNKNOWN;
-
             return ArtifactColor.UNKNOWN; // fallback
         }
     }
