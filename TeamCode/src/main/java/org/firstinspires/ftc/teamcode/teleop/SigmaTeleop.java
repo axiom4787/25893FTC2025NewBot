@@ -1,8 +1,17 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.InstantAction;
+import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -10,6 +19,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.*;
+
 @Config
 @TeleOp(name = "UnifiedTeleOp", group = "AA_main")
 public class SigmaTeleop extends LinearOpMode {
@@ -117,18 +127,16 @@ public class SigmaTeleop extends LinearOpMode {
         if (g1.getButton(GamepadKeys.Button.RIGHT_STICK_BUTTON)) fieldCentric = false;
 
 
-
         // intake control
-        if(g2.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER)>0.01){
+        if (g2.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) > 0.01) {
             intake.run();
-        }
-        else {
+        } else {
             intake.stop();
         }
 
         //outtake control
         if (g2.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) > 0.01) {
-            outtake.set(shooterRPM);
+            runShooter();
         } else {
             outtake.stop();
         }
@@ -158,13 +166,15 @@ public class SigmaTeleop extends LinearOpMode {
 
         // Set intaking ON
         if (g2.wasJustPressed(GamepadKeys.Button.A) && !actuator.isActivated()) {
-            indexer.setIntaking(true);
+            indexer.setIntaking(!indexer.isIntaking());
         }
 
-        // Set intaking OFF
-        if (g2.wasJustPressed(GamepadKeys.Button.B)) {
-            indexer.setIntaking(false);
-        }
+        if (g2.wasJustPressed(GamepadKeys.Button.B))
+            Actions.runBlocking(
+                    fireWithPeriodic(actionFirePurple())
+            );
+
+
         indexer.update();
 
         /*
@@ -191,8 +201,16 @@ public class SigmaTeleop extends LinearOpMode {
          */
 
 
-
         // ========== TELEMETRY ==========
+        telemetry.addLine("===== SLOT CONTENTS =====");
+        for (Indexer.IndexerState s : Indexer.IndexerState.values()) {
+            telemetry.addData(
+                    "Slot " + s.index,
+                    "%s  (err=%.1f°)",
+                    indexer.getColorAt(s),
+                    indexer.debugSlotErrorDeg(s)
+            );
+        }
         telemetry.addData("Field Centric", fieldCentric);
         telemetry.addData("April Lock", continuousAprilTagLock);
         telemetry.addData("Turn Correction", turnCorrection);
@@ -200,8 +218,82 @@ public class SigmaTeleop extends LinearOpMode {
         telemetry.addData("Voltage", indexer.getVoltage());
         telemetry.addData("Target Voltage", indexer.getTargetVoltage());
         telemetry.addData("Outtake Power", outtake.getPower());
-        telemetry.addData("measured RPM",outtake.getRPM());
-        telemetry.addData("target RPM",outtake.getTargetRPM());
+        telemetry.addData("measured RPM", outtake.getRPM());
+        telemetry.addData("target RPM", outtake.getTargetRPM());
         telemetry.update();
     }
+
+    public Action actionFireGreen() {
+        return new SequentialAction(
+                new InstantAction(actuator::down),
+
+                new InstantAction(() -> indexer.moveToColor(Indexer.ArtifactColor.GREEN)),
+
+                //new InstantAction(outtake::setFiveK),   // or outtake.spinUp(), setRPM(), etc.
+
+                new SleepAction(2.0),
+
+                new InstantAction(actuator::up),     // FIRE
+
+                new SleepAction(0.25),
+
+                new InstantAction(outtake::stop)
+        );
+    }
+
+    public Action actionFirePurple() {
+        return new SequentialAction(
+                new InstantAction(actuator::down),
+
+                new InstantAction(() -> indexer.moveToColor(Indexer.ArtifactColor.PURPLE)),
+
+                new InstantAction(() -> outtake.set(shooterRPM)),   // or outtake.spinUp(), setRPM(), etc.
+
+                new SleepAction(2.0),
+
+                new InstantAction(actuator::up),     // FIRE
+
+                new SleepAction(0.75),
+
+                new InstantAction(outtake::stop),
+
+                new InstantAction(actuator::down)
+        );
+    }
+
+    public Action periodicAction() {
+        class PeriodicAction implements Action {
+            @Override
+            public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+                outtake.periodic();
+                indexer.update();
+                return true;
+            }
+        }
+        return new PeriodicAction();
+    }
+
+    public Action fireWithPeriodic(Action fireAction) {
+        return new Action() {
+            @Override
+            public boolean run(@NonNull TelemetryPacket packet) {
+                // run subsystems every tick
+                indexer.update();
+                outtake.periodic();
+
+                // run the fire action
+                boolean stillRunning = fireAction.run(packet);
+
+                // keep running while fireAction is running
+                return stillRunning;
+            }
+        };
+    }
+
+
+
+    public void runShooter() {
+        outtake.set(shooterRPM);
+    }
+
 }
