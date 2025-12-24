@@ -47,8 +47,6 @@ public class ColorTester extends OpMode {
 
         double angle = indexer.getMeasuredAngle();
         IndexerState closest = indexer.debugClosestSlot();
-        double closestErr = indexer.debugClosestSlotErrorDeg();
-        double secondErr = indexer.debugSecondClosestSlotErrorDeg();
 
         telemetry.addLine("===== INDEXER STATE =====");
         telemetry.addData("Measured Angle (deg)", "%.2f", angle);
@@ -56,9 +54,6 @@ public class ColorTester extends OpMode {
         telemetry.addLine();
         telemetry.addLine("===== SLOT ALIGNMENT =====");
         telemetry.addData("Closest Slot", closest);
-        telemetry.addData("Closest Error (deg)", "%.2f", closestErr);
-        telemetry.addData("2nd Closest Error (deg)", "%.2f", secondErr);
-        telemetry.addData("Assignment Reason", indexer.debugAssignmentReason());
 
         telemetry.addLine();
         telemetry.addLine("===== SLOT CONTENTS =====");

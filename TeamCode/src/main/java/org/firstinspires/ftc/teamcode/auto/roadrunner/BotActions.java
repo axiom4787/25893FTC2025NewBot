@@ -27,7 +27,7 @@ public class BotActions {
         
         indexer = new Indexer(hardwareMap);
 
-        outtake = new Outtake(hardwareMap);
+        outtake = new Outtake(hardwareMap, Outtake.Mode.RPM);
     }
 
     public Action actionIntake() {

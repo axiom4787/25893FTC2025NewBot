@@ -15,7 +15,7 @@ public class VoltageTester extends LinearOpMode {
         waitForStart();
         while (opModeIsActive())
         {
-            telemetry.addData("voltage", indexer.getVoltageAnalog());
+            telemetry.addData("voltage", indexer.getVoltage());
             telemetry.update();
         }
     }
