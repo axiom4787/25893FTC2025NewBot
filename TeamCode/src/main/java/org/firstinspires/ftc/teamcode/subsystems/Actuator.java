@@ -6,8 +6,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 @Config
 public class Actuator {
-    public double DOWN = 0.0; // flush with the floor of platform
-    public double UP = .17; // raised to push it into the flywheel
+    public static double DOWN = 0.0;      // flush with the floor of platform
+    public static double UP_QUICK = 0.17; // used for quick (non-indexed) outtake
+    public static double UP_INDEXED = 0.34; // used for indexed outtake
 
     private boolean activated;
 
@@ -24,22 +25,28 @@ public class Actuator {
         activated = false;
     }
 
+    //default up is indexed
     public void up() {
-        servo.setPosition(UP);
+        upIndexed();
+    }
+
+    //highe rposition
+    public void upIndexed() {
+        servo.setPosition(UP_INDEXED);
         activated = true;
     }
 
-    public boolean isActivated()
-    {
-        return activated;
+    //lower position
+    public void upQuick() {
+        servo.setPosition(UP_QUICK);
+        activated = true;
     }
 
-    public void set(boolean activate)
-    {
-        if (activate)
-            up();
-        else
-            down();
+    public boolean isActivated() { return activated; }
+
+    public void set(boolean activate) {
+        if (activate) up();
+        else down();
     }
 
     public double getWaitTime() {

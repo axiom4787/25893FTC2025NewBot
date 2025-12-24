@@ -37,6 +37,7 @@ public class CRServoPositionControl {
     public static double loaded_kS = 0.08;
 
     private boolean loaded = false;
+    private boolean manualOverride = false; // when true, update() does nothing (open-loop control active)
 
     // hardware
     private final CRServo servo;
@@ -81,7 +82,18 @@ public class CRServoPositionControl {
 
     public boolean isLoaded() { return loaded; }
 
+    public void setOpenLoopPower(double power) {
+        manualOverride = true;
+        servo.setPower(clamp(power, -1.0, 1.0));
+    }
+
+    public void clearOpenLoop() {
+        manualOverride = false;
+    }
+
     public void update() {
+        if (manualOverride) return; // skip closed-loop when in override
+
         updateContinuousAngle();
 
         double error = targetDeg - continuousDeg;
@@ -103,24 +115,15 @@ public class CRServoPositionControl {
         lastAngleDeg = continuousDeg;
         lastTimeNs = now;
 
-        double output;
+        double output = kP * error * stiffnessGain - kD * velocity + kI * error;
 
-        //slowing velocity dampening near target
-        if (absErr < brakeZoneDeg) {
-            output = kP * error * stiffnessGain - kD * velocity + kI * error;
-        } else {
-            output = kP * error * stiffnessGain - kD * velocity + kI * error;
-        }
-
-        // apply static friction compensation ONLY when driving toward target
+        // static friction compensation toward target
         if (Math.signum(output) == Math.signum(error)) {
             double sign = Math.signum(output);
             output = sign * Math.max(Math.abs(output), kS);
         }
 
-        // clamp
         output = clamp(output, -maxPower, maxPower);
-
         servo.setPower(output);
     }
 

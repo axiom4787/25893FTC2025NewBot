@@ -41,6 +41,9 @@ public class Bot {
     public FSM state;
 
     private static final double TRIGGER_DEADZONE = 0.05;
+    private static final double SHOOTER_RPM = 5000;
+    private static final double NON_INDEX_SPIN_TIME = 0.6;//seconds of full-power indexer blast
+    private static final double SHOOTER_SPINUP = 0.75;
 
     public Bot(HardwareMap hardwareMap, Telemetry tele, Gamepad gamepad1, Gamepad gamepad2) {
         intake = new Intake(hardwareMap);
@@ -54,8 +57,9 @@ public class Bot {
         state = FSM.Intake;
     }
 
-    public void teleopInit()
-    {
+    public void teleopInit() {
+        indexer.initializeColors(Indexer.ArtifactColor.EMPTY);
+        indexer.moveTo(Indexer.IndexerState.zero);
         indexer.setIntaking(true);
         state = FSM.Intake;
     }
@@ -64,31 +68,28 @@ public class Bot {
         g1.readButtons();
         g2.readButtons();
 
+        handleMovement();
+
         if (g1.wasJustPressed(GamepadKeys.Button.LEFT_STICK_BUTTON)) {
             fieldCentric = !fieldCentric;
         }
 
         switch (state) {
-            case Intake:
-                handleIntakeState();
-                break;
-            case QuickOuttake:
-                handleQuickOuttakeState();
-                break;
-            case SortOuttake:
-                handleSortOuttakeState();
-                break;
-            case Endgame:
-                handleEndgameState();
-                break;
+            case Intake -> handleIntakeState();
+            case QuickOuttake -> handleQuickOuttakeState();
+            case SortOuttake -> handleSortOuttakeState();
+            case Endgame -> handleEndgameState();
         }
 
-        // Telem (most sigma ever)
-        telemetry.addData("Field Centric:", fieldCentric);
-        telemetry.addData("Indexer States:", "Current State: %s , Next State: %s",indexer.getState(), indexer.getState().next());
-        telemetry.addData("Indexer Voltages:", "Target: %.3f , Actual: %.3f" , indexer.getTargetVoltage(), indexer.getVoltage());
-        telemetry.addData("Outtake RPM:", "Target: %.1f, Actual: %.1f", outtake.getTargetRPM(),outtake.getRPM());
-        telemetry.addData("Actuator up?: ", actuator.isActivated());
+        outtake.periodic();
+        indexer.update();
+
+        telemetry.addData("Field Centric", fieldCentric);
+        telemetry.addData("Indexer State", "%s -> %s", indexer.getState(), indexer.getState().next());
+        telemetry.addData("Indexer Voltages", "Target: %.3f , Actual: %.3f", indexer.getTargetVoltage(), indexer.getVoltage());
+        telemetry.addData("Outtake RPM", "Target: %.1f, Actual: %.1f", outtake.getTargetRPM(), outtake.getRPM());
+        telemetry.addData("Actuator up?", actuator.isActivated());
+        telemetry.addData("Indexer Loaded?", indexer.isLoaded());
         telemetry.update();
     }
 
@@ -106,56 +107,88 @@ public class Bot {
         if (leftTrigger > TRIGGER_DEADZONE) intake.run();
         else intake.stop();
 
-        if (g2.wasJustPressed(GamepadKeys.Button.A)) state = (FSM.QuickOuttake);
-        if (g2.wasJustPressed(GamepadKeys.Button.B)) state = (FSM.SortOuttake);
-        if (g2.wasJustPressed(GamepadKeys.Button.Y)) state = (FSM.Endgame);
+        if (g2.wasJustPressed(GamepadKeys.Button.A)) state = FSM.QuickOuttake;
+        if (g2.wasJustPressed(GamepadKeys.Button.B)) state = FSM.SortOuttake;
+        if (g2.wasJustPressed(GamepadKeys.Button.Y)) state = FSM.Endgame;
     }
 
     private void handleQuickOuttakeState() {
         if (g2.wasJustPressed(GamepadKeys.Button.X)) {
-            Actions.runBlocking(actionQuickSpin());
+            Actions.runBlocking(actionNonIndexedDump());
         }
-
-        if (g2.wasJustPressed(GamepadKeys.Button.A)) state = (FSM.Intake);
+        if (g2.wasJustPressed(GamepadKeys.Button.A)) state = FSM.Intake;
     }
 
     private void handleSortOuttakeState() {
-        // TODO: implement sorted shoot sequence:
-        // 1) spin shooter to RPM
-        // 2) wait for stable RPM (ideally ts is in a roadronere action)
-        // 3) feed one ball at a time with small delays
+        if (g2.wasJustPressed(GamepadKeys.Button.X)) {
+            Actions.runBlocking(fireWithPeriodic(actionFireGreen()));
+        }
+        if (g2.wasJustPressed(GamepadKeys.Button.Y)) {
+            Actions.runBlocking(fireWithPeriodic(actionFirePurple()));
+        }
         if (g2.wasJustPressed(GamepadKeys.Button.A)) {
-            // cancel sort and return to intake
-            state = (FSM.Intake);
+            state = FSM.Intake;
         }
     }
 
     private void handleEndgameState() {
-        // TODO: activate actuator to open slides or perform endgame actions
-        if (g2.wasJustPressed(GamepadKeys.Button.A)) state = (FSM.Intake);
+        if (g2.wasJustPressed(GamepadKeys.Button.A)) state = FSM.Intake;
     }
 
-    public Action periodics(){
+    public Action periodics() {
         return new ParallelAction(
-            new InstantAction(() -> outtake.periodic()),
-            new InstantAction(() -> indexer.update())
-
-                );
+                new InstantAction(outtake::periodic),
+                new InstantAction(indexer::update)
+        );
     }
 
-
-    public Action actionQuickSpin() {
-        double ballRespinWait = 0.1;
+    private Action actionNonIndexedDump() {
         return new SequentialAction(
-                new InstantAction(() -> outtake.regressionRPM()),
                 new InstantAction(() -> indexer.setIntaking(false)),
-                new SleepAction(1),
-                new InstantAction(() -> actuator.up()), //ball 1 already on indexer gets shot immediately
-                new SleepAction(actuator.getWaitTime()),
-                new InstantAction(()->indexer.moveTo(indexer.getState().next())), // feed ball 2
-                new SleepAction(ballRespinWait),
-                new InstantAction(() -> indexer.moveTo(indexer.getState().next())), //feed ball 3
-                new SleepAction(ballRespinWait)
-                );
+                new InstantAction(actuator::upQuick),                 // lower up position for quick dump
+                new InstantAction(() -> outtake.set(SHOOTER_RPM)),
+                new SleepAction(SHOOTER_SPINUP),                      // spin up shooter
+                new InstantAction(() -> indexer.setIndexerPower(1.0)),// full blast
+                new SleepAction(NON_INDEX_SPIN_TIME),
+                new InstantAction(indexer::stopIndexerPower),
+                new InstantAction(outtake::stop),
+                new InstantAction(actuator::down),
+                new InstantAction(() -> indexer.moveTo(Indexer.IndexerState.zero)),
+                new InstantAction(() -> indexer.setIntaking(true))
+        );
+    }
+
+    private Action actionFireGreen() {
+        return new SequentialAction(
+                new InstantAction(actuator::down),
+                new InstantAction(() -> indexer.moveToColor(Indexer.ArtifactColor.GREEN)),
+                new InstantAction(() -> outtake.set(SHOOTER_RPM)),
+                new SleepAction(2.0),
+                new InstantAction(actuator::upIndexed),// higher position for indexed firing
+                new SleepAction(0.5),
+                new InstantAction(outtake::stop),
+                new InstantAction(actuator::down)
+        );
+    }
+
+    private Action actionFirePurple() {
+        return new SequentialAction(
+                new InstantAction(actuator::down),
+                new InstantAction(() -> indexer.moveToColor(Indexer.ArtifactColor.PURPLE)),
+                new InstantAction(() -> outtake.set(SHOOTER_RPM)),
+                new SleepAction(2.0),
+                new InstantAction(actuator::upIndexed),
+                new SleepAction(0.75),
+                new InstantAction(outtake::stop),
+                new InstantAction(actuator::down)
+        );
+    }
+
+    private Action fireWithPeriodic(Action fireAction) {
+        return packet -> {
+            indexer.update();
+            outtake.periodic();
+            return fireAction.run(packet);
+        };
     }
 }
