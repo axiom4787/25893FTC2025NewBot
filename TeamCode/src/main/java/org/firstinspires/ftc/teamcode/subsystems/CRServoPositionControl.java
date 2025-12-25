@@ -29,7 +29,7 @@ public class CRServoPositionControl {
     public static double unloaded_kP = 0.002;
     public static double unloaded_kI = 0.0;
     public static double unloaded_kD = 0.0;
-    public static double unloaded_kS = 0.0;
+    public static double unloaded_kS = 0.08;
 
     public static double loaded_kP = 0.002;
     public static double loaded_kI = 0.00009;
