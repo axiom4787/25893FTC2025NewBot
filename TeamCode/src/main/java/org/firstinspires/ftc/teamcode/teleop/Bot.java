@@ -188,8 +188,7 @@ public class Bot {
         return new SequentialAction(
                 new InstantAction(() -> indexer.setIntaking(false)),
                 new InstantAction(actuator::down),
-                new InstantAction(() -> indexer.moveTo(slot)),
-
+                new InstantAction(() -> indexer.moveTo(slot, true)),
                 new InstantAction(() -> outtake.set(SHOOTER_RPM)),
                 new SleepAction(SHOOTER_SPINUP),
                 new InstantAction(actuator::upIndexed),
@@ -214,7 +213,7 @@ public class Bot {
 
         return new SequentialAction(
                 new InstantAction(actuator::down),
-                new InstantAction(() -> indexer.moveTo(slot)),
+                new InstantAction(() -> indexer.moveTo(slot, true)),
 
                 new InstantAction(() -> outtake.set(SHOOTER_RPM)),
                 new SleepAction(SHOOTER_SPINUP),

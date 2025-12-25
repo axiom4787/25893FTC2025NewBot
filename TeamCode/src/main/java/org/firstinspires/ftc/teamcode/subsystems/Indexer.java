@@ -144,7 +144,7 @@ public class Indexer {
     public void setIntaking(boolean isIntaking) {
         if (this.intaking != isIntaking) {
             this.intaking = isIntaking;
-            moveTo(state);
+            moveTo(state, true);
         }
     }
 
@@ -157,7 +157,12 @@ public class Indexer {
     }
 
     public void moveTo(IndexerState newState) {
-        if (newState == state) return;
+        moveTo(newState, false);
+    }
+
+    // Move to a slot and forceRecommand will reissue the target even if it's the current slot.
+    public void moveTo(IndexerState newState, boolean forceRecommand) {
+        if (!forceRecommand && newState == state) return;
 
         double targetAngle = getSlotCenterAngle(newState);
 
@@ -186,7 +191,7 @@ public class Indexer {
 
         if (dashTargetSlot != lastDashTargetSlot) {
             if (dashTargetSlot >= 0 && dashTargetSlot <= 2) {
-                moveTo(IndexerState.values()[dashTargetSlot]);
+                moveTo(IndexerState.values()[dashTargetSlot], true);
             }
             lastDashTargetSlot = dashTargetSlot;
         }
