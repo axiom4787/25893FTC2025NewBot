@@ -21,6 +21,7 @@ public class Outtake {
     }
 
     private final MotorEx shooter;
+    private final MotorEx shooter2;
 
     // FTCLib PID controller (P, I, D only)
     private final PIDController controller;
@@ -42,6 +43,8 @@ public class Outtake {
     public Outtake(HardwareMap hardwareMap, Mode mode) {
         shooter = new MotorEx(hardwareMap, "outtake");
         shooter.setInverted(true);
+        shooter2 = new MotorEx(hardwareMap, "outtake-2");
+
 
         this.mode = mode;
         controller = new PIDController(p, i, d);
