@@ -44,6 +44,7 @@ public class Outtake {
         shooter = new MotorEx(hardwareMap, "outtake");
         shooter.setInverted(true);
         shooter2 = new MotorEx(hardwareMap, "outtake-2");
+        shooter.setInverted(false);
 
 
         this.mode = mode;
@@ -52,6 +53,7 @@ public class Outtake {
 
     public void stop() {
         shooter.stopMotor();
+        shooter2.stopMotor();
         motorPower = 0.0;
         targetRPM = 0.0;
     }
@@ -76,6 +78,7 @@ public class Outtake {
         if (mode == Mode.POWER) {
             // Open-loop mode
             shooter.set(motorPower);
+            shooter2.set(motorPower);
             return;
         }
 
@@ -95,6 +98,7 @@ public class Outtake {
         motorPower = clamp(motorPower, 0.0, 1.0);
 
         shooter.set(motorPower);
+        shooter2.set(motorPower);
     }
 
     public double regressionRPM()
