@@ -182,6 +182,12 @@ public class DistanceRegressionTeleOp extends LinearOpMode {
         }
 
 
+        if (goalTagID == 20) {
+            telemetry.addData("Blue Goal", "Selected");
+        }
+        else if(goalTagID == 24) {
+            telemetry.addData("Red Goal", "Selected");
+        }
         // ========== TELEMETRY ==========
         telemetry.addData("set RPM",outtake.getTargetRPM());
         telemetry.addData("Range", aprilTag.getRange());
