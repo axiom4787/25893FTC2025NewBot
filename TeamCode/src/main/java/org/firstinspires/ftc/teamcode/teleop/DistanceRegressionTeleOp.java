@@ -86,7 +86,7 @@ public class DistanceRegressionTeleOp extends LinearOpMode {
                 if (!Double.isNaN(bearing)) {
                     lastTurnCorrection = aprilAimer.calculateTurnPowerFromBearing(bearing);
                 } else {
-                    lastTurnCorrection = 0;
+                    lastTurnCorrection = aprilAimer.calculateIMUTurnPower(goalTagID);
                 }
             }
 
