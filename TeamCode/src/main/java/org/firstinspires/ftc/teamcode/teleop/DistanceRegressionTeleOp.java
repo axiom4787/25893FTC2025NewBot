@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import android.telephony.IccOpenLogicalChannelResponse;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -33,6 +35,7 @@ public class DistanceRegressionTeleOp extends LinearOpMode {
 
     private static final long AIM_UPDATE_INTERVAL_MS = 50;
     private static int goalTagID;
+    private static String colorGoalSelected;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -172,28 +175,22 @@ public class DistanceRegressionTeleOp extends LinearOpMode {
         if (g2.wasJustPressed(GamepadKeys.Button.LEFT_BUMPER)) {
             goalTagID = 20;
             aprilTag.setGoalTagID(goalTagID); // blue
-            telemetry.addData("Blue Goal", "Selected");
+            colorGoalSelected = "Blue";
         }
 
         if (g2.wasJustPressed(GamepadKeys.Button.RIGHT_BUMPER)) {
             goalTagID = 24;
             aprilTag.setGoalTagID(goalTagID); // red
-            telemetry.addData("Red Goal", "Selected");
+            colorGoalSelected = "Red";
         }
 
-
-        if (goalTagID == 20) {
-            telemetry.addData("Blue Goal", "Selected");
-        }
-        else if(goalTagID == 24) {
-            telemetry.addData("Red Goal", "Selected");
-        }
         // ========== TELEMETRY ==========
-        telemetry.addData("set RPM",outtake.getTargetRPM());
-        telemetry.addData("Range", aprilTag.getRange());
+        telemetry.addData("Target RPM",outtake.getTargetRPM());
+        telemetry.addData("Bot Centerline Range", aprilTag.getBotCenterlineRange());
         telemetry.addData("measured RPM",outtake.getRPM());
         telemetry.addData("Outtake Power", outtake.getPower());
         telemetry.addData("April Lock", continuousAprilTagLock);
+        telemetry.addData("Selected Goal Color:", colorGoalSelected);
         telemetry.update();
     }
 }
