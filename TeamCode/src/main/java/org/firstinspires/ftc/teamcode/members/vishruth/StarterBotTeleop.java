@@ -42,6 +42,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 /*
  * This file includes a teleop (driver-controlled) file for the goBILDA® StarterBot for the
@@ -61,8 +62,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @TeleOp(name = "StarterBotTeleop", group = "StarterBot")
 //@Disabled
 public class StarterBotTeleop extends OpMode {
-    final double FEED_TIME_SECONDS = 0.20; //The feeder servos run this long when a shot is requested.
-    final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
+    final double FEED_TIME_SECONDS = 0.20;
+    //The feeder servos run this long when a shot is requested.
+    final double STOP_SPEED = 0.0;
+    //We send this power to the servos when we want them to stop.
     final double FULL_SPEED = 1.0;
 
     /*
@@ -71,8 +74,11 @@ public class StarterBotTeleop extends OpMode {
      * velocity. Here we are setting the target, and minimum velocity that the launcher should run
      * at. The minimum velocity is a threshold for determining when to fire.
      */
-    final double LAUNCHER_TARGET_VELOCITY = 1125;
-    final double LAUNCHER_MIN_VELOCITY = 1075;
+    final double LAUNCHER_TARGET_VELOCITY = 2300;
+    final double LAUNCHER_MIN_VELOCITY = 2050;
+
+    double launcherTargetVelocity = LAUNCHER_TARGET_VELOCITY;
+    double launcherMinVelocity = LAUNCHER_MIN_VELOCITY;
 
     // Declare OpMode members.
     private DcMotor leftDrive = null;
@@ -206,17 +212,34 @@ public class StarterBotTeleop extends OpMode {
          * both motors work to rotate the robot. Combinations of these inputs can be used to create
          * more complex maneuvers.
          */
-        arcadeDrive(-gamepad1.left_stick_y, gamepad1.right_stick_x);
+        arcadeDrive(gamepad1.left_stick_y, gamepad1.left_stick_x/2);
 
         /*
          * Here we give the user control of the speed of the launcher motor without automatically
          * queuing a shot.
          */
         if (gamepad1.y) {
-            launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
+            launcher.setVelocity(launcherTargetVelocity);
         } else if (gamepad1.b) { // stop flywheel
             launcher.setVelocity(STOP_SPEED);
         }
+// ideal shooting velocity between 1100 and 1300
+//        if (gamepad1.a) {
+//            launcherTargetVelocity = launcherTargetVelocity + 1;
+//            launcherMinVelocity = launcherMinVelocity + 1;
+//        } else if (gamepad1.x) {
+//            launcherTargetVelocity = launcherTargetVelocity - 1;
+//            launcherMinVelocity = launcherMinVelocity - 1;
+//        }
+//
+//        if (launcherTargetVelocity> 2000){
+//            launcherTargetVelocity = 1750;
+//        }
+//
+//        if (launcherMinVelocity > 1900) {
+//            launcherMinVelocity = 1720;
+//        }
+
 
         /*
          * Now we call our "Launch" function.
@@ -228,6 +251,8 @@ public class StarterBotTeleop extends OpMode {
          */
         telemetry.addData("State", launchState);
         telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+        telemetry.addData("Target Velocity", launcherTargetVelocity );
+        telemetry.addData("LauncherMinVelocity", launcherMinVelocity);
         telemetry.addData("motorSpeed", launcher.getVelocity());
 
     }
@@ -240,14 +265,19 @@ public class StarterBotTeleop extends OpMode {
     }
 
     void arcadeDrive(double forward, double rotate) {
+
         leftPower = forward + rotate;
         rightPower = forward - rotate;
 
+        double max = Math.max(Math.max(leftPower,1),rightPower);
+
+        Range.clip(leftPower,-1,1);
+        Range.clip(rightPower, -1, 1);
         /*
          * Send calculated power to wheels
          */
-        leftDrive.setPower(leftPower);
-        rightDrive.setPower(rightPower);
+        leftDrive.setPower(leftPower/(max+0.5));
+        rightDrive.setPower(rightPower/(max+0.5));
     }
 
     void launch(boolean shotRequested) {
@@ -258,8 +288,8 @@ public class StarterBotTeleop extends OpMode {
                 }
                 break;
             case SPIN_UP:
-                launcher.setVelocity(LAUNCHER_TARGET_VELOCITY);
-                if (launcher.getVelocity() > LAUNCHER_MIN_VELOCITY) {
+                launcher.setVelocity(launcherTargetVelocity);
+                if (launcher.getVelocity() > launcherMinVelocity) {
                     launchState = LaunchState.LAUNCH;
                 }
                 break;
