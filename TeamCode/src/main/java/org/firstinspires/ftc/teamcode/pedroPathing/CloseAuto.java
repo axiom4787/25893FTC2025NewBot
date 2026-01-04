@@ -4,13 +4,11 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -20,11 +18,10 @@ import org.firstinspires.ftc.teamcode.GlobalStorage;
 import org.firstinspires.ftc.teamcode.GoalTagLimelight;
 import org.firstinspires.ftc.teamcode.Shooter;
 
-import java.nio.file.Paths;
 
-@Autonomous(name = "CloseRedPedro", group = "Autonomous")
+@Autonomous(name = "CloseAuto", group = "Autonomous")
 @Configurable // Panels
-public class CloseRedPedro extends LinearOpMode {
+public class CloseAuto extends LinearOpMode {
 
     private TelemetryManager panelsTelemetry; // Panels Telemetry instance
     public Follower follower; // Pedro Pathing follower instance
@@ -39,17 +36,19 @@ public class CloseRedPedro extends LinearOpMode {
     Shooter collectorFront;
     Servo flipper;
     GoalTagLimelight limelight;
+    Poses autoPoses = new Poses();
 
     private int startDelay = 0;
     private int teamID;
     private boolean testingMode = false;
-    private boolean shooting = false;;
+    double line1Y = 83.232;
+    int angleOffset = 0;
     ElapsedTime timer = new ElapsedTime();
     public PathChain MOVETOLAUNCH;
     public PathChain MOVETOCOLLECT;
-    public PathChain COLLECT1;
-    public PathChain COLLECT2;
-    public PathChain COLLECT3;
+    public PathChain COLLECT11;
+    public PathChain COLLECT12;
+    public PathChain COLLECT13;
     public PathChain MOVETOLAUNCH2;
     public PathChain ENDOFFLINE;
 
@@ -58,9 +57,7 @@ public class CloseRedPedro extends LinearOpMode {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(118, 130.756, Math.toRadians(40)));
 
-        buildPaths();
         panelsTelemetry.debug("Status", "Initialized");
         panelsTelemetry.update(telemetry);
 
@@ -105,10 +102,18 @@ public class CloseRedPedro extends LinearOpMode {
             if (gamepad1.bWasPressed()) {
                 //goalTag.targetAprilTagID = 24;
                 teamID = 24;
+                angleOffset = 0;
+                autoPoses.build(0,1,line1Y, angleOffset);
+                follower.setStartingPose(autoPoses.startPose);
+                buildPaths();
                 GlobalStorage.setAlliance(24);
             } else if (gamepad1.xWasPressed()) {
                 //goalTag.targetAprilTagID = 20;
                 teamID = 20;
+                angleOffset = 180;
+                autoPoses.build(99.07,-1,line1Y, angleOffset);
+                follower.setStartingPose(autoPoses.startPose);
+                buildPaths();
                 GlobalStorage.setAlliance(20);
             } else if (gamepad1.yWasPressed()) {
                 startDelay += 2;
@@ -119,19 +124,19 @@ public class CloseRedPedro extends LinearOpMode {
             }
 
         } while (opModeInInit());
+        waitForStart();
+        //sleep(1000*startDelay);
+        setPathState(0);
+        limelight.setTeam(teamID);
+
+        collectorBack.setPower(Shooter.collectorPower);
+        collectorFront.setPower(Shooter.collectorPower);
+
+        launchFlapLeft.setPosition(0.3);
+        launchFlapRight.setPosition(0.4);
 
         while (opModeIsActive()) {
-            //sleep(1000*startDelay);
-
-            limelight.setTeam(teamID);
-
-            collectorBack.setPower(Shooter.collectorPower);
-            collectorFront.setPower(Shooter.collectorPower);
-
-            launchFlapLeft.setPosition(0.3);
-            launchFlapRight.setPosition(0.4);
-
-            follower.update(); // Update Pedro Pathing
+           follower.update(); // Update Pedro Pathing
             pathState = autonomousPathUpdate(); // Update autonomous state machine
 
             // Log values to Panels and Driver Station
@@ -142,67 +147,50 @@ public class CloseRedPedro extends LinearOpMode {
             panelsTelemetry.update(telemetry);
         }
     }
-
     public void buildPaths() {
         MOVETOLAUNCH = follower
                 .pathBuilder()
-                .addPath(
-                        new BezierLine(new Pose(118.031, 130.496), new Pose(83.881, 83.232))
-                )
-                .setLinearHeadingInterpolation(Math.toRadians(40), Math.toRadians(45))
+                .addPath(new BezierLine(autoPoses.startPose, autoPoses.launchPose))
+                .setLinearHeadingInterpolation(Math.toRadians(180-angleOffset), Math.toRadians(Math.abs(angleOffset-45)))
                 .build();
 
         MOVETOCOLLECT = follower
                 .pathBuilder()
-                .addPath(
-                        new BezierLine(new Pose(83.881, 83.232), new Pose(99.463, 82.972))
-                )
-                .setLinearHeadingInterpolation(Math.toRadians(45), Math.toRadians(0))
+                .addPath(new BezierLine(autoPoses.launchPose, autoPoses.readyPickUp1))
+                .setLinearHeadingInterpolation(Math.toRadians(Math.abs(angleOffset-45)), Math.toRadians(angleOffset))
                 .build();
 
-        COLLECT1 = follower
+        COLLECT11 = follower
                 .pathBuilder()
-                .addPath(
-                        new BezierLine(new Pose(99.463, 82.972), new Pose(111.408, 83.232))
-                )
-                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierLine(autoPoses.readyPickUp1, autoPoses.line11))
+                .setConstantHeadingInterpolation(Math.toRadians(angleOffset))
                 .build();
 
-        COLLECT2 = follower
+        COLLECT12 = follower
                 .pathBuilder()
-                .addPath(
-                        new BezierLine(new Pose(111.408, 83.232), new Pose(118.420, 82.842))
-                )
-                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierLine(autoPoses.line11, autoPoses.line12))
+                .setConstantHeadingInterpolation(Math.toRadians(angleOffset))
                 .build();
 
-        COLLECT3 = follower
+        COLLECT13 = follower
                 .pathBuilder()
-                .addPath(
-                        new BezierLine(new Pose(118.420, 82.842), new Pose(124.263, 82.972))
-                )
-                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierLine(autoPoses.line12, autoPoses.line13))
+                .setConstantHeadingInterpolation(Math.toRadians(angleOffset))
                 .build();
 
-        MOVETOLAUNCH = follower
+        MOVETOLAUNCH2 = follower
                 .pathBuilder()
-                .addPath(
-                        new BezierLine(new Pose(124.263, 82.972), new Pose(84.011, 82.972))
-                )
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(45))
+                .addPath(new BezierLine(autoPoses.line13, autoPoses.launchPose))
+                .setLinearHeadingInterpolation(Math.toRadians(angleOffset), Math.abs(angleOffset-45))
                 .build();
 
         ENDOFFLINE = follower
                 .pathBuilder()
-                .addPath(
-                        new BezierLine(new Pose(84.011, 82.972), new Pose(116.213, 82.712))
-                )
-                .setLinearHeadingInterpolation(Math.toRadians(45), Math.toRadians(270))
+                .addPath(new BezierLine(autoPoses.launchPose, autoPoses.endOffLine))
+                .setLinearHeadingInterpolation(Math.abs(angleOffset-45), Math.toRadians(270))
                 .build();
-
     }
-
-    public int autonomousPathUpdate() {
+        public int autonomousPathUpdate() {
         switch (pathState) {
             case 0:
                 follower.followPath(MOVETOLAUNCH, Shooter.maxPower, true);
@@ -210,14 +198,16 @@ public class CloseRedPedro extends LinearOpMode {
                 break;
             case 1:
                 if (!follower.isBusy()) {
-                    Shooter.fireVolleySorted(limelight,telemetry,flipper,shooterLeft,launchFlapLeft,shooterRight,launchFlapRight, this);
+                    if (!testingMode) {
+                        Shooter.fireVolleySorted(limelight,telemetry,flipper,shooterLeft,launchFlapLeft,shooterRight,launchFlapRight, this);
+                    }
                     follower.followPath(MOVETOCOLLECT, Shooter.maxPower, true);
                     setPathState(2);
                 }
                 break;
             case 2:
                 if (!follower.isBusy()) {
-                    follower.followPath(COLLECT1, Shooter.maxPower, true);
+                    follower.followPath(COLLECT11, Shooter.maxPower, true);
                     timer.reset();
                     setPathState(3);
                 }
@@ -227,7 +217,7 @@ public class CloseRedPedro extends LinearOpMode {
                     flipper.setPosition(1);
                     if (timer.seconds() > 1) {
                         flipper.setPosition(0.525);
-                        follower.followPath(COLLECT2, Shooter.maxPower, true);
+                        follower.followPath(COLLECT12, Shooter.maxPower, true);
                         timer.reset();
                         setPathState(4);
                     }
@@ -239,7 +229,7 @@ public class CloseRedPedro extends LinearOpMode {
                     flipper.setPosition(0);
                     if (timer.seconds() > 1) {
                         flipper.setPosition(0.525);
-                        follower.followPath(COLLECT3, Shooter.maxPower, true);
+                        follower.followPath(COLLECT13, Shooter.maxPower, true);
                         setPathState(5);
                     }
                 }
@@ -253,8 +243,9 @@ public class CloseRedPedro extends LinearOpMode {
                 break;
             case 6:
                 if (!follower.isBusy()) {
-                    Shooter.fireVolleySorted(limelight,telemetry,flipper,shooterLeft,launchFlapLeft,shooterRight,launchFlapRight, this);
-
+                    if (!testingMode) {
+                        Shooter.fireVolleySorted(limelight,telemetry,flipper,shooterLeft,launchFlapLeft,shooterRight,launchFlapRight, this);
+                    }
                     follower.followPath(ENDOFFLINE, Shooter.maxPower, true);
                     setPathState(7);
                 }
@@ -270,5 +261,26 @@ public class CloseRedPedro extends LinearOpMode {
     }
     public void setPathState(int pState) {
         pathState = pState;
+    }
+    public static class Poses {
+
+        public Pose startPose;
+        public Pose launchPose;
+        public Pose readyPickUp1, line11, line12, line13;
+        public Pose endOffLine;
+
+        public void build(double startOffset, int sign, double line1Y, int angleOffset) {
+
+            // Old starting pose parallel to side of field
+            startPose = new Pose(121.536-startOffset, 120.5, Math.toRadians(180-angleOffset));
+            launchPose = new Pose(startPose.getX() - 35*sign, line1Y);
+
+            readyPickUp1 = new Pose(startPose.getX() - 18*sign , line1Y);
+            line11 = new Pose(startPose.getX() - 6.6*sign, line1Y);
+            line12 = new Pose(line11.getX() + 5, line1Y);
+            line13 = new Pose(line12.getX() + 5, line1Y);
+
+            endOffLine = new Pose(startPose.getX(), 83.232);
+        }
     }
 }

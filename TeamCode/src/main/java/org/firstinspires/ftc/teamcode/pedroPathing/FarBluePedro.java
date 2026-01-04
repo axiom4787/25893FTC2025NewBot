@@ -8,6 +8,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.GlobalStorage;
 import org.firstinspires.ftc.teamcode.GoalTagLimelight;
 import org.firstinspires.ftc.teamcode.Shooter;
 
+@Disabled
 @Autonomous(name = "FarBluePedro", group = "Autonomous")
 @Configurable // Panels
 public class FarBluePedro extends LinearOpMode {
@@ -36,22 +38,20 @@ public class FarBluePedro extends LinearOpMode {
     Shooter collectorFront;
     Servo flipper;
     GoalTagLimelight limelight;
-    private int offset = 0;
-
     private int startDelay = 0;
     private int teamID;
     private boolean testingMode = false;
     private boolean shooting = false;
     ElapsedTime timer = new ElapsedTime();
 
-    private final Pose startPose = new Pose(61.850+offset, 8.348, Math.toRadians(90));
+    private final Pose startPose = new Pose(61.850, 8.348, Math.toRadians(90));
     private final Pose launchPose = new Pose(57.598, 19.324);
     private final Pose readyPickUp1 = new Pose(40, 35.478);
     private final Pose line11 = new Pose(33, 35.478);
     private final Pose line12 = new Pose(28, 35.478);
     private final Pose line13 = new Pose(23, 35.478);
-    private final Pose readyPickUp2 = new Pose(40.222, 59.763);
-    private final Pose collectLine2 = new Pose(15.368, 59.763);
+    private final Pose readyPickUp2 = new Pose(40.222, 59.340);
+    private final Pose collectLine2 = new Pose(15.368, 59.340);
 
     private PathChain Path1, Path2, Path3, Path4, Path5, Path6, Path7, Path8, Path9, Path10;
 

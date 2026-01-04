@@ -9,6 +9,7 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -22,6 +23,7 @@ import org.firstinspires.ftc.teamcode.Shooter;
 
 import java.nio.file.Paths;
 
+@Disabled
 @Autonomous(name = "CloseBluePedro", group = "Autonomous")
 @Configurable // Panels
 public class CloseBluePedro extends LinearOpMode {
@@ -43,7 +45,8 @@ public class CloseBluePedro extends LinearOpMode {
     private int startDelay = 0;
     private int teamID;
     private boolean testingMode = false;
-    private boolean shooting = false;;
+    private boolean shooting = false;
+    ;
     ElapsedTime timer = new ElapsedTime();
     public PathChain MOVETOLAUNCH;
     public PathChain MOVETOCOLLECT;
@@ -69,9 +72,9 @@ public class CloseBluePedro extends LinearOpMode {
 
         ch = new Chassis(hardwareMap);
 
-        collectorFront = new Shooter(hardwareMap,"collectorFront", false);
+        collectorFront = new Shooter(hardwareMap, "collectorFront", false);
 
-        collectorBack = new Shooter(hardwareMap,"collectorBack", false);
+        collectorBack = new Shooter(hardwareMap, "collectorBack", false);
 
         flipper = hardwareMap.get(Servo.class, "flipper");
 
@@ -84,7 +87,7 @@ public class CloseBluePedro extends LinearOpMode {
         launchFlapRight = hardwareMap.get(Servo.class, "launchFlapRight");
 
         limelight = new GoalTagLimelight();
-        limelight.init(hardwareMap,telemetry);
+        limelight.init(hardwareMap, telemetry);
 
         GlobalStorage.setPattern(null);
         GlobalStorage.setAlliance(-1);
@@ -144,61 +147,61 @@ public class CloseBluePedro extends LinearOpMode {
     }
 
     public void buildPaths() {
-            MOVETOLAUNCH = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(26.359, 130.756), new Pose(59.470, 84.400))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(-35), Math.toRadians(135))
-                    .build();
+        MOVETOLAUNCH = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(new Pose(26.359, 130.756), new Pose(59.470, 84.400))
+                )
+                .setLinearHeadingInterpolation(Math.toRadians(-35), Math.toRadians(135))
+                .build();
 
-            MOVETOCOLLECT = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(59.470, 84.400), new Pose(42.460, 84.271))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(180))
-                    .build();
+        MOVETOCOLLECT = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(new Pose(59.470, 84.400), new Pose(42.460, 84.271))
+                )
+                .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(180))
+                .build();
 
-            COLLECT1 = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(42.460, 84.271), new Pose(34.409, 84.271))
-                    )
-                    .setConstantHeadingInterpolation(Math.toRadians(180))
-                    .build();
+        COLLECT1 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(new Pose(42.460, 84.271), new Pose(34.409, 84.271))
+                )
+                .setConstantHeadingInterpolation(Math.toRadians(180))
+                .build();
 
-            COLLECT2 = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(34.409, 84.271), new Pose(29.735, 84.400))
-                    )
-                    .setConstantHeadingInterpolation(Math.toRadians(180))
-                    .build();
+        COLLECT2 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(new Pose(34.409, 84.271), new Pose(29.735, 84.400))
+                )
+                .setConstantHeadingInterpolation(Math.toRadians(180))
+                .build();
 
-            COLLECT3 = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(29.735, 84.400), new Pose(24.671, 84.271))
-                    )
-                    .setConstantHeadingInterpolation(Math.toRadians(180))
-                    .build();
+        COLLECT3 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(new Pose(29.735, 84.400), new Pose(24.671, 84.271))
+                )
+                .setConstantHeadingInterpolation(Math.toRadians(180))
+                .build();
 
-            MOVETOLAUNCH2 = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(24.671, 84.271), new Pose(59.600, 84.300))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(135))
-                    .build();
+        MOVETOLAUNCH2 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(new Pose(24.671, 84.271), new Pose(59.600, 84.300))
+                )
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(135))
+                .build();
 
-            ENDOFFLINE = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(59.600, 84.300), new Pose(29.865, 84.790))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(270))
-                    .build();
+        ENDOFFLINE = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(new Pose(59.600, 84.300), new Pose(29.865, 84.790))
+                )
+                .setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(270))
+                .build();
     }
 
     public int autonomousPathUpdate() {
@@ -209,7 +212,7 @@ public class CloseBluePedro extends LinearOpMode {
                 break;
             case 1:
                 if (!follower.isBusy()) {
-                    Shooter.fireVolleySorted(limelight,telemetry,flipper,shooterLeft,launchFlapLeft,shooterRight,launchFlapRight, this);
+                    Shooter.fireVolleySorted(limelight, telemetry, flipper, shooterLeft, launchFlapLeft, shooterRight, launchFlapRight, this);
                     follower.followPath(MOVETOCOLLECT, Shooter.maxPower, true);
                     setPathState(2);
                 }
@@ -246,13 +249,13 @@ public class CloseBluePedro extends LinearOpMode {
             case 5:
                 if (!follower.isBusy()) {
 
-                    follower.followPath(MOVETOLAUNCH2, Shooter.maxPower,true);
+                    follower.followPath(MOVETOLAUNCH2, Shooter.maxPower, true);
                     setPathState(6);
                 }
                 break;
             case 6:
                 if (!follower.isBusy()) {
-                    Shooter.fireVolleySorted(limelight,telemetry,flipper,shooterLeft,launchFlapLeft,shooterRight,launchFlapRight, this);
+                    Shooter.fireVolleySorted(limelight, telemetry, flipper, shooterLeft, launchFlapLeft, shooterRight, launchFlapRight, this);
 
                     follower.followPath(ENDOFFLINE, Shooter.maxPower, true);
                     setPathState(7);
@@ -267,6 +270,7 @@ public class CloseBluePedro extends LinearOpMode {
         }
         return pathState;
     }
+
     public void setPathState(int pState) {
         pathState = pState;
     }

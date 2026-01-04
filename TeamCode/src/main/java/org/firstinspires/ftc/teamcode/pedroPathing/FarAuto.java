@@ -9,7 +9,6 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -19,11 +18,10 @@ import org.firstinspires.ftc.teamcode.GlobalStorage;
 import org.firstinspires.ftc.teamcode.GoalTagLimelight;
 import org.firstinspires.ftc.teamcode.Shooter;
 
-import java.nio.file.Paths;
 
-@Autonomous(name = "FarRedPedro", group = "Autonomous")
+@Autonomous(name = "FarAuto", group = "Autonomous")
 @Configurable // Panels
-public class FarRedPedro extends LinearOpMode {
+public class FarAuto extends LinearOpMode {
 
     private TelemetryManager panelsTelemetry; // Panels Telemetry instance
     public Follower follower; // Pedro Pathing follower instance
@@ -42,8 +40,9 @@ public class FarRedPedro extends LinearOpMode {
     private int startDelay = 0;
     private int teamID;
     private boolean testingMode = false;
-    private boolean shooting = false;;
     ElapsedTime timer = new ElapsedTime();
+    Poses autoPoses = new Poses();
+    private int angleOffset;
 
 
     public PathChain MOVETOLAUNCH;
@@ -59,21 +58,18 @@ public class FarRedPedro extends LinearOpMode {
     public PathChain MOVETOLAUNCH3;
     public PathChain ENDOFFLINE;
 
-    private final Pose startPose = new Pose(81.850, 8.348, Math.toRadians(90));
+    final double line1Y = 35.478;
+    final double line2Y = 59.340;
+
     @Override
     public void runOpMode() {
-        setPathState(0);
 
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(startPose);
-
-        buildPaths();
 
         panelsTelemetry.debug("Status", "Initialized");
         panelsTelemetry.update(telemetry);
-
 
         ch = new Chassis(hardwareMap);
 
@@ -113,10 +109,18 @@ public class FarRedPedro extends LinearOpMode {
             if (gamepad1.bWasPressed()) {
                 //goalTag.targetAprilTagID = 24;
                 teamID = 24;
+                angleOffset = 0;
+                autoPoses.build(0,1,line1Y,line2Y);
+                follower.setStartingPose(autoPoses.startPose);
+                buildPaths();
                 GlobalStorage.setAlliance(24);
             } else if (gamepad1.xWasPressed()) {
                 //goalTag.targetAprilTagID = 20;
                 teamID = 20;
+                angleOffset = 180;
+                autoPoses.build(20,-1,line1Y,line2Y);
+                follower.setStartingPose(autoPoses.startPose);
+                buildPaths();
                 GlobalStorage.setAlliance(20);
             } else if (gamepad1.yWasPressed()) {
                 startDelay += 2;
@@ -125,19 +129,20 @@ public class FarRedPedro extends LinearOpMode {
             } else if (gamepad1.leftStickButtonWasPressed()) {
                 testingMode = true;
             }
-
         } while (opModeInInit());
 
+        waitForStart();
+        //sleep(1000*startDelay);
+        setPathState(0);
+        limelight.setTeam(teamID);
+
+        collectorBack.setPower(Shooter.collectorPower);
+        collectorFront.setPower(Shooter.collectorPower);
+
+        launchFlapLeft.setPosition(0.3);
+        launchFlapRight.setPosition(0.4);
+
         while (opModeIsActive()) {
-            //sleep(1000*startDelay);
-
-            limelight.setTeam(teamID);
-
-            collectorBack.setPower(Shooter.collectorPower);
-            collectorFront.setPower(Shooter.collectorPower);
-
-            launchFlapLeft.setPosition(0.3);
-            launchFlapRight.setPosition(0.4);
 
             follower.update(); // Update Pedro Pathing
             pathState = autonomousPathUpdate(); // Update autonomous state machine
@@ -153,104 +158,103 @@ public class FarRedPedro extends LinearOpMode {
 
     public void buildPaths() {
 
-            MOVETOLAUNCH = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(81.850, 8.348), new Pose(87.598, 19.324))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(70))
-                    .build();
+        MOVETOLAUNCH = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(autoPoses.startPose, autoPoses.launchPose)
+                )
+                .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(Math.abs(angleOffset-70)))
+                .build();
 
-            PREPARETOCOLLECT1 = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(87.598, 19.324), new Pose(101.670, 35.838))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(70), Math.toRadians(0))
-                    .build();
+        PREPARETOCOLLECT1 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(autoPoses.launchPose, autoPoses.readyPickUp1)
+                )
+                .setLinearHeadingInterpolation(Math.toRadians(Math.abs(angleOffset-70)), Math.toRadians(0))
+                .build();
 
-            COLLECT11 = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(101.670, 35.838), new Pose(108, 35.838))
-                    )
-                    .setConstantHeadingInterpolation(Math.toRadians(0))
-                    .build();
+        COLLECT11 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(autoPoses.readyPickUp1, autoPoses.line11)
+                )
+                .setConstantHeadingInterpolation(Math.toRadians(angleOffset))
+                .build();
 
-            COLLECT12 = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(108, 35.838), new Pose(113, 35.578))
-                    )
-                    .setConstantHeadingInterpolation(Math.toRadians(0))
-                    .build();
+        COLLECT12 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(autoPoses.line11, autoPoses.line12)
+                )
+                .setConstantHeadingInterpolation(Math.toRadians(angleOffset))
+                .build();
 
-            COLLECT13 = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(113, 35.578), new Pose(118, 35.578))
-                    )
-                    .setConstantHeadingInterpolation(Math.toRadians(0))
-                    .build();
+        COLLECT13 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(autoPoses.line12, autoPoses.line13)
+                )
+                .setConstantHeadingInterpolation(Math.toRadians(angleOffset))
+                .build();
 
-            MOVETOLAUNCH2 = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(120, 35.578), new Pose(87.776, 19.087))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(70))
-                    .build();
+        MOVETOLAUNCH2 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(autoPoses.line13, autoPoses.launchPose)
+                )
+                .setLinearHeadingInterpolation(Math.toRadians(angleOffset), Math.toRadians(Math.abs(angleOffset-70)))
+                .build();
 
-            PREPARETOCOLLECT2 = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(87.776, 19.087), new Pose(102.189, 59.859))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(70), Math.toRadians(0))
-                    .build();
+        PREPARETOCOLLECT2 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(autoPoses.launchPose, autoPoses.readyPickUp2)
+                )
+                .setLinearHeadingInterpolation(Math.toRadians(Math.abs(angleOffset-70)), Math.toRadians(angleOffset))
 
-            COLLECT21 = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(102.189, 59.859), new Pose(109.331, 59.600))
-                    )
-                    .setConstantHeadingInterpolation(Math.toRadians(0))
-                    .build();
+                .build();
 
-            COLLECT22 = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(109.331, 59.600), new Pose(115.044, 59.470))
-                    )
-                    .setConstantHeadingInterpolation(Math.toRadians(0))
-                    .build();
+        COLLECT21 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(autoPoses.readyPickUp2, autoPoses.line21)
+                )
+                .setConstantHeadingInterpolation(Math.toRadians(angleOffset))
+                .build();
 
-            COLLECT23 = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(115.044, 59.470), new Pose(120.887, 59.340))
-                    )
-                    .setConstantHeadingInterpolation(Math.toRadians(0))
-                    .build();
+        COLLECT22 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(autoPoses.line21, autoPoses.line22)
+                )
+                .setConstantHeadingInterpolation(Math.toRadians(angleOffset))
+                .build();
 
-            MOVETOLAUNCH3 = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(120.887, 59.340), new Pose(87.647, 19.087))
-                    )
-                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(70))
-                    .build();
+        COLLECT23 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(autoPoses.line22, autoPoses.line23)
+                )
+                .setConstantHeadingInterpolation(Math.toRadians(angleOffset))
+                .build();
 
-            ENDOFFLINE = follower
-                    .pathBuilder()
-                    .addPath(
-                            new BezierLine(new Pose(87.647, 19.087), new Pose(92.191, 26.229))
-                    )
-                    .setConstantHeadingInterpolation(Math.toRadians(70))
-                    .build();
+        MOVETOLAUNCH3 = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(autoPoses.line23, autoPoses.launchPose)
+                )
+                .setLinearHeadingInterpolation(Math.toRadians(angleOffset), Math.toRadians(Math.abs(angleOffset-70)))
+                .build();
 
+        ENDOFFLINE = follower
+                .pathBuilder()
+                .addPath(
+                        new BezierLine(autoPoses.launchPose, autoPoses.endOffLine)
+                )
+                .setConstantHeadingInterpolation(Math.toRadians(Math.toRadians(Math.abs(angleOffset-70))))
+                .build();
     }
-
     public int autonomousPathUpdate() {
         switch (pathState) {
             case 0:
@@ -316,7 +320,7 @@ public class FarRedPedro extends LinearOpMode {
                     timer.reset();
                     setPathState(8);
                 }
-
+                break;
             case 8:
                 if (!follower.isBusy()) {
                     flipper.setPosition(1);
@@ -364,6 +368,33 @@ public class FarRedPedro extends LinearOpMode {
     }
     public void setPathState(int pState) {
         pathState = pState;
+    }
+
+    public static class Poses {
+
+        public Pose startPose;
+        public Pose launchPose;
+        public Pose readyPickUp1, line11, line12, line13;
+        public Pose readyPickUp2, line21, line22, line23;
+        public Pose endOffLine;
+
+        public void build(double startOffset, int sign, double line1Y, double line2Y) {
+
+            startPose = new Pose(81.850-startOffset, 8.348, Math.toRadians(90));
+            launchPose = new Pose(startPose.getX()+5*sign, 19.324);
+
+            readyPickUp1 = new Pose(startPose.getX()+20*sign, line1Y);
+            line11 = new Pose(startPose.getX()+25*sign, line1Y);
+            line12 = new Pose(line11.getX() + 5*sign, line1Y);
+            line13 = new Pose(line12.getX() + 5*sign, line1Y);
+
+            readyPickUp2 = new Pose(startPose.getX()+20*sign, line2Y);
+            line21 = new Pose(startPose.getX()+25*sign, line2Y);
+            line22 = new Pose(line21.getX() + 5*sign, line2Y);
+            line23 = new Pose(line22.getX() + 5*sign, line2Y);
+
+            endOffLine = new Pose(startPose.getX()+10*sign, 26);
+        }
     }
 
 }

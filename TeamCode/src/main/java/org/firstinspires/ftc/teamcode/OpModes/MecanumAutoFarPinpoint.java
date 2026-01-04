@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.teamcode.OpModes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -44,6 +45,7 @@ import org.firstinspires.ftc.teamcode.GoalTagLimelight;
 import org.firstinspires.ftc.teamcode.Pinpoint;
 import org.firstinspires.ftc.teamcode.Shooter;
 
+@Disabled
 @Autonomous(name="Mecanum Auto Far Pinpoint", group="Linear OpMode")
 public class MecanumAutoFarPinpoint extends LinearOpMode {
 

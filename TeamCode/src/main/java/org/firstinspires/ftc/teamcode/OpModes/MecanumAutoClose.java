@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode.OpModes;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -46,6 +47,7 @@ import org.firstinspires.ftc.teamcode.GoalTagLimelight;
 import org.firstinspires.ftc.teamcode.SensorGoBildaPinpoint;
 import org.firstinspires.ftc.teamcode.Shooter;
 
+@Disabled
 @Autonomous(name="Mecanum Auto Close", group="Linear OpMode")
 public class MecanumAutoClose extends LinearOpMode {
 
