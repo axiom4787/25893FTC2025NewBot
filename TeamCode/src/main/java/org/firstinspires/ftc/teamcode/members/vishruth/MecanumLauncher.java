@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.members.vishruth;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.FRLib.hardware.IMUW;
 import org.firstinspires.ftc.teamcode.FRLib.subsystems.Launcher;
@@ -13,20 +12,25 @@ import org.firstinspires.ftc.teamcode.utils.VelocityProfiler;
 
 @TeleOp
 public class MecanumLauncher extends OurOpmode{
-    ElapsedTime time = new ElapsedTime();
     Launcher launcher;
     MecanumDrive drive;
     IMUW imu;
-    double profilerOutput;
     double power = 0.2;
-    VelocityProfiler profiler = new VelocityProfiler();
+    VelocityProfiler profiler = new VelocityProfiler(this,0.075);
+
     @Override
     protected void Loop() {
-        drive.driveVectorField(-gamepad1.left_stick_y,gamepad1.left_stick_x,gamepad1.right_stick_x,power,imu);
-        profilerOutput = profiler.velocityProfileProportional(1,0.5);
-        launcher.launchTeleOp(gamepad1.rightBumperWasPressed());
+        drive.driveVectorField(
+                profiler.velocityProfileLeftY(),
+                profiler.velocityProfileLeftX(),
+                profiler.velocityProfileRightX(),
+                (gamepad1.right_bumper ? 0.75 : 0.2),
+                imu);
+
+
+        launcher.launchTeleOp(gamepad2.rightBumperWasPressed());
         
-        if (gamepad1.bWasPressed()){
+        if (gamepad2.bWasPressed()){
             launcher.stopFlywheel();
             logger.logData(Logger.LoggerMode.CRITICAL,"Flywheel","Stopped");
         }
@@ -35,24 +39,22 @@ public class MecanumLauncher extends OurOpmode{
             imu.resetYaw();
         }
 
-        if(gamepad1.xWasPressed()){
-            power = power + 0.1;
-        } else if (gamepad1.aWasPressed()) {
-            power = power -0.1;
-        }
+//        if(gamepad1.xWasPressed()){
+//            power = power + 0.1;
+//        } else if (gamepad1.aWasPressed()) {
+//            power = power -0.1;
+//        }
 
-        if(time.seconds()>2){
-            requestOpModeStop();
-            telemetry.addLine(Double.toString(profilerOutput));
-        }
 
-        if (gamepad1.yWasPressed()){
+        if (gamepad2.yWasPressed()){
             launcher.spinUpFlywheel();
             logger.logData(Logger.LoggerMode.CRITICAL,"Flywheel","Spinning Up");
         }
 
         logVariables();
     }
+
+
 
     private void logVariables() {
         logger.logData(Logger.LoggerMode.STATUS,"FlyWheelVelocity",launcher.getLauncher().getVelocity());
@@ -72,7 +74,6 @@ public class MecanumLauncher extends OurOpmode{
 
     @Override
     protected void initialize() {
-
         logger = new Logger(telemetry);
         launcher = new Launcher(this);
         drive = new MecanumDrive(this,logger, MecanumDrive.RobotName.BOB);
