@@ -248,7 +248,6 @@ public class FarAuto extends LinearOpMode {
                         new BezierLine(autoPoses.launchPose, autoPoses.readyPickUp2)
                 )
                 .setLinearHeadingInterpolation(Math.toRadians(Math.abs(angleOffset-70)), Math.toRadians(angleOffset))
-
                 .build();
 
         COLLECT21 = follower

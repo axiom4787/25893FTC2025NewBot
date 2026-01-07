@@ -274,10 +274,10 @@ public class CloseAuto extends LinearOpMode {
             startPose = new Pose(121.536-startOffset, 120.5, Math.toRadians(180-angleOffset));
             launchPose = new Pose(startPose.getX() - 35*sign, line1Y);
 
-            readyPickUp1 = new Pose(startPose.getX() - 18*sign , line1Y);
-            line11 = new Pose(startPose.getX() - 6.6*sign, line1Y);
-            line12 = new Pose(line11.getX() + 5, line1Y);
-            line13 = new Pose(line12.getX() + 5, line1Y);
+            readyPickUp1 = new Pose(startPose.getX() - 25*sign, line1Y);
+            line11 = new Pose(startPose.getX() - 14.68*sign, line1Y);
+            line12 = new Pose(line11.getX() + 5*sign, line1Y);
+            line13 = new Pose(line12.getX() + 5*sign, line1Y);
 
             endOffLine = new Pose(startPose.getX(), 83.232);
         }
