@@ -3,10 +3,13 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 import java.util.List;
 
@@ -32,9 +35,15 @@ public class GoalTagLimelight {
     private double camera_angle = 0.04009; // radians old was 0.0418
 
     public boolean isDataCurrent;
+    IMU imu;
     //Pipeline 5 is 20(blue) pipeline 1 is 24(red)
 
     public void init(HardwareMap hardwareMap, Telemetry telemetry) {
+        imu = hardwareMap.get(IMU.class, "imu");
+        RevHubOrientationOnRobot revHubOrientationOnRobot = new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.RIGHT);
+        imu.initialize(new IMU.Parameters(revHubOrientationOnRobot));
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         telemetry.setMsTransmissionInterval(11);
@@ -72,25 +81,35 @@ public class GoalTagLimelight {
                 seeObelisk = true;
             }
         }
-        for (LLResultTypes.FiducialResult fiducial : fiducials) {
-            teamID = fiducial.getFiducialId();
-        }
     }
-    public void process(Telemetry telemetry) {
+    public void processRobotPose() {
+        YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
+        limelight.updateRobotOrientation(orientation.getYaw());
         LLResult result = limelight.getLatestResult();
         if (result != null && result.isValid()) {
+            Pose3D botPose = result.getBotpose_MT2();
+            x = botPose.getPosition().x + 72;
+            y = botPose.getPosition().y + 72;
+        }
+    }
+
+    public void process(Telemetry telemetry) {
+
+        LLResult result = limelight.getLatestResult();
+        if (result != null && result.isValid()) {
+            Pose3D botPose = result.getBotpose();
+
             tx = result.getTx(); // How far left or right the target is (degrees)
             ty = result.getTy(); // How far up or down the target is (degrees)
 
             double ta = result.getTa(); // How big the target looks (0%-100% of the image)
-            Pose3D botpose = result.getBotpose();
-            if (botpose != null) {
-                x = botpose.getPosition().x;
-                telemetry.addData("botx", x);
-                y = botpose.getPosition().y;
-                telemetry.addData("boty", y);
+            if (botPose != null) {
+//                x = botPose.getPosition().x;
+//                telemetry.addData("botx", x);
+//                y = botPose.getPosition().y;
+//                telemetry.addData("boty", y);
 
-                goalYaw = botpose.getOrientation().getYaw();
+                goalYaw = botPose.getOrientation().getYaw();
                 goalRange = (target_height - camera_height) / (Math.tan(Math.toRadians(ty)+camera_angle)) + 27; //added const.
 
                 isDataCurrent = true;
@@ -111,16 +130,26 @@ public class GoalTagLimelight {
         }
     }
 
-    public void setTeam(int id) {
-        if (id == 20) {
-            limelight.pipelineSwitch(5);
-            teamID = 20;
-        } else if (id == 24) {
-            limelight.pipelineSwitch(1);
-            teamID = 24;
+    public void setTeam() {
+        limelight.pipelineSwitch(7); // Show both goals
+        LLResult result = limelight.getLatestResult();
+
+        List<LLResultTypes.FiducialResult> fiducials = result.getFiducialResults();
+        for (LLResultTypes.FiducialResult fiducial : fiducials) {
+            teamID = fiducial.getFiducialId();
         }
     }
-
+    public void setTeamID() {
+        if (teamID == 20) {
+            limelight.pipelineSwitch(5);
+        } else if (teamID == 24) {
+            limelight.pipelineSwitch(1);
+        }
+    }
+    public void setPipeline(int id) {
+        limelight.pipelineSwitch(id);
+        teamID = id;
+    }
     public String getObelisk() {
         if (PGP) {
             return "PGP";
@@ -132,6 +161,7 @@ public class GoalTagLimelight {
             return "No Tag Detected";
         }
     }
+    public int getPipeline() {return limelight.getStatus().getPipelineIndex();}
     public int getTeam() {
       return teamID;
     }

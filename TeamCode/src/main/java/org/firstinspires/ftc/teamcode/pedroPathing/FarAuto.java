@@ -7,8 +7,11 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -41,6 +44,7 @@ public class FarAuto extends LinearOpMode {
     private int teamID;
     private boolean testingMode = false;
     ElapsedTime timer = new ElapsedTime();
+    ElapsedTime timer2 = new ElapsedTime();
     Poses autoPoses = new Poses();
     private int angleOffset;
 
@@ -58,6 +62,7 @@ public class FarAuto extends LinearOpMode {
     public PathChain MOVETOLAUNCH3;
     public PathChain ENDOFFLINE;
 
+    private boolean ran = false;
     final double line1Y = 35.478;
     final double line2Y = 59.340;
 
@@ -90,10 +95,18 @@ public class FarAuto extends LinearOpMode {
         limelight = new GoalTagLimelight();
         limelight.init(hardwareMap,telemetry);
 
-        GlobalStorage.setPattern(null);
-        GlobalStorage.setAlliance(-1);
 
+        timer2.reset();
         do {
+            while (timer2.seconds() < 0.25) {
+                limelight.setTeam();
+                limelight.processRobotPose();
+                telemetry.addData("x", limelight.getX());
+                telemetry.addData("y", limelight.getY());
+                telemetry.addData("team ID", limelight.getTeam());
+                telemetry.addData("pipeline", limelight.getPipeline());
+                telemetry.update();
+            }
             limelight.readObelisk(telemetry);
             GlobalStorage.setPattern(limelight.getObelisk());
 
@@ -101,10 +114,11 @@ public class FarAuto extends LinearOpMode {
             telemetry.addData("launch",autoPoses.launchPose);
             telemetry.addData("Pattern", limelight.getObelisk());
             telemetry.addData("Is Tag Recent", limelight.seeObelisk);
-            telemetry.addData("team ID", teamID);
+            telemetry.addData("team ID", limelight.getTeam());
             telemetry.addData("Testing Mode", testingMode);
             telemetry.addLine("Press b for red, x for blue, y adds delay, a removes delay");
             telemetry.addData("Start Delay", startDelay);
+            telemetry.addData("pipeline", limelight.getPipeline());
             telemetry.addData("collectorPower", Shooter.collectorPower);
             telemetry.update();
 
@@ -131,12 +145,29 @@ public class FarAuto extends LinearOpMode {
             } else if (gamepad1.leftStickButtonWasPressed()) {
                 testingMode = true;
             }
+
+
+            if (limelight.getTeam() == 24 && !ran) {
+                angleOffset = 0;
+                autoPoses.build(0,1,line1Y,line2Y);
+                follower.setStartingPose(autoPoses.startPose);
+                buildPaths();
+                GlobalStorage.setAlliance(24);
+                ran = true;
+            } else if (limelight.getTeam() == 20 && !ran) {
+                angleOffset = 180;
+                autoPoses.build(20,-1,line1Y,line2Y);
+                follower.setStartingPose(autoPoses.startPose);
+                buildPaths();
+                GlobalStorage.setAlliance(20);
+                ran = true;
+            }
         } while (opModeInInit());
 
         waitForStart();
         //sleep(1000*startDelay);
         setPathState(0);
-        limelight.setTeam(teamID);
+        limelight.setTeamID();
 
         collectorBack.setPower(Shooter.collectorPower);
         collectorFront.setPower(Shooter.collectorPower);
@@ -145,14 +176,17 @@ public class FarAuto extends LinearOpMode {
         launchFlapRight.setPosition(0.4);
 
         while (opModeIsActive()) {
-
+            limelight.processRobotPose();
             follower.update(); // Update Pedro Pathing
             pathState = autonomousPathUpdate(); // Update autonomous state machine
 
+            telemetry.addData("x", limelight.getX());
+            telemetry.addData("y", limelight.getY());
+
             // Log values to Panels and Driver Station
             panelsTelemetry.debug("Path State", pathState);
-            panelsTelemetry.debug("X", follower.getPose().getX());
-            panelsTelemetry.debug("Y", follower.getPose().getY());
+//            panelsTelemetry.debug("X", follower.getPose().getX());
+//            panelsTelemetry.debug("Y", follower.getPose().getY());
             panelsTelemetry.debug("Heading", follower.getPose().getHeading());
             panelsTelemetry.update(telemetry);
         }
@@ -282,7 +316,7 @@ public class FarAuto extends LinearOpMode {
             case 3:
                 if (!follower.isBusy()) {
                     flipper.setPosition(1);
-                    if (timer.seconds() > 1) {
+                    if (timer.seconds() > 0.8) {
                         flipper.setPosition(0.525);
                         follower.followPath(COLLECT12, Shooter.maxPower, true);
                         timer.reset();
@@ -293,7 +327,7 @@ public class FarAuto extends LinearOpMode {
             case 4:
                 if (!follower.isBusy()) {
                     flipper.setPosition(0);
-                    if (timer.seconds() > 1) {
+                    if (timer.seconds() > 0.8) {
                         flipper.setPosition(0.525);
                         follower.followPath(COLLECT13, Shooter.maxPower, true);
                         setPathState(5);
@@ -326,7 +360,7 @@ public class FarAuto extends LinearOpMode {
             case 8:
                 if (!follower.isBusy()) {
                     flipper.setPosition(1);
-                    if (timer.seconds() > 1) {
+                    if (timer.seconds() > 0.8) {
                         flipper.setPosition(0.525);
                         follower.followPath(COLLECT22, Shooter.maxPower, true);
                         timer.reset();
@@ -337,7 +371,7 @@ public class FarAuto extends LinearOpMode {
             case 9:
                 if (!follower.isBusy()) {
                     flipper.setPosition(0);
-                    if (timer.seconds() > 1) {
+                    if (timer.seconds() > 0.8) {
                         flipper.setPosition(0.525);
                         follower.followPath(COLLECT23, Shooter.maxPower, true);
                         setPathState(10);

@@ -163,11 +163,7 @@ public class MecanumAutoCloseMoveOffLine extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            if (teamID == 24) {
-                limelight.setTeam(24);
-            } else if (teamID == 20) {
-                limelight.setTeam(20);
-            }
+            limelight.setTeam();
             sleep(startDelay*1000);
             if (limelight.getID() == 24) {
                 turn(0.5, 1300);

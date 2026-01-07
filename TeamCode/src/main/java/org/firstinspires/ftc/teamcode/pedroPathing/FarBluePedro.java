@@ -131,7 +131,7 @@ public class FarBluePedro extends LinearOpMode {
         while (opModeIsActive()) {
             //sleep(1000*startDelay);
 
-            limelight.setTeam(teamID);
+            //limelight.setTeam(teamID);
 
             collectorBack.setPower(Shooter.collectorPower);
             collectorFront.setPower(Shooter.collectorPower);

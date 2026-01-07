@@ -126,7 +126,7 @@ public class CloseAuto extends LinearOpMode {
         waitForStart();
         //sleep(1000*startDelay);
         setPathState(0);
-        limelight.setTeam(teamID);
+        limelight.setTeam();
 
         collectorBack.setPower(Shooter.collectorPower);
         collectorFront.setPower(Shooter.collectorPower);

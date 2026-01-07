@@ -155,11 +155,7 @@ public class MecanumAutoClose extends LinearOpMode {
         while (opModeIsActive()) {
             launchFlapLeft.setPosition(0.3);
             launchFlapRight.setPosition(0.4);
-            if (teamID == 24) {
-                limelight.setTeam(24);
-            } else if (teamID == 20) {
-                limelight.setTeam(20);
-            }
+            limelight.setTeam();
             sleep(startDelay*1000);
             if (limelight.getID() == 24) {
                 ch.turn(0.5, 1300);

@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -11,10 +13,14 @@ public class Chassis {
     private double maxPower = 1.0;
     private double maxSpeed = 1.0;  // make this slower for outreaches
     private double kPTurn = 0.14;
+    IMU imu;
 
     public DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
 
+
     public Chassis(HardwareMap hardwareMap) {
+        GlobalStorage.setPattern(null);
+        GlobalStorage.setAlliance(-1);
         frontLeftDrive = hardwareMap.get(DcMotor.class, "leftFront");
         frontRightDrive = hardwareMap.get(DcMotor.class, "rightFront");
         backLeftDrive = hardwareMap.get(DcMotor.class, "leftBack");

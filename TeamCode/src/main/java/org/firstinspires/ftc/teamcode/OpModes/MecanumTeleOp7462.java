@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode.OpModes;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -100,7 +101,7 @@ public class MecanumTeleOp7462 extends OpMode {
         limelight.init(hardwareMap, telemetry);
 
         if ((GlobalStorage.getAlliance() != -1)) {
-            limelight.setTeam(GlobalStorage.getAlliance());
+            limelight.setPipeline(GlobalStorage.getAlliance());
         }
         timerLeft.reset();
         timerRight.reset();
@@ -121,10 +122,10 @@ public class MecanumTeleOp7462 extends OpMode {
         telemetry.update();
         if (gamepad1.bWasPressed()) {
 //            goalTag.targetAprilTagID = 24;
-            limelight.setTeam(24);
+            limelight.setPipeline(24);
         } else if (gamepad1.xWasPressed()) {
             //goalTag.targetAprilTagID = 20;
-            limelight.setTeam(20);
+            limelight.setPipeline(20);
         } else if (gamepad1.rightStickButtonWasPressed()) {
             slowChildMode = true;
         }

@@ -126,7 +126,7 @@ public class CloseBluePedro extends LinearOpMode {
         while (opModeIsActive()) {
             //sleep(1000*startDelay);
 
-            limelight.setTeam(teamID);
+            limelight.setTeam();
 
             collectorBack.setPower(Shooter.collectorPower);
             collectorFront.setPower(Shooter.collectorPower);

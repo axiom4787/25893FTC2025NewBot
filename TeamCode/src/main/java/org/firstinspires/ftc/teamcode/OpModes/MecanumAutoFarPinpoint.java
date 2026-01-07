@@ -166,7 +166,6 @@ public class MecanumAutoFarPinpoint extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            limelight.setTeam(teamID);
             sleep(startDelay*1000);
 
             collectorBack.setPower(collectorPower);

@@ -67,10 +67,10 @@ public class ShooterVelocityDataLogger extends OpMode {
     public void init_loop() {
         if (gamepad1.bWasPressed()) {
 //            goalTag.targetAprilTagID = 24;
-            limelight.setTeam(24);
+            limelight.setPipeline(24);
         } else if (gamepad1.xWasPressed()) {
             //goalTag.targetAprilTagID = 20;
-            limelight.setTeam(20);
+            limelight.setPipeline(20);
         }
         telemetry.addData("Pattern", limelight.getObelisk());
         telemetry.addData("team ID", limelight.getID());

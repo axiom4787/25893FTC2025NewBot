@@ -189,7 +189,7 @@ public class MecanumAutoFar extends LinearOpMode {
             } // 450
             runtime.reset();
             while (runtime.seconds() < 0.25) {
-                limelight.setTeam(teamID);
+                limelight.setTeam();
                 limelight.process(telemetry);
                 velLeft = (limelight.getRange() + 202.17 - 10) / 8.92124;
                 velRight = (limelight.getRange() + 202.17 - 10) / 8.92124;
