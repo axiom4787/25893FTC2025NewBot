@@ -57,7 +57,8 @@ public class BasicRun extends LinearOpMode {
         rightBack = hardwareMap.get(DcMotorEx.class, "rightBackWheel");
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFrontWheel");
         rightFront = hardwareMap.get(DcMotorEx.class, "rightFrontWheel");
-
+        middleWheel = hardwareMap.get(DcMotorEx.class, "middleWheel");
+                                      
         leftBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightBack.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
