@@ -270,6 +270,12 @@ public class ShooterSubsystem {
         outtakeMotor.setPower(0);
     }
 
+    // --- Getters ---
+    public double getOuttakeVelocity() {
+        return outtakeMotor.getVelocity();
+    }
+
+
     public void addTelemetry(Telemetry telemetry) {
         telemetry.addLine("----- Shooter -----");
         telemetry.addData("Shooter Velocity = ", lastVelocity);

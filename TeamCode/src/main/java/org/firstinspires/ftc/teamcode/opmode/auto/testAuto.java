@@ -70,6 +70,8 @@ public class testAuto extends LinearOpMode {
             telemetry.addData("TxOffset", robot.turret.getTxOffset());
             telemetry.addData("ShooterBusy", robot.shooter.isBusy());
             telemetry.addData("DriveBusy", robot.drive.isBusy());
+            telemetry.addData("Outtake Velecity", robot.shooter.getOuttakeVelocity());
+
 
             switch (autoStep) {
                 case POSITION:
