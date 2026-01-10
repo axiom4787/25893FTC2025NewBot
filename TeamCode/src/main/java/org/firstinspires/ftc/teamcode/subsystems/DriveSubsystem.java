@@ -11,6 +11,8 @@ public class DriveSubsystem {
 
     private final DcMotor frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor;
     private double speedMultiplier = 1.0;
+    private static final double TICKS_PER_DEGREE = 4.52;
+
 
     double lastLfPower = 0;
     double lastLbPower = 0;
@@ -113,17 +115,30 @@ public class DriveSubsystem {
         backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
-    public void setTargetForwardInches(double inches, double power) {
-        int moveTicks = (int) Math.round(inches * TICKS_PER_INCH);
+    public void setTargetDrive(double forwardInches, double strafeInches, double rotateDegrees, double power) {
 
-        frontLeftMotor.setTargetPosition(frontLeftMotor.getCurrentPosition() + moveTicks);
-        frontRightMotor.setTargetPosition(frontRightMotor.getCurrentPosition() + moveTicks);
-        backLeftMotor.setTargetPosition(backLeftMotor.getCurrentPosition() + moveTicks);
-        backRightMotor.setTargetPosition(backRightMotor.getCurrentPosition() + moveTicks);
+        int forwardTicks = (int) Math.round(forwardInches * TICKS_PER_INCH);
+        int strafeTicks  = (int) Math.round(strafeInches  * TICKS_PER_INCH);
+        int rotateTicks  = (int) Math.round(rotateDegrees * TICKS_PER_DEGREE);
 
-        frontLeftMotor.setPower(power);
-        frontRightMotor.setPower(power);
-        backLeftMotor.setPower(power);
-        backRightMotor.setPower(power);
+        // Mecanum kinematics
+        int fl = forwardTicks + strafeTicks + rotateTicks;
+        int fr = forwardTicks - strafeTicks - rotateTicks;
+        int bl = forwardTicks - strafeTicks + rotateTicks;
+        int br = forwardTicks + strafeTicks - rotateTicks;
+
+        frontLeftMotor.setTargetPosition(frontLeftMotor.getCurrentPosition() + fl);
+        frontRightMotor.setTargetPosition(frontRightMotor.getCurrentPosition() + fr);
+        backLeftMotor.setTargetPosition(backLeftMotor.getCurrentPosition() + bl);
+        backRightMotor.setTargetPosition(backRightMotor.getCurrentPosition() + br);
+
+        // Power must be positive in RUN_TO_POSITION
+        double p = Math.abs(power);
+
+        frontLeftMotor.setPower(p);
+        frontRightMotor.setPower(p);
+        backLeftMotor.setPower(p);
+        backRightMotor.setPower(p);
     }
+
 }

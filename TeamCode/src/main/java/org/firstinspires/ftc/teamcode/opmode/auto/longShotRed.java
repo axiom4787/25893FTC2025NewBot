@@ -61,7 +61,7 @@ public class longShotRed extends LinearOpMode {
                         step = Step.DRIVE;
                         robot.drive.resetEncoders();
                         robot.drive.setRunToPositionMode();
-                        robot.drive.setTargetForwardInches(10, 0.8);
+                        //robot.drive.setTargetForwardInches(10, 0.8);
                     }
                     break;
 

@@ -19,8 +19,14 @@ public class testAuto extends LinearOpMode {
 
         // --- Set up wheels ---
         robot.drive.resetEncoders();
+
+        // --- Set up hood ---
         robot.shooter.angleUp();
         robot.shooter.angleDown();
+
+        robot.shooter.angleUp();
+        robot.shooter.angleUp();
+
 
         // --- Set up vision / turret ---
         // Set turret TX offset to +10 degrees <- Left (adjust if your sign convention differs)
@@ -78,7 +84,7 @@ public class testAuto extends LinearOpMode {
             switch (autoStep) {
                 case POSITION:
                     robot.drive.resetEncoders();
-                    robot.drive.setTargetForwardInches(2, 0.4);
+                    robot.drive.setTargetDrive(2, 0, 0, 0.4);
                     robot.drive.setRunToPositionMode();
                     timer.reset();
                     autoStep = AutoStep.AIM;
@@ -112,7 +118,7 @@ public class testAuto extends LinearOpMode {
                         if (timer.seconds() > 4) {
                             autoStep = AutoStep.DRIVE;
                             robot.drive.resetEncoders();
-                            robot.drive.setTargetForwardInches(10, 0.8);
+                            robot.drive.setTargetDrive(10, 0, 0, 0.8);
                             robot.drive.setRunToPositionMode();
                         }
 
@@ -121,8 +127,14 @@ public class testAuto extends LinearOpMode {
                         telemetry.addData("WARN", "Shooter timeout, continuing.");
                         autoStep = AutoStep.DRIVE;
                         robot.drive.resetEncoders();
-                        robot.drive.setTargetForwardInches(10, 0.8);
+                        robot.drive.setTargetDrive(10, 0, 0, 0.8);
                         robot.drive.setRunToPositionMode();
+                        timer.reset();
+                        if (timer.seconds() > 1.5) {
+                            telemetry.addLine("Rotation");
+                            robot.drive.setTargetDrive(0, 0,90, 1);
+                            robot.drive.setRunToPositionMode();
+                        }
 
                     }
                     break;
