@@ -1,11 +1,13 @@
+package org.firstinspires.ftc.teamcode.opmode.auto;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 
-@Autonomous(name="testAuto_fixed?")
-public class testAuto extends LinearOpMode {
+@Autonomous(name = "shortRed", group = "short")
+public class shortRed extends LinearOpMode {
     private enum AutoStep { POSITION, AIM, SHOOT, DRIVE, ROTATE, GRAB, BACK_UP, ROTATE_BACK, DONE }
 
     @Override
@@ -23,16 +25,12 @@ public class testAuto extends LinearOpMode {
         // --- Set up hood ---
         robot.shooter.angleUp();
         robot.shooter.angleDown();
-
-        robot.shooter.angleUp();
-        robot.shooter.angleUp();
-        robot.shooter.angleUp();
         robot.shooter.angleUp();
 
 
         // --- Set up vision / turret ---
         // Set turret TX offset to +10 degrees <- Left (adjust if your sign convention differs)
-        robot.turret.setTxOffset(2);
+        robot.turret.setTxOffset(0);
         robot.turret.setTurretKP(0.03);
 
         // Prefer explicit enable if available. If not, toggle is a fallback.
@@ -89,7 +87,7 @@ public class testAuto extends LinearOpMode {
             switch (autoStep) {
                 case POSITION:
                     robot.drive.resetEncoders();
-                    robot.drive.setTargetDrive(2, 0, 0, 0.4);
+                    robot.drive.setTargetDrive(55, 0, 0, -0.4);
                     robot.drive.setRunToPositionMode();
                     timer.reset();
                     autoStep = AutoStep.AIM;
@@ -105,7 +103,7 @@ public class testAuto extends LinearOpMode {
                             if (timer.seconds() > 1) {
                                 // Start shooting sequence
                                 autoStep = AutoStep.SHOOT;
-                                robot.shooter.startShot(1, "autoLong");
+                                robot.shooter.startShot(1, "short");
                                 timer.reset(); // begin shooter timeout
                             }
                         }
@@ -116,40 +114,37 @@ public class testAuto extends LinearOpMode {
                     break;
 
                 case SHOOT:
-                    // Proceed when shooter finished OR when timeout elapsed
-                    if (!robot.shooter.isBusy()) {
-                        // advance to driving
-                        timer.reset();
-                        if (timer.seconds() > 2) {
-                            autoStep = AutoStep.DRIVE;
-                            robot.drive.resetEncoders();
-                            robot.drive.setTargetDrive(24, 0, 0, 0.8);
-                            robot.drive.setRunToPositionMode();
-                            autoStep = AutoStep.DRIVE;
-                        }
-
-                    } else if (timer.seconds() > SHOOT_TIMEOUT_S) {
-                        // shooter stuck — bail out to next step to avoid stall
-                        telemetry.addData("WARN", "Shooter timeout, continuing.");
-                        robot.drive.resetEncoders();
-                        robot.drive.setTargetDrive(23, 0, 0, 0.5);
-                        robot.drive.setRunToPositionMode();
-                        timer.reset();
-                        autoStep = AutoStep.DRIVE;
-
-                    }
-                    break;
-
-                case DRIVE:
+                    // advance to driving
+                    timer.reset();
                     if (timer.seconds() > 2) {
-                        telemetry.addLine("Rotation");
-                        robot.drive.setTargetDrive(0, 0, 90, 0.5);
-                        rotate = true;
+                        autoStep = AutoStep.DRIVE;
+                        robot.drive.resetEncoders();
+                        robot.drive.setTargetDrive(0, -10, 0, 0.8);
                         robot.drive.setRunToPositionMode();
-                        autoStep = AutoStep.ROTATE;
-                        timer.reset();
-                    }
-                    break;
+                        autoStep = AutoStep.DRIVE;
+            } else if (timer.seconds() > SHOOT_TIMEOUT_S) {
+                // shooter stuck — bail out to next step to avoid stall
+                telemetry.addData("WARN", "Shooter timeout, continuing.");
+                robot.drive.resetEncoders();
+                robot.drive.setTargetDrive(0, -10, 0, 0.5);
+                robot.drive.setRunToPositionMode();
+                timer.reset();
+                autoStep = AutoStep.DRIVE;
+
+            }
+            break;
+
+            case DRIVE:
+                if (timer.seconds() > 2) {
+                    autoStep = AutoStep.DONE;
+//                        telemetry.addLine("Rotation");
+//                        robot.drive.setTargetDrive(0, 0, 90, 0.5);
+//                        rotate = true;
+//                        robot.drive.setRunToPositionMode();
+//                        autoStep = AutoStep.ROTATE;
+//                        timer.reset();
+                }
+                break;
 
                 case ROTATE:
                     if(timer.seconds() > 2) {
@@ -170,15 +165,15 @@ public class testAuto extends LinearOpMode {
                         robot.drive.setRunToPositionMode();
                         timer.reset();
                         autoStep = AutoStep.BACK_UP;
-                        }
+                    }
                     break;
 
                 case BACK_UP:
 
                     if(timer.seconds() > 1) {
-                        robot.drive.setTargetDrive(0,0, 70, -0.5);
+                        robot.drive.setTargetDrive(0, 0, 70, -0.5);
                         timer.reset();
-                        if(timer.seconds() > 3) {
+                        if (timer.seconds() > 3) {
                             robot.drive.setTargetDrive(-20, 0, 0, 0.5);
                             robot.shooter.startShot(1, "autoLong");
                             autoStep = AutoStep.BACK_UP;
@@ -186,27 +181,28 @@ public class testAuto extends LinearOpMode {
                         }
 
 
-                    if (!robot.drive.isBusy()) {
-                        autoStep = AutoStep.DONE;
+                        if (!robot.drive.isBusy()) {
+                            autoStep = AutoStep.DONE;
+                        }
                     }
-                    break;
+                        break;
 
 
 
 
 
-                case DONE:
-                    // Optionally stop motors or set a safe state
-                    break;
+                        case DONE:
+                            // Optionally stop motors or set a safe state
+                            break;
+                    }
+
+                    telemetry.update();
+                    // allow other threads / hardware to run
+                    idle();
             }
 
+            // cleanup / final telemetry
+            telemetry.addData("Auto", "Finished");
             telemetry.update();
-            // allow other threads / hardware to run
-            idle();
         }
-
-        // cleanup / final telemetry
-        telemetry.addData("Auto", "Finished");
-        telemetry.update();
     }
-}

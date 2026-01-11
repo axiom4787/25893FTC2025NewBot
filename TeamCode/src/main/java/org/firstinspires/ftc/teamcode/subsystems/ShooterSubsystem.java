@@ -32,7 +32,7 @@ public class ShooterSubsystem {
     // Tunables
     private final int shortShotVelocity = 950; // spin power
     private final int longShotVelocity = 1250; // spin power
-    private final int AutoShortShotVelocity = 950; // spin power
+    private final int AutoShortShotVelocity = 960; // spin power
     private final int AutoLongShotVelocity = 1000; // spin power
 
     private final int ejectVelocity = 500;
