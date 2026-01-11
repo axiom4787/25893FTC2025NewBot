@@ -33,7 +33,7 @@ public class ShooterSubsystem {
     private final int shortShotVelocity = 950; // spin power
     private final int longShotVelocity = 1250; // spin power
     private final int AutoShortShotVelocity = 950; // spin power
-    private final int AutoLongShotVelocity = 1100; // spin power
+    private final int AutoLongShotVelocity = 1000; // spin power
 
     private final int ejectVelocity = 500;
     private final double targetPower = 1.0; // spin power

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
 import static org.firstinspires.ftc.teamcode.constants.DriveConstants.DriveConstants.TICKS_PER_INCH;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -11,7 +12,7 @@ public class DriveSubsystem {
 
     private final DcMotor frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor;
     private double speedMultiplier = 1.0;
-    private static final double TICKS_PER_DEGREE = 4.52;
+    private static final double TICKS_PER_DEGREE = 7.75;
 
 
     double lastLfPower = 0;
@@ -133,12 +134,11 @@ public class DriveSubsystem {
         backRightMotor.setTargetPosition(backRightMotor.getCurrentPosition() + br);
 
         // Power must be positive in RUN_TO_POSITION
-        double p = Math.abs(power);
 
-        frontLeftMotor.setPower(p);
-        frontRightMotor.setPower(p);
-        backLeftMotor.setPower(p);
-        backRightMotor.setPower(p);
+        frontLeftMotor.setPower(fl);
+        frontRightMotor.setPower(fr);
+        backLeftMotor.setPower(bl);
+        backRightMotor.setPower(br);
     }
 
 }

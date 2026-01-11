@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 
 @Autonomous(name="testAuto_fixed?")
 public class testAuto extends LinearOpMode {
-    private enum AutoStep { POSITION, AIM, SHOOT, DRIVE, DONE }
+    private enum AutoStep { POSITION, AIM, SHOOT, DRIVE, ROTATE, DONE }
 
     @Override
     public void runOpMode() {
@@ -24,6 +24,7 @@ public class testAuto extends LinearOpMode {
         robot.shooter.angleUp();
         robot.shooter.angleDown();
 
+        robot.shooter.angleUp();
         robot.shooter.angleUp();
         robot.shooter.angleUp();
 
@@ -55,6 +56,7 @@ public class testAuto extends LinearOpMode {
         // safety timeout values (adjust as needed)
         final double SHOOT_TIMEOUT_S = 4;    // max seconds to wait for shooter
         final double AIM_TOLERANCE_DEG = 5.0;  // aim tolerance in degrees
+        boolean rotate = false;
 
         while (opModeIsActive() && autoStep != AutoStep.DONE) {
             // Update subsystems
@@ -79,6 +81,8 @@ public class testAuto extends LinearOpMode {
             telemetry.addData("ShooterBusy", robot.shooter.isBusy());
             telemetry.addData("DriveBusy", robot.drive.isBusy());
             telemetry.addData("Outtake Velocity", robot.shooter.getOuttakeVelocity());
+            telemetry.addData("Rotate", rotate);
+
 
 
             switch (autoStep) {
@@ -120,30 +124,39 @@ public class testAuto extends LinearOpMode {
                             robot.drive.resetEncoders();
                             robot.drive.setTargetDrive(10, 0, 0, 0.8);
                             robot.drive.setRunToPositionMode();
+                            autoStep = AutoStep.DRIVE;
                         }
 
                     } else if (timer.seconds() > SHOOT_TIMEOUT_S) {
                         // shooter stuck — bail out to next step to avoid stall
                         telemetry.addData("WARN", "Shooter timeout, continuing.");
-                        autoStep = AutoStep.DRIVE;
                         robot.drive.resetEncoders();
                         robot.drive.setTargetDrive(10, 0, 0, 0.8);
                         robot.drive.setRunToPositionMode();
                         timer.reset();
-                        if (timer.seconds() > 1.5) {
-                            telemetry.addLine("Rotation");
-                            robot.drive.setTargetDrive(0, 0,90, 1);
-                            robot.drive.setRunToPositionMode();
-                        }
+                        autoStep = AutoStep.DRIVE;
 
                     }
                     break;
 
                 case DRIVE:
+                    if (timer.seconds() > 4) {
+                        telemetry.addLine("Rotation");
+                        robot.drive.setTargetDrive(0, 0, 90, 0.8);
+                        rotate = true;
+                        robot.drive.setRunToPositionMode();
+                        autoStep = AutoStep.ROTATE;
+                    }
+                    break;
+
+                case ROTATE:
                     if (!robot.drive.isBusy()) {
                         autoStep = AutoStep.DONE;
                     }
                     break;
+
+
+
 
                 case DONE:
                     // Optionally stop motors or set a safe state
