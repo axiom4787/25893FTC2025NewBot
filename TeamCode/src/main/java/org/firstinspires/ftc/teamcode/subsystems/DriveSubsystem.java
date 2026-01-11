@@ -117,7 +117,7 @@ public class DriveSubsystem {
     }
 
     public void setTargetDrive(double forwardInches, double strafeInches, double rotateDegrees, double power) {
-
+        resetEncoders();
         int forwardTicks = (int) Math.round(forwardInches * TICKS_PER_INCH);
         int strafeTicks  = (int) Math.round(strafeInches  * TICKS_PER_INCH);
         int rotateTicks  = (int) Math.round(rotateDegrees * TICKS_PER_DEGREE);
@@ -133,9 +133,11 @@ public class DriveSubsystem {
         backLeftMotor.setTargetPosition(backLeftMotor.getCurrentPosition() + bl);
         backRightMotor.setTargetPosition(backRightMotor.getCurrentPosition() + br);
 
-        frontLeftMotor.setPower(fl * power);
-        frontRightMotor.setPower(fr * power);
-        backLeftMotor.setPower(bl * power);
-        backRightMotor.setPower(br * power);
+        double p = Math.abs(power);  // must be > 0
+        frontLeftMotor.setPower(p);
+        frontRightMotor.setPower(p);
+        backLeftMotor.setPower(p);
+        backRightMotor.setPower(p);
+
     }
 }

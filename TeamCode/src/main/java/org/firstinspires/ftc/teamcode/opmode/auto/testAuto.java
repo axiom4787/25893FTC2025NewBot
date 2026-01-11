@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.hardware.Robot;
 
 @Autonomous(name="testAuto_fixed?")
 public class testAuto extends LinearOpMode {
-    private enum AutoStep { POSITION, AIM, SHOOT, DRIVE, ROTATE, GRAB, DONE }
+    private enum AutoStep { POSITION, AIM, SHOOT, DRIVE, ROTATE, GRAB, BACK_UP, DONE }
 
     @Override
     public void runOpMode() {
@@ -122,7 +122,7 @@ public class testAuto extends LinearOpMode {
                         if (timer.seconds() > 4) {
                             autoStep = AutoStep.DRIVE;
                             robot.drive.resetEncoders();
-                            robot.drive.setTargetDrive(10, 0, 0, 0.8);
+                            robot.drive.setTargetDrive(22, 0, 0, 0.8);
                             robot.drive.setRunToPositionMode();
                             autoStep = AutoStep.DRIVE;
                         }
@@ -131,7 +131,7 @@ public class testAuto extends LinearOpMode {
                         // shooter stuck — bail out to next step to avoid stall
                         telemetry.addData("WARN", "Shooter timeout, continuing.");
                         robot.drive.resetEncoders();
-                        robot.drive.setTargetDrive(17, 0, 0, 0.8);
+                        robot.drive.setTargetDrive(22, 0, 0, 0.5);
                         robot.drive.setRunToPositionMode();
                         timer.reset();
                         autoStep = AutoStep.DRIVE;
@@ -142,7 +142,7 @@ public class testAuto extends LinearOpMode {
                 case DRIVE:
                     if (timer.seconds() > 4) {
                         telemetry.addLine("Rotation");
-                        robot.drive.setTargetDrive(0, 0, 90, 0.8);
+                        robot.drive.setTargetDrive(0, 0, 87, 0.5);
                         rotate = true;
                         robot.drive.setRunToPositionMode();
                         autoStep = AutoStep.ROTATE;
@@ -154,7 +154,7 @@ public class testAuto extends LinearOpMode {
                     if(timer.seconds() > 1) {
                         robot.shooter.startIntake(1);
                         robot.shooter.startOuttake(-0.5);
-                        robot.drive.setTargetDrive(40, 0, 0, 0.1);
+                        robot.drive.setTargetDrive(40, 0, 0, 0.05);
                         robot.drive.setRunToPositionMode();
                         autoStep = AutoStep.GRAB;
                         timer.reset();
