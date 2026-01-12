@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.utils.Logger;
 
 public class Launcher {
 
-    final double FEED_TIME = 0.25;
+    final double FEED_TIME = 0.23;
     //The feeder servos run this long when a shot is requested.
     final double STOP_SPEED = 0.0;
     //We send this power to the servos when we want them to stop.
