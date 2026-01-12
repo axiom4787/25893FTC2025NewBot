@@ -1,13 +1,11 @@
-package org.firstinspires.ftc.teamcode.adikan;
+package org.firstinspires.ftc.teamcode.members.adishesh;
 
-
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-
-@Autonomous(name = "Adi's auto dance")
-public class DanceForMe extends LinearOpMode {
+@TeleOp(name = "Adi's auto strafe")
+public class Strafing extends LinearOpMode {
     static final double COUNTS_PER_MOTOR_REV = 537.7;    // eg: TETRIX Motor Encoder
     static final double DRIVE_GEAR_REDUCTION = 1.0;     // No External Gearing.
     static final double WHEEL_DIAMETER_INCHES = 4.0;     // For figuring circumference
@@ -39,37 +37,49 @@ public class DanceForMe extends LinearOpMode {
         waitForStart();
         // forward 3, backward 3, clockwise 2, anticlockwise 2, left 3, right 3
 
-        int count = 1;
-        while(opModeIsActive() && count <= 1) {
 
-            move(0.1, 0, 0);
-            telemetry.addData("before first sleep", "");
+        while(opModeIsActive()) {
+
+            double axial   = -gamepad1.left_stick_y;
+            double lateral =  gamepad1.left_stick_x;
+            double yaw     =  gamepad1.right_stick_x;
+
+
+            move(axial, lateral, yaw);
+            telemetry.addData("axial", axial);
             telemetry.update();
-            sleep(3000);
+            sleep(1000);
 
-            move(0, 0, 0.015);
-            telemetry.addData("before second sleep", "");
-            telemetry.update();
-            sleep(10000);
 
-            move(0.05, 0.1, 0);
-            telemetry.addData("before third sleep", "");
-            telemetry.update();
-            sleep(3000);
-
-            move(0.1,0.04, 0);
-            sleep(3000);
-            ++count;
 
         }
 
     }
 
     private void move(double axial, double lateral, double yaw) {
-            frontLeftDrive.setPower(axial+lateral+yaw);
-            frontRightDrive.setPower(axial-lateral-yaw);
-            rearLeftDrive.setPower(axial-lateral+yaw);
-            rearRightDrive.setPower(axial+lateral-yaw);
+        double max;
+        double frontLeftPower  = axial + lateral + yaw;
+        double frontRightPower = axial - lateral - yaw;
+        double backLeftPower   = axial - lateral + yaw;
+        double backRightPower  = axial + lateral - yaw;
+
+        // Normalize the values so no wheel power exceeds 100%
+        // This ensures that the robot maintains the desired motion.
+        max = Math.max(Math.abs(frontLeftPower), Math.abs(frontRightPower));
+        max = Math.max(max, Math.abs(backLeftPower));
+        max = Math.max(max, Math.abs(backRightPower));
+
+        if (max >= 1) {
+            frontLeftPower  /= max;
+            frontRightPower /= max;
+            backLeftPower   /= max;
+            backRightPower  /= max;
+        }
+
+        frontLeftDrive.setPower(frontLeftPower);
+        frontRightDrive.setPower(frontRightPower);
+        rearLeftDrive.setPower(backLeftPower);
+        rearRightDrive.setPower(backRightPower);
     }
 
 

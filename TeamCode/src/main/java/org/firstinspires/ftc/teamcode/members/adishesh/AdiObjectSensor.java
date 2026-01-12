@@ -3,9 +3,13 @@ package org.firstinspires.ftc.teamcode.members.adishesh;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 
-@Autonomous(name = "Adi's auto move")
-public class AutoForward extends LinearOpMode {
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
+@Autonomous(name = "Adi's Object Sensor")
+public class AdiObjectSensor extends LinearOpMode {
     static final double COUNTS_PER_MOTOR_REV = 537.7;    // eg: TETRIX Motor Encoder
     static final double DRIVE_GEAR_REDUCTION = 1.0;     // No External Gearing.
     static final double WHEEL_DIAMETER_INCHES = 4.0;     // For figuring circumference
@@ -16,6 +20,7 @@ public class AutoForward extends LinearOpMode {
     private DcMotor rearLeftDrive = null;
     private DcMotor frontRightDrive = null;
     private DcMotor rearRightDrive = null;
+    private DistanceSensor distanceSensor;
 
     private int leftPos;
     private int rightPos;
@@ -27,6 +32,7 @@ public class AutoForward extends LinearOpMode {
         rearLeftDrive = hardwareMap.get(DcMotor.class, "back_left_motor");
         frontRightDrive = hardwareMap.get(DcMotor.class, "front_right_motor");
         rearRightDrive = hardwareMap.get(DcMotor.class, "back_right_motor");
+        distanceSensor = hardwareMap.get(DistanceSensor.class, "distance_sensor");
 
         frontLeftDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRightDrive.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -42,11 +48,11 @@ public class AutoForward extends LinearOpMode {
         // forward 3, backward 3, clockwise 2, anticlockwise 2, left 3, right
 
         // Move front
-        move(5, 5, 0.2);
-        sleep(1000);
+        move(100, 100, 0.2);
+        //sleep(1000);
         //Move back
-        move(-5,-5,0.2);
-        sleep(1000);
+        //move(-5,-5,0.2);
+        //sleep(1000);
 
 
 
@@ -81,9 +87,13 @@ public class AutoForward extends LinearOpMode {
         rearLeftDrive.setPower(power);
         rearRightDrive.setPower(power);
 
-        while(opModeIsActive() && frontLeftDrive.isBusy() && frontRightDrive.isBusy() && rearLeftDrive.isBusy() && rearRightDrive.isBusy()) {
+        while(opModeIsActive() && frontLeftDrive.isBusy() && frontRightDrive.isBusy() &&
+                rearLeftDrive.isBusy() && rearRightDrive.isBusy() && distanceSensor.getDistance(DistanceUnit.INCH) > 20) {
 
+            telemetry.addData("Distance of object in inches - ", distanceSensor.getDistance(DistanceUnit.INCH));
+            telemetry.update();
         }
+
         frontLeftDrive.setPower(0);
         frontRightDrive.setPower(0);
         rearLeftDrive.setPower(0);
