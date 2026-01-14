@@ -54,6 +54,6 @@ public class OdometryFun extends OurOpmode {
         double yOffset = object.position.getY(DistanceUnit.INCH) - robotPosition.getY(DistanceUnit.INCH);
 
         double angle = Math.toDegrees(Math.atan2(yOffset,xOffset));
-        robot.drive.turnDegreesPID(robot.imu,angle-robotPosition.getHeading(AngleUnit.DEGREES),0.2,1);
+        robot.drive.turnDegreesPID(angle-robotPosition.getHeading(AngleUnit.DEGREES),0.2,1);
     }
 }

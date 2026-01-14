@@ -70,8 +70,9 @@ public class MecanumLauncher extends OurOpmode{
     protected void initialize() {
         logger = new Logger(telemetry);
         launcher = new Launcher(this);
-        drive = new MecanumDrive(this,logger, MecanumDrive.RobotName.BOB);
         imu = new IMUW(hardwareMap,"imu", RevHubOrientationOnRobot.LogoFacingDirection.RIGHT, RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD);
+        drive = new MecanumDrive(this,logger, MecanumDrive.RobotName.BOB,imu);
+
         drive.setMotorZeroPowerBehaviors(DcMotor.ZeroPowerBehavior.BRAKE);
         imu.resetYaw();
         logger.logData(Logger.LoggerMode.CRITICAL,"Status","Init");

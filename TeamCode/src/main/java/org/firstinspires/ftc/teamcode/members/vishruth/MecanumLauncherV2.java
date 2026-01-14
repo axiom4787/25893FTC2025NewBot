@@ -30,9 +30,9 @@ public class MecanumLauncherV2 extends OurOpmode{
     @Override
     protected void Loop() {
         // this if the rightBumper is constantly pressed, then do the power o.82, otherwise, 0.5
-        power = gamepad1.right_bumper ? fastPower : normalPower;
+        power = gamepad1.left_bumper ? fastPower : normalPower;
         // if the leftBumper was pressed, it checks what state the driver preference is and converts it to the other one
-        if (gamepad1.leftBumperWasPressed()) {
+        if (gamepad2.leftBumperWasPressed()) {
             preference = (preference == DriverPreference.NORMAL)
                     ? DriverPreference.FIELD_RELATIVE
                     : DriverPreference.NORMAL;
@@ -42,18 +42,18 @@ public class MecanumLauncherV2 extends OurOpmode{
         driveBasedOnPreferences();
 
 
-        launcher.launchTeleOp(gamepad2.rightBumperWasPressed());
+        launcher.launchTeleOp(gamepad1.rightBumperWasPressed());
         
-        if (gamepad2.bWasPressed()){
+        if (gamepad1.bWasPressed()){
             launcher.stopFlywheel();
             logger.logData(Logger.LoggerMode.CRITICAL,"Flywheel","Stopped");
         }
 
-        if (gamepad1.yWasPressed()){
+        if (gamepad2.yWasPressed()){
             imu.resetYaw();
         }
 
-        if (gamepad2.yWasPressed()){
+        if (gamepad1.yWasPressed()){
             launcher.spinUpFlywheel();
             logger.logData(Logger.LoggerMode.CRITICAL,"Flywheel","Spinning Up");
         }
@@ -105,7 +105,7 @@ public class MecanumLauncherV2 extends OurOpmode{
         //initializing everything else
         logger = new Logger(telemetry);
         launcher = new Launcher(this);
-        drive = new MecanumDrive(this,logger, MecanumDrive.RobotName.BOB);
+        drive = new MecanumDrive(this,logger, MecanumDrive.RobotName.BOB,imu);
         imu = new IMUW(hardwareMap,"imu", RevHubOrientationOnRobot.LogoFacingDirection.RIGHT, RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD);
         drive.setMotorZeroPowerBehaviors(DcMotor.ZeroPowerBehavior.BRAKE);
         imu.resetYaw();

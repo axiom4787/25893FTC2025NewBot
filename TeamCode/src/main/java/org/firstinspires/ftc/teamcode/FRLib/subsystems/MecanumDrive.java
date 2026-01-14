@@ -410,14 +410,14 @@ public class MecanumDrive {
         driveStraightDistanceSensor(imu,0,inches,power,100,sensor,tooCloseInches);
         countsWhenDetect = frontLeft.getPosition();
         double countsLeft = startCounts-countsWhenDetect;
-        turnDegreesPID(imu,90,0.2,0.5);
+        turnDegreesPID(90,0.2,0.5);
         imu.resetYaw();
-        driveStraight(imu,0,15,power,100);
-        turnDegreesPID(imu,-90,0.2,0.5);
-        driveStraight(imu,0,(float)countsLeft/COUNTS_PER_INCH,power,100);
-        turnDegreesPID(imu,-90,0.2,0.5);
-        driveStraight(imu,0,15,power,100);
-        turnDegreesPID(imu,90,0.2,0.5);
+        driveStraight(0,15,power,100);
+        turnDegreesPID(-90,0.2,0.5);
+        driveStraight(0,(float)countsLeft/COUNTS_PER_INCH,power,100);
+        turnDegreesPID(-90,0.2,0.5);
+        driveStraight(0,15,power,100);
+        turnDegreesPID(90,0.2,0.5);
 
     }
 
