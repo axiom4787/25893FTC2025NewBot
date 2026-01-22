@@ -52,10 +52,11 @@ public class PleaseRobotINeedThis extends LinearOpMode {
     private HuskyLens huskyLens;
     private IMU imu;
     private double shooterPower = 0.0;
-//    private boolean useHuskyLensForAim = true;
+    private boolean useHuskyLensForAim = true;
     private boolean autoLinearActuatorControl = true;
     private boolean autoTurretControl = true;
     private boolean driveInFieldRelative = true;
+    private boolean runShooter = false;
 
     final double GUIDE_DOWN = 0.75;
     final double GUIDE_UP = 0.25;
@@ -75,14 +76,14 @@ public class PleaseRobotINeedThis extends LinearOpMode {
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
 
-            if (gamepad1.yWasPressed()) {
+            if (gamepad1.aWasPressed()) {
                 imu.resetYaw();
                 gamepad1.rumble(100);
             }
 
             autoControlToggles();
 
-            if (gamepad1.dpadUpWasPressed()) {
+            if (gamepad1.xWasPressed()) {
                 driveInFieldRelative = !driveInFieldRelative;
                 gamepad1.rumble(600);
             }
@@ -94,30 +95,36 @@ public class PleaseRobotINeedThis extends LinearOpMode {
             else drive(forward, right, rotate);
 
             intake();
-            shooter();
 
-            if (autoLinearActuatorControl) autoTurret();
-            else turret();
-
-            if (autoTurretControl) linearActuator();
-            else autoLinearActuator();
+            if (useHuskyLensForAim) {
+                autoTurret();
+                autoLinearActuator();
+                autoShooter();
+            } else {
+                linearActuator();
+                turret();
+                shooter();
+            }
+            if (gamepad1.right_bumper) {
+                shooterPower = -0.5;
+            }
+            if (gamepad1.left_trigger > 0) {
+                shooter.setPower(shooterPower);
+            } else {
+                shooter.setPower(0.0);
+            }
 
             telemetry.update();
         }
     }
 
     private void autoControlToggles() {
-        if (gamepad1.rightBumperWasPressed()) {
-            autoLinearActuatorControl = !autoLinearActuatorControl;
-            gamepad1.rumble(300);
-        }
-        if (gamepad1.leftBumperWasPressed()) {
-            autoTurretControl = !autoTurretControl;
+        if (gamepad1.bWasPressed()) {
+            useHuskyLensForAim = !useHuskyLensForAim;
             gamepad1.rumble(300);
         }
 
-        telemetry.addData("Linear actuator control", autoLinearActuatorControl ? "Auto" : "Manual");
-        telemetry.addData("Turret control", autoTurretControl ? "Auto" : "Manual");
+        telemetry.addData("Shooter aim control mode", useHuskyLensForAim ? "Auto" : "Manual");
     }
     private void initElectronics() {
         Config config = new Config();
@@ -163,19 +170,10 @@ public class PleaseRobotINeedThis extends LinearOpMode {
           if (gamepad1.dpad_down) {
               linearActuator.setPosition(GUIDE_DOWN);
           }
-
-//        double actuatorPosition = linearActuator.getPosition();
-//
-//        if (gamepad1.dpad_up) {
-//            actuatorPosition -= 0.001;
-//        } else if (gamepad1.dpad_down) {
-//            actuatorPosition += 0.001;
-//        }
-//        if (actuatorPosition > GUIDE_DOWN) actuatorPosition = GUIDE_DOWN;
-//        if (actuatorPosition < GUIDE_UP) actuatorPosition = GUIDE_UP;
-//        linearActuator.setPosition(actuatorPosition);
-
-//        telemetry.addData("Linear actuator position", "%4.2f", actuatorPosition);
+          if (gamepad1.dpad_up) {
+              linearActuator.setPosition(GUIDE_UP);
+          }
+          telemetry.addData("Linear actuator position", "%4.2f", linearActuator.getPosition());
     }
     private void autoLinearActuator() {
         HuskyLens.Block target = getTargetBlock();
@@ -204,7 +202,6 @@ public class PleaseRobotINeedThis extends LinearOpMode {
 
         if (target != null) {
             setTurretServosPower(-((target.x / 160f) - 1) * 0.5);
-            shooterPower = 0.8 - Math.max(0f, target.height - 30f) / 350f;
             telemetry.addData("Size", target.height);
         } else {
             setTurretServosPower(0f);
@@ -232,49 +229,22 @@ public class PleaseRobotINeedThis extends LinearOpMode {
         return new double[] {xDistance, yDistance, zDistance}; // Local x, y, and z, all in inches relative to the view
     }
 
+    private void autoShooter() {
+        HuskyLens.Block target = getTargetBlock();
+        if (target == null) return;
+
+        shooterPower = 0.8 - Math.max(0f, target.height - 30f) / 350f;
+    }
     private void shooter() {
-        if (gamepad1.aWasPressed()) shooterPower = 0.8;
-        // should probably be based on distance from goal, which huskylens knows
-
-        if (gamepad1.xWasPressed()) shooterPower = 0.0;
-
-        if (gamepad1.b) {
-            shooter.setPower(-0.5);
-            telemetry.addData("Shooter power", "-0.5");
-        } else {
-            shooter.setPower(shooterPower);
-            telemetry.addData("Shooter power", "%4.2f", shooterPower);
-        }
-
+        shooterPower = 0.8;
     }
 
     private void intake() {
         double intakeSpeed = gamepad1.right_trigger;
-        // push down more for faster intake, less for slower
+        if (gamepad1.right_bumper) intakeSpeed = -0.5;
 
-        if (gamepad1.b) { // reverse shooter and intake if B is pressed
-            intakeSpeed *= -1;
-        }
         intake.setPower(intakeSpeed);
         telemetry.addData("Intake speed", "%.2f", intakeSpeed);
-
-        // old code in case we need it
-//        if (gamepad1.yWasReleased()) {
-//            runShooter = false;
-//            shooter.setPower(0.0);
-//        }
-//        if (gamepad1.b) {
-//            intake.setPower(1.0);
-//            telemetry.addData("Intake", "Forward");
-//        } else if (gamepad1.y) {
-//            intake.setPower(-1.0);
-//            shooter.setPower(-0.5);
-//            runShooter = true;
-//            telemetry.addData("Intake", "Reverse");
-//        } else {
-//            intake.setPower(0.0);
-//            telemetry.addData("Intake", "Idle");
-//        }
     }
 
     private void drive(double forward, double right, double rotate) {
