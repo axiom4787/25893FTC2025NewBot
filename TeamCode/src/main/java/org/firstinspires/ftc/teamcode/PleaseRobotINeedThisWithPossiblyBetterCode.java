@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -39,11 +40,11 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@TeleOp(name="run the robot DONT USE ME :D", group="Linear OpMode")
-public class PleaseRobotINeedThis extends LinearOpMode {
+@TeleOp(name="run the robot v2", group="Linear OpMode")
+@Disabled
+public class PleaseRobotINeedThisWithPossiblyBetterCode extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive;
     private DcMotor intake, shooter;
@@ -51,16 +52,13 @@ public class PleaseRobotINeedThis extends LinearOpMode {
     private Servo linearActuator;
     private HuskyLens huskyLens;
     private IMU imu;
+
     private double shooterPower = 0.0;
     private boolean useHuskyLensForAim = true;
-    private boolean autoLinearActuatorControl = true;
-    private boolean autoTurretControl = true;
     private boolean driveInFieldRelative = true;
-    private boolean runShooter = false;
 
-    final double GUIDE_DOWN = 0.75;
-    final double GUIDE_UP = 0.25;
-
+    final double HOOD_POSITION_DOWN = 0.75;
+    final double HOOD_POSITION_UP = 0.25;
     @Override
     public void runOpMode() {
         initElectronics();
@@ -71,7 +69,7 @@ public class PleaseRobotINeedThis extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        linearActuator.setPosition(GUIDE_DOWN);
+        linearActuator.setPosition(HOOD_POSITION_DOWN);
 
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
@@ -167,12 +165,8 @@ public class PleaseRobotINeedThis extends LinearOpMode {
     }
 
     private void linearActuator() {
-          if (gamepad1.dpad_down) {
-              linearActuator.setPosition(GUIDE_DOWN);
-          }
-          if (gamepad1.dpad_up) {
-              linearActuator.setPosition(GUIDE_UP);
-          }
+          if (gamepad1.dpad_down) { linearActuator.setPosition(HOOD_POSITION_DOWN); }
+          if (gamepad1.dpad_up) {   linearActuator.setPosition(HOOD_POSITION_UP);   }
           telemetry.addData("Linear actuator position", "%4.2f", linearActuator.getPosition());
     }
     private void autoLinearActuator() {
@@ -239,6 +233,9 @@ public class PleaseRobotINeedThis extends LinearOpMode {
         shooterPower = 0.8;
     }
 
+    private void intakeSystem() {
+        intake();
+    }
     private void intake() {
         double intakeSpeed = gamepad1.right_trigger;
         if (gamepad1.right_bumper) intakeSpeed = -0.5;
@@ -247,6 +244,19 @@ public class PleaseRobotINeedThis extends LinearOpMode {
         telemetry.addData("Intake speed", "%.2f", intakeSpeed);
     }
 
+    private void driveSystem() {
+        double forward = -gamepad1.left_stick_y; // Note: pushing stick forward gives negative value
+        double right   =  gamepad1.left_stick_x;
+        double rotate  =  gamepad1.right_stick_x;
+
+        if (driveInFieldRelative) {
+            driveFieldRelative(forward, right, rotate);
+        } else {
+            drive(forward, right, rotate);
+        }
+
+        telemetry.addData("Driving mode", driveInFieldRelative ? "Field relative" : "Robot relative");
+    }
     private void drive(double forward, double right, double rotate) {
         // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
 
@@ -293,6 +303,7 @@ public class PleaseRobotINeedThis extends LinearOpMode {
         // Finally, call the drive method with robot relative forward and right amounts
         drive(newForward, newRight, rotate);
     }
+
     private void setTurretServosPower(double position) {
         turretRight.setPower(position);
         turretLeft.setPower(position);
