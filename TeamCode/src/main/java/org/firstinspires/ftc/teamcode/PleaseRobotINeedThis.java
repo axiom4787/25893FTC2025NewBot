@@ -42,7 +42,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@TeleOp(name="run the robot DONT USE ME :D", group="Linear OpMode")
+@TeleOp(name="run the robot", group="Linear OpMode")
 public class PleaseRobotINeedThis extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive;

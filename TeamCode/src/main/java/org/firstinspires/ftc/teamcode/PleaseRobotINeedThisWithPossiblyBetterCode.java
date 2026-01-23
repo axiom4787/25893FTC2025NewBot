@@ -42,7 +42,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@TeleOp(name="run the robot v2", group="Linear OpMode")
+@TeleOp(name="run the robot v2 not comp ready", group="Linear OpMode")
 @Disabled
 public class PleaseRobotINeedThisWithPossiblyBetterCode extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
