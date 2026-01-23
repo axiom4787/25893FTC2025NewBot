@@ -42,7 +42,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@TeleOp(name="run the robot v2 not comp ready", group="Linear OpMode")
+@TeleOp(name="not comp ready code", group="Linear OpMode")
 @Disabled
 public class PleaseRobotINeedThisWithPossiblyBetterCode extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
@@ -57,8 +57,34 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends LinearOpMode {
     private boolean useHuskyLensForAim = true;
     private boolean driveInFieldRelative = true;
 
-    final double HOOD_POSITION_DOWN = 0.75;
-    final double HOOD_POSITION_UP = 0.25;
+    private static class HOOD_POSITION {
+        public static final double DOWN = 0.75;
+        public static final double UP = 0.25;
+
+        public static double clamp(double pos) {
+            if (pos > HOOD_POSITION.DOWN) pos = HOOD_POSITION.DOWN;
+            if (pos < HOOD_POSITION.UP) pos = HOOD_POSITION.UP;
+            return pos;
+        }
+    }
+
+    private static class SHOOTER {
+        public static double OFF_POWER = 0.0;
+        public static double SHOOT_POWER = 0.8;
+        public static double REVERSE_POWER = -0.5;
+    }
+
+    private static class INTAKE {
+        public static double OFF_POWER = 0.0;
+        public static double REVERSE_POWER = 0.0;
+    }
+
+    private static class TURRET {
+        public static double OFF_POWER = 0.0;
+        public static double RIGHT_POWER = 1.0;
+        public static double LEFT_POWER = -1.0;
+    }
+
     @Override
     public void runOpMode() {
         initElectronics();
@@ -69,61 +95,62 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
-        linearActuator.setPosition(HOOD_POSITION_DOWN);
+        linearActuator.setPosition(HOOD_POSITION.DOWN);
+        // Set initial linear actuator position so that the code knows where it is.
+        // The linear actuator can't actually read its position, it reads
+        // the last set position as its position
 
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
 
-            if (gamepad1.aWasPressed()) {
-                imu.resetYaw();
-                gamepad1.rumble(100);
-            }
+            robotControlToggles();
 
-            autoControlToggles();
-
-            if (gamepad1.xWasPressed()) {
-                driveInFieldRelative = !driveInFieldRelative;
-                gamepad1.rumble(600);
-            }
-            telemetry.addData("Driving mode", driveInFieldRelative ? "Field relative" : "Robot relative");
-            double forward = -gamepad1.left_stick_y; // Note: pushing stick forward gives negative value
-            double right   =  gamepad1.left_stick_x;
-            double rotate  =  gamepad1.right_stick_x;
-            if (driveInFieldRelative) driveFieldRelative(forward, right, rotate);
-            else drive(forward, right, rotate);
-
-            intake();
-
-            if (useHuskyLensForAim) {
-                autoTurret();
-                autoLinearActuator();
-                autoShooter();
-            } else {
-                linearActuator();
-                turret();
-                shooter();
-            }
-            if (gamepad1.right_bumper) {
-                shooterPower = -0.5;
-            }
-            if (gamepad1.left_trigger > 0) {
-                shooter.setPower(shooterPower);
-            } else {
-                shooter.setPower(0.0);
-            }
+            driveSystem();
+            intakeSystem();
+            turretSystem();
+            linearActuatorSystem();
+            shooterSystem();
 
             telemetry.update();
         }
     }
 
-    private void autoControlToggles() {
-        if (gamepad1.bWasPressed()) {
-            useHuskyLensForAim = !useHuskyLensForAim;
-            gamepad1.rumble(300);
+    private HuskyLens.Block getTargetBlock() {
+        HuskyLens.Block target = null;
+        HuskyLens.Block[] blocks = huskyLens.blocks();
+//        telemetry.addData("Block count", blocks.length);
+        double biggestBlockSize = 0f;
+        for (HuskyLens.Block block : blocks) {
+            if (block.height * block.width > biggestBlockSize) {
+                target = block;
+                biggestBlockSize = block.height * block.width;
+            }
+//            telemetry.addData("Block", block.toString());
         }
 
-        telemetry.addData("Shooter aim control mode", useHuskyLensForAim ? "Auto" : "Manual");
+        return target;
     }
+
+    public double[] getRealPos(HuskyLens.Block targetBlock, double REAL_WIDTH) {
+        double HALFCAMERAWIDTH = 320f / 2f;
+        double HALFCAMERAHEIGHT = 180f / 2f;
+
+        // Should be how much you need to multiply the distance calculation by to be accurate
+        // You can find by running `TuneGetRealPos` and finding how much you need to multiply by to get the actual value, then multiply whichever of these you are tuning by that value to get your new value. These are the default values that produce +- 0.5 in of accuracy
+        double ZSCALAR = 333.333; // How much you need to multiply the z distance calculation by to be accurate
+        double XSCALAR = 0.555; // Same as above but for x distance
+        double YSCALAR = 0.555; // """
+
+        double targetBlockScale = Math.max(targetBlock.width, targetBlock.height); // our tag could be rotated, so we will take the largest of these to prevent errors
+
+        double zDistance = (REAL_WIDTH / targetBlockScale) * ZSCALAR; // distance away in inches
+
+        double xDistance = ((targetBlock.x - HALFCAMERAWIDTH) / HALFCAMERAWIDTH) * zDistance * XSCALAR; // the distance from the center in inches locally
+        double yDistance = ((HALFCAMERAHEIGHT - targetBlock.y) / HALFCAMERAHEIGHT) * zDistance * YSCALAR;
+
+        return new double[] {xDistance, yDistance, zDistance}; // Local x, y, and z, all in inches relative to the view
+    }
+
     private void initElectronics() {
         Config config = new Config();
         config.init(hardwareMap);
@@ -147,98 +174,110 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends LinearOpMode {
         imu.initialize(new IMU.Parameters(orientationOnRobot));
     }
 
-    private HuskyLens.Block getTargetBlock() {
-        HuskyLens.Block target = null;
-        HuskyLens.Block[] blocks = huskyLens.blocks();
-//        telemetry.addData("Block count", blocks.length);
-        double size = 0f;
-        for (int i = 0; i < blocks.length; i++) {
-            HuskyLens.Block block = blocks[i];
-            if (block.height * block.width > size) {
-                target = block;
-                size = block.height * block.width;
-            }
-//            telemetry.addData("Block", block.toString());
+    private void robotControlToggles() {
+        // A -> Reset gyro
+        // B -> Toggle manual turret aim
+        // X -> Toggle field relative
+
+        if (gamepad1.aWasPressed()) {
+            imu.resetYaw();
+            gamepad1.rumble(100);
         }
 
-        return target;
+        if (gamepad1.bWasPressed()) {
+            useHuskyLensForAim = !useHuskyLensForAim;
+            gamepad1.rumble(300);
+        }
+
+        if (gamepad1.xWasPressed()) {
+            driveInFieldRelative = !driveInFieldRelative;
+            gamepad1.rumble(600);
+        }
+
+        telemetry.addData("Driving mode", driveInFieldRelative ? "Field relative" : "Robot relative");
+        telemetry.addData("Shooter aim control mode", useHuskyLensForAim ? "Auto" : "Manual");
     }
 
-    private void linearActuator() {
-          if (gamepad1.dpad_down) { linearActuator.setPosition(HOOD_POSITION_DOWN); }
-          if (gamepad1.dpad_up) {   linearActuator.setPosition(HOOD_POSITION_UP);   }
-          telemetry.addData("Linear actuator position", "%4.2f", linearActuator.getPosition());
-    }
-    private void autoLinearActuator() {
-        HuskyLens.Block target = getTargetBlock();
-        if (target != null) {
+    private void linearActuatorSystem() {
+        // If HuskyLens aiming is enabled:
+        // - Use HuskyLens to determine linear actuator position
+        // Otherwise:
+        // - dpad down -> Move linear actuator to CLOSE shooting position
+        // - dpad up   -> Move linear actuator to FAR shooting position
+
+        if (useHuskyLensForAim) {
+            HuskyLens.Block target = getTargetBlock();
+            if (target == null) return;
+
             double actuatorPosition = linearActuator.getPosition();
 
             actuatorPosition -= (target.y - 110f) / 160f * 0.025;
-            //if (actuatorPosition > GUIDE_DOWN) actuatorPosition = GUIDE_DOWN;
-            //if (actuatorPosition < GUIDE_UP) actuatorPosition = GUIDE_UP;
+//            actuatorPosition = HOOD_POSITION.clamp(actuatorPosition);
             linearActuator.setPosition(actuatorPosition);
-        }
-    }
 
-    private void turret() {
-        double turretRotationChange = 0;
-        if (gamepad1.dpad_right) turretRotationChange = 1;
-        if (gamepad1.dpad_left) turretRotationChange = -1;
-
-        setTurretServosPower(turretRotationChange);
-
-//        telemetry.addData("Turret rotation offset", "%4.2f", turretRotationChange);
-    }
-
-    private void autoTurret() {
-        HuskyLens.Block target = getTargetBlock();
-
-        if (target != null) {
-            setTurretServosPower(-((target.x / 160f) - 1) * 0.5);
-            telemetry.addData("Size", target.height);
         } else {
-            setTurretServosPower(0f);
+            if (gamepad1.dpad_down) { linearActuator.setPosition(HOOD_POSITION.DOWN); }
+            if (gamepad1.dpad_up) {   linearActuator.setPosition(HOOD_POSITION.UP);   }
         }
 
+        telemetry.addData("Linear actuator position", "%4.2f", linearActuator.getPosition());
     }
 
-    public double[] getRealPos(HuskyLens.Block targetBlock, double REAL_WIDTH) {
-        double HALFCAMERAWIDTH = 320f / 2f;
-        double HALFCAMERAHEIGHT = 180f / 2f;
+    private void turretSystem() {
+        if (useHuskyLensForAim) {
+            HuskyLens.Block target = getTargetBlock();
 
-        // Should be how much you need to multiply the distance calculation by to be accurate
-        // You can find by running `TuneGetRealPos` and finding how much you need to multiply by to get the actual value, then multiply whichever of these you are tuning by that value to get your new value. These are the default values that produce +- 0.5 in of accuracy
-        double ZSCALAR = 333.333; // How much you need to multiply the z distance calculation by to be accurate
-        double XSCALAR = 0.555; // Same as above but for x distance
-        double YSCALAR = 0.555; // """
+            if (target != null) {
+                setTurretServosPower(-((target.x / 160f) - 1) * 0.5);
+                telemetry.addData("Size", target.height);
+            } else {
+                setTurretServosPower(TURRET.OFF_POWER);
+            }
 
-        double targetBlockScale = Math.max(targetBlock.width, targetBlock.height); // our tag could be rotated, so we will take the largest of these to prevent errors
+        } else {
+            double turretRotationChange = 0;
+            if (gamepad1.dpad_right) turretRotationChange = TURRET.RIGHT_POWER;
+            if (gamepad1.dpad_left) turretRotationChange = TURRET.LEFT_POWER;
 
-        double zDistance = (REAL_WIDTH / targetBlockScale) * ZSCALAR; // distance away in inches
-
-        double xDistance = ((targetBlock.x - HALFCAMERAWIDTH) / HALFCAMERAWIDTH) * zDistance * XSCALAR; // the distance from the center in inches locally
-        double yDistance = ((HALFCAMERAHEIGHT - targetBlock.y) / HALFCAMERAHEIGHT) * zDistance * YSCALAR;
-
-        return new double[] {xDistance, yDistance, zDistance}; // Local x, y, and z, all in inches relative to the view
+            setTurretServosPower(turretRotationChange);
+        }
     }
 
-    private void autoShooter() {
-        HuskyLens.Block target = getTargetBlock();
-        if (target == null) return;
+    private void shooterSystem() {
+        // If HuskyLens aiming enabled:
+        // - Use HuskyLens to determine shooter speed
+        // Otherwise:
+        // - Right bumper -> Reverse (Also reverses intake)
+        // - Left trigger -> Shoot
 
-        shooterPower = 0.8 - Math.max(0f, target.height - 30f) / 350f;
-    }
-    private void shooter() {
-        shooterPower = 0.8;
+        // It might be advantageous to map left bumper to reverse shooter instead of right bumper
+        // so that they can be independently reversed
+
+        if (gamepad1.left_trigger == 0) {
+            shooterPower = SHOOTER.OFF_POWER;
+
+        } else if (gamepad1.right_bumper) {
+            shooterPower = SHOOTER.REVERSE_POWER;
+
+        } else if (useHuskyLensForAim) {
+            HuskyLens.Block target = getTargetBlock();
+            if (target == null) return;
+
+            shooterPower = 0.8 - Math.max(0f, target.height - 30f) / 350f;
+        } else {
+            shooterPower = SHOOTER.SHOOT_POWER;
+        }
+
+        shooter.setPower(shooterPower);
+        telemetry.addData("Shooter power", "%.2f", shooterPower);
     }
 
     private void intakeSystem() {
-        intake();
-    }
-    private void intake() {
+        // Right trigger -> Intake
+        // Right bumper  -> Outtake (Also reverses shooter)
+
         double intakeSpeed = gamepad1.right_trigger;
-        if (gamepad1.right_bumper) intakeSpeed = -0.5;
+        if (gamepad1.right_bumper) intakeSpeed = INTAKE.REVERSE_POWER;
 
         intake.setPower(intakeSpeed);
         telemetry.addData("Intake speed", "%.2f", intakeSpeed);
@@ -254,12 +293,8 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends LinearOpMode {
         } else {
             drive(forward, right, rotate);
         }
-
-        telemetry.addData("Driving mode", driveInFieldRelative ? "Field relative" : "Robot relative");
     }
     private void drive(double forward, double right, double rotate) {
-        // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-
         // Combine the joystick requests for each axis-motion to determine each wheel's power.
         double frontRightPower = forward - right - rotate;
         double frontLeftPower  = forward + right + rotate;
@@ -267,7 +302,6 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends LinearOpMode {
         double backRightPower  = forward + right - rotate;
 
         // Normalize the values so no wheel power exceeds 100%
-        // This ensures that the robot maintains the desired motion.
         double max = Math.abs(frontLeftPower);
         max = Math.max(max, Math.abs(frontRightPower));
         max = Math.max(max, Math.abs(backLeftPower));
@@ -286,10 +320,11 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends LinearOpMode {
         backLeftDrive.setPower(backLeftPower);
         backRightDrive.setPower(backRightPower);
 
-        telemetry.addData("Front left/Right drive", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
-        telemetry.addData("Back  left/Right drive", "%4.2f, %4.2f", backLeftPower, backRightPower);
+//        telemetry.addData("Front left/Right drive", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
+//        telemetry.addData("Back  left/Right drive", "%4.2f, %4.2f", backLeftPower, backRightPower);
     }
     private void driveFieldRelative(double forward, double right, double rotate) {
+        // First, convert cartesian offset to polar coordinates
         double theta = Math.atan2(forward, right);
         double r = Math.hypot(right, forward);
 
