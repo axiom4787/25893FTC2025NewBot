@@ -17,6 +17,8 @@ public abstract class ThePlantRobotOpMode extends LinearOpMode {
     public HuskyLens huskyLens;
     public IMU imu;
 
+    Config config = new Config();
+
     public ElapsedTime runtime = new ElapsedTime();
 
     @Override
@@ -31,20 +33,21 @@ public abstract class ThePlantRobotOpMode extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
+        opModeRunOnce();
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
 
-            opModeLoop();
+            opModeRunLoop();
 
             telemetry.update();
         }
     }
 
     abstract void opModeInit();
-    abstract void opModeLoop();
+    abstract void opModeRunOnce();
+    abstract void opModeRunLoop();
 
     private void internalInitElectronics() {
-        Config config = new Config();
         config.init(hardwareMap);
 
         frontLeftDrive = config.frontLeftDrive;

@@ -36,10 +36,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @TeleOp(name="not comp ready code", group="Linear OpMode")
-@Disabled
+//@Disabled
 public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpMode {
     private boolean useHuskyLensForAim = true;
     private boolean driveInFieldRelative = true;
+    private double lastHuskyLensPower = SHOOTER.SHOOT_POWER;
 
     private static class HOOD {
         public static final double DOWN_POSITION = 0.75;
@@ -51,7 +52,7 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
             return pos;
         }
 
-        public static enum STATE {
+        public enum STATE {
             OFF,
             DOWN, // Lower hood pos -> close shooting
             UP,   // Raise hood pos -> far shooting
@@ -62,7 +63,7 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
         public static double OFF_POWER = 0.0;
         public static double SHOOT_POWER = 0.8;
         public static double REVERSE_POWER = -0.5;
-        public static enum STATE {
+        public enum STATE {
             OFF,
             SHOOT,
             REVERSE,
@@ -71,9 +72,9 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
     }
     private static class INTAKE {
         public static double OFF_POWER = 0.0;
-        public static double REVERSE_POWER = 0.0;
+        public static double REVERSE_POWER = -0.5;
 
-        public static enum STATE {
+        public enum STATE {
             OFF,
             INTAKE,
             REVERSE,
@@ -84,7 +85,7 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
         public static double RIGHT_POWER = 1.0;
         public static double LEFT_POWER = -1.0;
 
-        public static enum STATE {
+        public enum STATE {
             OFF,
             AUTO,  // Use HuskyLens
             LEFT,
@@ -97,6 +98,7 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
     private INTAKE.STATE intakeState = INTAKE.STATE.OFF;
     private TURRET.STATE turretState = TURRET.STATE.AUTO;
 
+    Config config = new Config();
     public void opModeInit() {}
 
     public void opModeLoop() {
@@ -230,15 +232,16 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
     }
 
     private void linearActuatorSystem() {
+        Config config = new Config();
         switch (hoodState) {
             case AUTO:
-                HuskyLens.Block target = getTargetBlock();
+                HuskyLens.Block target = config.getTargetBlock(huskyLens);
                 if (target == null) break;
 
                 double actuatorPosition = linearActuator.getPosition();
 
                 actuatorPosition -= (target.y - 110f) / 160f * 0.025;
-//                actuatorPosition = HOOD.clampPosition(actuatorPosition);
+                actuatorPosition = HOOD.clampPosition(actuatorPosition);
                 linearActuator.setPosition(actuatorPosition);
                 break;
             case DOWN:
@@ -257,16 +260,17 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
     }
 
     private void turretSystem() {
+        Config config = new Config();
         switch (turretState) {
             case AUTO:
-                HuskyLens.Block target = getTargetBlock();
+                HuskyLens.Block target = config.getTargetBlock(huskyLens);
 
                 if (target == null) {
                     setTurretServosPower(TURRET.OFF_POWER);
                     break;
                 }
 
-                setTurretServosPower(-((target.x / 160f) - 1) * 0.5);
+                setTurretServosPower(- ( ( target.x / 160f ) - 1 ) * 0.5 );
                 telemetry.addData("HuskyLens target height", target.height);
 
                 break;
@@ -282,7 +286,7 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
     }
 
     private void shooterSystem() {
-        double shooterPower = 0f;
+        double shooterPower = lastHuskyLensPower;
         switch (shooterState) {
             case SHOOT:
                 shooterPower = SHOOTER.SHOOT_POWER;
@@ -291,10 +295,11 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
                 shooterPower = SHOOTER.REVERSE_POWER;
                 break;
             case AUTO:
-                HuskyLens.Block target = getTargetBlock();
+                HuskyLens.Block target = config.getTargetBlock(huskyLens);
                 if (target == null) break;
 
                 shooterPower = 0.8 - Math.max(0f, target.height - 30f) / 350f;
+                lastHuskyLensPower = shooterPower;
                 break;
             case OFF:
                 shooterPower = SHOOTER.OFF_POWER;

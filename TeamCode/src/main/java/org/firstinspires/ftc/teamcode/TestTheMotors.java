@@ -95,12 +95,12 @@ public class TestTheMotors extends LinearOpMode {
             } else backRightDrive.setPower(0);
 
             if (gamepad1.y) {
-                intake.setPower(0.5);
+                intake.setPower(1.0);
                 telemetry.addLine("Running `intake`");
             } else intake.setPower(0);
 
             if (gamepad1.x) {
-                shooter.setPower(0.5);
+                shooter.setPower(1.0);
                 telemetry.addLine("Running `shooter`");
             } else shooter.setPower(0);
 

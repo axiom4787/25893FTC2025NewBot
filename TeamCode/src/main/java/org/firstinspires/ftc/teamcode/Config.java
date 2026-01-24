@@ -44,4 +44,29 @@ public class Config {
 
         imu = hardwareMap.get(IMU.class, "imu");
     }
+
+    public static double calculateTurret(HuskyLens.Block target) {
+        double base = -((target.x / 160f) - 1f) * 0.5f;
+        return Math.signum(base) * Math.pow(Math.abs(base), 1.4f) * 2.5f;
+    }
+
+    public static double calculateHood(HuskyLens.Block target) {
+        double base = (target.y - 110f) / 160f * 0.035f;
+        return Math.signum(base) * Math.pow(Math.abs(base), 1.4f) * 12f;
+    }
+
+    public static HuskyLens.Block getTargetBlock (HuskyLens huskyLens) {
+        HuskyLens.Block target = null;
+        HuskyLens.Block[] blocks = huskyLens.blocks();
+        double size = 0f;
+        for (int i = 0; i < blocks.length; i++) {
+            HuskyLens.Block block = blocks[i];
+            if (block.height * block.width > size) {
+                target = block;
+                size = block.height * block.width;
+            }
+        }
+
+        return target;
+    }
 }

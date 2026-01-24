@@ -42,6 +42,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
+@Deprecated
 @TeleOp(name="run the robot", group="Linear OpMode")
 public class PleaseRobotINeedThis extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
@@ -55,7 +56,7 @@ public class PleaseRobotINeedThis extends LinearOpMode {
     private boolean useHuskyLensForAim = true;
     private boolean autoLinearActuatorControl = true;
     private boolean autoTurretControl = true;
-    private boolean driveInFieldRelative = true;
+    private boolean driveInFieldRelative = false;
     private boolean runShooter = false;
 
     final double GUIDE_DOWN = 0.75;
@@ -111,7 +112,11 @@ public class PleaseRobotINeedThis extends LinearOpMode {
             if (gamepad1.left_trigger > 0) {
                 shooter.setPower(shooterPower);
             } else {
-                shooter.setPower(shooterPower/1.3f);
+                if (intakeSpeed > 0.1) {
+                    shooter.setPower(-intakeSpeed * 2);
+                } else {
+                    shooter.setPower(shooterPower / 1.5);
+                }
             }
 
             telemetry.update();
@@ -177,13 +182,13 @@ public class PleaseRobotINeedThis extends LinearOpMode {
     }
     double autoLinearActuatorValue = 0f;
     private void autoLinearActuator() {
-        HuskyLens.Block target = getTargetBlock();
+        Config config = new Config();
+        HuskyLens.Block target = config.getTargetBlock(huskyLens);
         telemetry.addLine("AUTO ACTUATOR");
 
         double actuatorPosition = linearActuator.getPosition();
         if (target != null) {
-            double base = (target.y - 110f) / 160f * 0.035f;
-            autoLinearActuatorValue = Math.signum(base) * Math.pow(Math.abs(base), 1.8f) * 100f;
+            autoLinearActuatorValue = config.calculateHood(target);
 
 
             actuatorPosition -= autoLinearActuatorValue; // Modified to make it more extreme as you get farther away, hopefully making vision smarter
@@ -209,13 +214,13 @@ public class PleaseRobotINeedThis extends LinearOpMode {
 
     double autoTurretValue = 0f;
     private void autoTurret() {
-        HuskyLens.Block target = getTargetBlock();
+        Config config = new Config();
+        HuskyLens.Block target = config.getTargetBlock(huskyLens);
         telemetry.addLine("AUTO TURRET");
 
 
         if (target != null) {
-            double base = -((target.x / 160f) - 1f) * 0.5f;
-            autoTurretValue = Math.signum(base) * Math.pow(Math.abs(base), 1.4f) * 2.5f; // Similar to -((target.x / 160f) - 1) * 0.5, but make it increase more the farther away it is instead of linearly
+            autoTurretValue = config.calculateTurret(target);
 
             telemetry.addLine("Can see target!");
             telemetry.addData("Size", target.height);
@@ -250,17 +255,19 @@ public class PleaseRobotINeedThis extends LinearOpMode {
     }
 
     private void autoShooter() {
-        HuskyLens.Block target = getTargetBlock();
+        Config config = new Config();
+        HuskyLens.Block target = config.getTargetBlock(huskyLens);
         if (target == null) return;
 
-        shooterPower = 0.8 - Math.max(0f, target.height - 30f) / 350f;
+        shooterPower = 0.7 - Math.max(0f, target.height - 30f) / 350f;
     }
     private void shooter() {
-        shooterPower = 0.8;
+        shooterPower = 0.7;
     }
 
+    double intakeSpeed;
     private void intake() {
-        double intakeSpeed = gamepad1.right_trigger;
+        intakeSpeed = gamepad1.right_trigger;
         if (gamepad1.right_bumper) intakeSpeed = -0.5;
 
         intake.setPower(intakeSpeed);
