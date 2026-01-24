@@ -1,49 +1,20 @@
-/* Copyright (c) 2021 FIRST. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted (subject to the limitations in the disclaimer below) provided that
- * the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this list
- * of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice, this
- * list of conditions and the following disclaimer in the documentation and/or
- * other materials provided with the distribution.
- *
- * Neither the name of FIRST nor the names of its contributors may be used to endorse or
- * promote products derived from this software without specific prior written permission.
- *
- * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
- * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-@TeleOp(name="run the robot", group="Linear OpMode")
-public class PleaseRobotINeedThis extends LinearOpMode {
+@Autonomous(name="Auto BLUE: shoot & move", group="Basic Auto")
+public class PleaseAutoINeedThis extends LinearOpMode {
+
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive;
     private DcMotor intake, shooter;
@@ -53,16 +24,12 @@ public class PleaseRobotINeedThis extends LinearOpMode {
     private IMU imu;
     private double shooterPower = 0.0;
     private boolean useHuskyLensForAim = true;
-    private boolean autoLinearActuatorControl = true;
-    private boolean autoTurretControl = true;
-    private boolean driveInFieldRelative = true;
-    private boolean runShooter = false;
 
     final double GUIDE_DOWN = 0.75;
     final double GUIDE_UP = 0.25;
 
     @Override
-    public void runOpMode() {
+    public void runOpMode() { // TODO: Guys its untested please test
         initElectronics();
 
         telemetry.addData("Status", "Initialized");
@@ -71,51 +38,25 @@ public class PleaseRobotINeedThis extends LinearOpMode {
         waitForStart();
         runtime.reset();
 
+        telemetry.addData("Status", "Starting Auto");
         linearActuator.setPosition(GUIDE_DOWN);
-
-        while (opModeIsActive()) {
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-
-            if (gamepad1.aWasPressed()) {
-                imu.resetYaw();
-                gamepad1.rumble(100);
-            }
-
-            autoControlToggles();
-
-            if (gamepad1.xWasPressed()) {
-                driveInFieldRelative = !driveInFieldRelative;
-                gamepad1.rumble(600);
-            }
-            telemetry.addData("Driving mode", driveInFieldRelative ? "Field relative" : "Robot relative");
-            double forward = -gamepad1.left_stick_y; // Note: pushing stick forward gives negative value
-            double right   =  gamepad1.left_stick_x;
-            double rotate  =  gamepad1.right_stick_x;
-            if (driveInFieldRelative) driveFieldRelative(forward, right, rotate);
-            else drive(forward, right, rotate);
-
-            intake();
-
-            if (useHuskyLensForAim) {
-                autoTurret();
-                autoLinearActuator();
-                autoShooter();
-            } else {
-                linearActuator();
-                turret();
-                shooter();
-            }
-            if (gamepad1.right_bumper) {
-                shooterPower = -0.5;
-            }
-            if (gamepad1.left_trigger > 0) {
-                shooter.setPower(shooterPower);
-            } else {
-                shooter.setPower(shooterPower/1.3f);
-            }
-
-            telemetry.update();
+        sleep(1000);
+        driveFieldRelative(-0.5, 0.0, 0.0);
+        long start = System.currentTimeMillis();
+        while (System.currentTimeMillis() - start < 1000) { // 1000 milliseconds
+            telemetry.addData("Status", "Aiming");
+            autoTurret();
+            autoLinearActuator();
+            autoShooter();
+            shooter.setPower(shooterPower);
         }
+        telemetry.addData("Status", "Shooting");
+        driveFieldRelative(0.0, 0.0, 0.0); // Stop
+        intake.setPower(1.0);
+        sleep(5000);
+        telemetry.addData("Status", "Finished");
+        intake.setPower(0.0);
+        shooter.setPower(0.0);
     }
 
     private void autoControlToggles() {
@@ -152,7 +93,6 @@ public class PleaseRobotINeedThis extends LinearOpMode {
     private HuskyLens.Block getTargetBlock() {
         HuskyLens.Block target = null;
         HuskyLens.Block[] blocks = huskyLens.blocks();
-//        telemetry.addData("Block count", blocks.length);
         double size = 0f;
         for (int i = 0; i < blocks.length; i++) {
             HuskyLens.Block block = blocks[i];
@@ -160,21 +100,11 @@ public class PleaseRobotINeedThis extends LinearOpMode {
                 target = block;
                 size = block.height * block.width;
             }
-//            telemetry.addData("Block", block.toString());
         }
 
         return target;
     }
 
-    private void linearActuator() {
-          if (gamepad1.dpad_down) {
-              linearActuator.setPosition(GUIDE_DOWN);
-          }
-          if (gamepad1.dpad_up) {
-              linearActuator.setPosition(GUIDE_UP);
-          }
-          telemetry.addData("Linear actuator position", "%4.2f", linearActuator.getPosition());
-    }
     double autoLinearActuatorValue = 0f;
     private void autoLinearActuator() {
         HuskyLens.Block target = getTargetBlock();
@@ -195,16 +125,6 @@ public class PleaseRobotINeedThis extends LinearOpMode {
         }
         telemetry.addData("Actuator Position", actuatorPosition);
         telemetry.addData("Actuator Change", autoLinearActuatorValue);
-    }
-
-    private void turret() {
-        double turretRotationChange = 0;
-        if (gamepad1.dpad_right) turretRotationChange = 1;
-        if (gamepad1.dpad_left) turretRotationChange = -1;
-
-        setTurretServosPower(turretRotationChange);
-
-//        telemetry.addData("Turret rotation offset", "%4.2f", turretRotationChange);
     }
 
     double autoTurretValue = 0f;
@@ -229,42 +149,11 @@ public class PleaseRobotINeedThis extends LinearOpMode {
 
     }
 
-    public double[] getRealPos(HuskyLens.Block targetBlock, double REAL_WIDTH) {
-        double HALFCAMERAWIDTH = 320f / 2f;
-        double HALFCAMERAHEIGHT = 180f / 2f;
-
-        // Should be how much you need to multiply the distance calculation by to be accurate
-        // You can find by running `TuneGetRealPos` and finding how much you need to multiply by to get the actual value, then multiply whichever of these you are tuning by that value to get your new value. These are the default values that produce +- 0.5 in of accuracy
-        double ZSCALAR = 333.333; // How much you need to multiply the z distance calculation by to be accurate
-        double XSCALAR = 0.555; // Same as above but for x distance
-        double YSCALAR = 0.555; // """
-
-        double targetBlockScale = Math.max(targetBlock.width, targetBlock.height); // our tag could be rotated, so we will take the largest of these to prevent errors
-
-        double zDistance = (REAL_WIDTH / targetBlockScale) * ZSCALAR; // distance away in inches
-
-        double xDistance = ((targetBlock.x - HALFCAMERAWIDTH) / HALFCAMERAWIDTH) * zDistance * XSCALAR; // the distance from the center in inches locally
-        double yDistance = ((HALFCAMERAHEIGHT - targetBlock.y) / HALFCAMERAHEIGHT) * zDistance * YSCALAR;
-
-        return new double[] {xDistance, yDistance, zDistance}; // Local x, y, and z, all in inches relative to the view
-    }
-
     private void autoShooter() {
         HuskyLens.Block target = getTargetBlock();
         if (target == null) return;
 
-        shooterPower = 0.8 - Math.max(0f, target.height - 30f) / 350f;
-    }
-    private void shooter() {
-        shooterPower = 0.8;
-    }
-
-    private void intake() {
-        double intakeSpeed = gamepad1.right_trigger;
-        if (gamepad1.right_bumper) intakeSpeed = -0.5;
-
-        intake.setPower(intakeSpeed);
-        telemetry.addData("Intake speed", "%.2f", intakeSpeed);
+        shooterPower = 1.0; // Make it 1 to make sure it hits all the shots
     }
 
     private void drive(double forward, double right, double rotate) {
