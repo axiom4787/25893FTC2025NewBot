@@ -30,39 +30,16 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @TeleOp(name="not comp ready code", group="Linear OpMode")
 @Disabled
-public class PleaseRobotINeedThisWithPossiblyBetterCode extends LinearOpMode {
-    private static final Logger log = LoggerFactory.getLogger(PleaseRobotINeedThisWithPossiblyBetterCode.class);
-    private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive;
-    private DcMotor intake, shooter;
-    private CRServo turretLeft, turretRight;
-    private Servo linearActuator;
-    private HuskyLens huskyLens;
-    private IMU imu;
-
+public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpMode {
     private boolean useHuskyLensForAim = true;
     private boolean driveInFieldRelative = true;
-
-    private HOOD.STATE hoodState = HOOD.STATE.DOWN;
-    private SHOOTER.STATE shooterState = SHOOTER.STATE.OFF;
-    private INTAKE.STATE intakeState = INTAKE.STATE.OFF;
-    private TURRET.STATE turretState = TURRET.STATE.AUTO;
 
     private static class HOOD {
         public static final double DOWN_POSITION = 0.75;
@@ -115,29 +92,22 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends LinearOpMode {
         }
     }
 
-    @Override
-    public void runOpMode() {
-        initElectronics();
+    private HOOD.STATE hoodState = HOOD.STATE.DOWN;
+    private SHOOTER.STATE shooterState = SHOOTER.STATE.OFF;
+    private INTAKE.STATE intakeState = INTAKE.STATE.OFF;
+    private TURRET.STATE turretState = TURRET.STATE.AUTO;
 
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
+    public void opModeInit() {}
 
-        waitForStart();
-        runtime.reset();
+    public void opModeLoop() {
+        robotControls();
 
-        while (opModeIsActive()) {
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
+        driveSystem();
+        intakeSystem();
+        turretSystem();
+        linearActuatorSystem();
+        shooterSystem();
 
-            robotControls();
-
-            driveSystem();
-            intakeSystem();
-            turretSystem();
-            linearActuatorSystem();
-            shooterSystem();
-
-            telemetry.update();
-        }
     }
 
     private HuskyLens.Block getTargetBlock() {
@@ -174,29 +144,6 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends LinearOpMode {
         double yDistance = ((HALFCAMERAHEIGHT - targetBlock.y) / HALFCAMERAHEIGHT) * zDistance * YSCALAR;
 
         return new double[] {xDistance, yDistance, zDistance}; // Local x, y, and z, all in inches relative to the view
-    }
-
-    private void initElectronics() {
-        Config config = new Config();
-        config.init(hardwareMap);
-
-        frontLeftDrive = config.frontLeftDrive;
-        frontRightDrive = config.frontRightDrive;
-        backLeftDrive = config.backLeftDrive;
-        backRightDrive = config.backRightDrive;
-        intake = config.intake;
-        shooter = config.shooter;
-        turretLeft = config.turretServoLeft;
-        turretRight = config.turretServoRight;
-        linearActuator = config.linearActuator;
-        huskyLens = config.huskyLens;
-        huskyLens.selectAlgorithm(HuskyLens.Algorithm.TAG_RECOGNITION);
-
-        imu = config.imu;
-        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD;
-        RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.RIGHT;
-        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
-        imu.initialize(new IMU.Parameters(orientationOnRobot));
     }
 
     private void robotControls() {
