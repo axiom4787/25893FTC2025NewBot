@@ -1,39 +1,14 @@
-/* Copyright (c) 2021 FIRST. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted (subject to the limitations in the disclaimer below) provided that
- * the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this list
- * of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice, this
- * list of conditions and the following disclaimer in the documentation and/or
- * other materials provided with the distribution.
- *
- * Neither the name of FIRST nor the names of its contributors may be used to endorse or
- * promote products derived from this software without specific prior written permission.
- *
- * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
- * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.Boilerplate.Config;
+import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
+
+import java.util.ArrayList;
 
 @TeleOp(name="not comp ready code", group="Linear OpMode")
 //@Disabled
@@ -98,54 +73,24 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
     private INTAKE.STATE intakeState = INTAKE.STATE.OFF;
     private TURRET.STATE turretState = TURRET.STATE.AUTO;
 
-    Config config = new Config();
-    public void opModeInit() {}
+    HuskyLens.Block target = null;
 
-    public void opModeLoop() {
+    @Override public void opModeInit() {}
+
+    @Override public void opModeRunOnce() {
+        gamepad1.setLedColor(0, 1, 0, Gamepad.LED_DURATION_CONTINUOUS);
+    }
+
+    @Override public void opModeRunLoop() {
         robotControls();
+
+        huskyLensSystem();
 
         driveSystem();
         intakeSystem();
         turretSystem();
         linearActuatorSystem();
         shooterSystem();
-
-    }
-
-    private HuskyLens.Block getTargetBlock() {
-        HuskyLens.Block target = null;
-        HuskyLens.Block[] blocks = huskyLens.blocks();
-//        telemetry.addData("Block count", blocks.length);
-        double biggestBlockSize = 0f;
-        for (HuskyLens.Block block : blocks) {
-            if (block.height * block.width > biggestBlockSize) {
-                target = block;
-                biggestBlockSize = block.height * block.width;
-            }
-//            telemetry.addData("Block", block.toString());
-        }
-
-        return target;
-    }
-
-    public double[] getRealPos(HuskyLens.Block targetBlock, double REAL_WIDTH) {
-        double HALFCAMERAWIDTH = 320f / 2f;
-        double HALFCAMERAHEIGHT = 180f / 2f;
-
-        // Should be how much you need to multiply the distance calculation by to be accurate
-        // You can find by running `TuneGetRealPos` and finding how much you need to multiply by to get the actual value, then multiply whichever of these you are tuning by that value to get your new value. These are the default values that produce +- 0.5 in of accuracy
-        double ZSCALAR = 333.333; // How much you need to multiply the z distance calculation by to be accurate
-        double XSCALAR = 0.555; // Same as above but for x distance
-        double YSCALAR = 0.555; // """
-
-        double targetBlockScale = Math.max(targetBlock.width, targetBlock.height); // our tag could be rotated, so we will take the largest of these to prevent errors
-
-        double zDistance = (REAL_WIDTH / targetBlockScale) * ZSCALAR; // distance away in inches
-
-        double xDistance = ((targetBlock.x - HALFCAMERAWIDTH) / HALFCAMERAWIDTH) * zDistance * XSCALAR; // the distance from the center in inches locally
-        double yDistance = ((HALFCAMERAHEIGHT - targetBlock.y) / HALFCAMERAHEIGHT) * zDistance * YSCALAR;
-
-        return new double[] {xDistance, yDistance, zDistance}; // Local x, y, and z, all in inches relative to the view
     }
 
     private void robotControls() {
@@ -231,11 +176,15 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
         telemetry.addData("Shooter aim control mode", useHuskyLensForAim ? "Auto" : "Manual");
     }
 
+    private void huskyLensSystem() {
+        if (!useHuskyLensForAim) return;
+
+        target = getTargetBlock();
+    }
+
     private void linearActuatorSystem() {
-        Config config = new Config();
         switch (hoodState) {
             case AUTO:
-                HuskyLens.Block target = config.getTargetBlock(huskyLens);
                 if (target == null) break;
 
                 double actuatorPosition = linearActuator.getPosition();
@@ -260,11 +209,8 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
     }
 
     private void turretSystem() {
-        Config config = new Config();
         switch (turretState) {
             case AUTO:
-                HuskyLens.Block target = config.getTargetBlock(huskyLens);
-
                 if (target == null) {
                     setTurretServosPower(TURRET.OFF_POWER);
                     break;
@@ -295,7 +241,6 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
                 shooterPower = SHOOTER.REVERSE_POWER;
                 break;
             case AUTO:
-                HuskyLens.Block target = config.getTargetBlock(huskyLens);
                 if (target == null) break;
 
                 shooterPower = 0.8 - Math.max(0f, target.height - 30f) / 350f;

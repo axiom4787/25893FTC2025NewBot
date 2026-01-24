@@ -1,22 +1,21 @@
-package org.firstinspires.ftc.teamcode;
-
-import androidx.annotation.NonNull;
+package org.firstinspires.ftc.teamcode.Boilerplate;
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class Config {
-    DcMotor frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive;
-    DcMotor intake, shooter;
-    CRServo turretServoLeft, turretServoRight;
-    Servo linearActuator;
-    HuskyLens huskyLens;
-    IMU imu;
+    public DcMotor frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive;
+    public DcMotor intake, shooter;
+    public CRServo turretServoLeft, turretServoRight;
+    public Servo linearActuator;
+    public HuskyLens huskyLens;
+    public IMU imu;
+
     public void init(HardwareMap hardwareMap) {
         frontLeftDrive = hardwareMap.get(DcMotor.class, "frontLeftDrive");
         backLeftDrive = hardwareMap.get(DcMotor.class, "backLeftDrive");
@@ -43,30 +42,9 @@ public class Config {
         huskyLens = hardwareMap.get(HuskyLens.class, "ebk"); // elite ball knowledge
 
         imu = hardwareMap.get(IMU.class, "imu");
-    }
-
-    public static double calculateTurret(HuskyLens.Block target) {
-        double base = -((target.x / 160f) - 1f) * 0.5f;
-        return Math.signum(base) * Math.pow(Math.abs(base), 1.4f) * 2.5f;
-    }
-
-    public static double calculateHood(HuskyLens.Block target) {
-        double base = (target.y - 110f) / 160f * 0.035f;
-        return Math.signum(base) * Math.pow(Math.abs(base), 1.4f) * 12f;
-    }
-
-    public static HuskyLens.Block getTargetBlock (HuskyLens huskyLens) {
-        HuskyLens.Block target = null;
-        HuskyLens.Block[] blocks = huskyLens.blocks();
-        double size = 0f;
-        for (int i = 0; i < blocks.length; i++) {
-            HuskyLens.Block block = blocks[i];
-            if (block.height * block.width > size) {
-                target = block;
-                size = block.height * block.width;
-            }
-        }
-
-        return target;
+        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD;
+        RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.RIGHT;
+        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
+        imu.initialize(new IMU.Parameters(orientationOnRobot));
     }
 }

@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -39,10 +40,11 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.Boilerplate.Config;
 
-@Deprecated
+@Disabled
+@Deprecated // wait what if we use the other opmode that has not messy ahh code
 @TeleOp(name="run the robot", group="Linear OpMode")
 public class PleaseRobotINeedThis extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
@@ -183,12 +185,12 @@ public class PleaseRobotINeedThis extends LinearOpMode {
     double autoLinearActuatorValue = 0f;
     private void autoLinearActuator() {
         Config config = new Config();
-        HuskyLens.Block target = config.getTargetBlock(huskyLens);
+        HuskyLens.Block target = getTargetBlock();
         telemetry.addLine("AUTO ACTUATOR");
 
         double actuatorPosition = linearActuator.getPosition();
         if (target != null) {
-            autoLinearActuatorValue = config.calculateHood(target);
+            autoLinearActuatorValue = calculateHood(target);
 
 
             actuatorPosition -= autoLinearActuatorValue; // Modified to make it more extreme as you get farther away, hopefully making vision smarter
@@ -215,12 +217,12 @@ public class PleaseRobotINeedThis extends LinearOpMode {
     double autoTurretValue = 0f;
     private void autoTurret() {
         Config config = new Config();
-        HuskyLens.Block target = config.getTargetBlock(huskyLens);
+        HuskyLens.Block target = getTargetBlock();
         telemetry.addLine("AUTO TURRET");
 
 
         if (target != null) {
-            autoTurretValue = config.calculateTurret(target);
+            autoTurretValue = calculateTurret(target);
 
             telemetry.addLine("Can see target!");
             telemetry.addData("Size", target.height);
@@ -256,7 +258,7 @@ public class PleaseRobotINeedThis extends LinearOpMode {
 
     private void autoShooter() {
         Config config = new Config();
-        HuskyLens.Block target = config.getTargetBlock(huskyLens);
+        HuskyLens.Block target = getTargetBlock();
         if (target == null) return;
 
         shooterPower = 0.7 - Math.max(0f, target.height - 30f) / 350f;
@@ -323,5 +325,15 @@ public class PleaseRobotINeedThis extends LinearOpMode {
     private void setTurretServosPower(double position) {
         turretRight.setPower(position);
         turretLeft.setPower(position);
+    }
+
+    private static double calculateTurret(HuskyLens.Block target) {
+        double base = -((target.x / 160f) - 1f) * 0.5f;
+        return Math.signum(base) * Math.pow(Math.abs(base), 1.4f) * 2.5f;
+    }
+
+    private static double calculateHood(HuskyLens.Block target) {
+        double base = (target.y - 110f) / 160f * 0.035f;
+        return Math.signum(base) * Math.pow(Math.abs(base), 1.4f) * 12f;
     }
 }

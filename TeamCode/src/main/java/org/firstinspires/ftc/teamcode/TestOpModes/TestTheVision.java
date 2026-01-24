@@ -1,12 +1,11 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.TestOpModes;
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcontroller.external.samples.ConceptSoundsASJava;
+import org.firstinspires.ftc.teamcode.Boilerplate.Config;
 
 @TeleOp(name="Test what vision do visiony things (TM)", group="Linear OpMode")
 public class TestTheVision extends LinearOpMode {

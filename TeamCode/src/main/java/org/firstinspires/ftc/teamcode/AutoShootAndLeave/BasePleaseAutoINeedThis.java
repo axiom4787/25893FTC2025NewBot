@@ -1,28 +1,24 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.AutoShootAndLeave;
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 
-//@Autonomous(name="Auto BLUE: shoot & move")
 public class BasePleaseAutoINeedThis extends ThePlantRobotOpMode {
     private double shooterPower = 0.0;
-    private boolean useHuskyLensForAim = true;
 
     final double GUIDE_DOWN = 0.75;
     final double GUIDE_UP = 0.25;
 
-    public enum Alliance {
-        RED,
-        BLUE,
-    }
-
+    public enum Alliance { RED, BLUE, }
     public Alliance alliance = Alliance.BLUE;
+    public boolean isBlue() { return alliance == Alliance.BLUE; }
+    public boolean isRed() { return alliance == Alliance.RED; }
 
     @Override public void opModeInit() {}
+    @Override public void opModeRunLoop() {}
 
-    @Override
-    public void opModeRunOnce() {
+    @Override public void opModeRunOnce() {
         setStatus("Starting auto");
 
         linearActuator.setPosition(GUIDE_DOWN);
@@ -44,44 +40,28 @@ public class BasePleaseAutoINeedThis extends ThePlantRobotOpMode {
         sleep(5000);
 
         setStatus("Leaving");
-        drive(0.0, alliance == Alliance.BLUE ? -0.67 : 0.67, 0.0);
+        drive(0.0, isBlue() ? -0.67 : 0.67, 0.0);
         sleep(1000);
 
         setStatus("Finished");
         intake.setPower(0.0);
         shooter.setPower(0.0);
+        drive(0, 0, 0);
     }
-
-    @Override public void opModeRunLoop() {}
 
     private void setStatus(String status) {
         telemetry.addData("Status", status);
         telemetry.update();
     }
 
-    private HuskyLens.Block getTargetBlock() {
-        HuskyLens.Block target = null;
-        HuskyLens.Block[] blocks = huskyLens.blocks();
-        double size = 0f;
-        for (int i = 0; i < blocks.length; i++) {
-            HuskyLens.Block block = blocks[i];
-            if (block.height * block.width > size) {
-                target = block;
-                size = block.height * block.width;
-            }
-        }
-
-        return target;
-    }
-
     double autoLinearActuatorValue = 0f;
     private void autoLinearActuator() {
-        HuskyLens.Block target = Config.getTargetBlock(huskyLens);
+        HuskyLens.Block target = getTargetBlock();
         telemetry.addLine("AUTO ACTUATOR");
 
         double actuatorPosition = linearActuator.getPosition();
         if (target != null) {
-            autoLinearActuatorValue = Config.calculateHood(target);
+            autoLinearActuatorValue = calculateHood(target);
 
             actuatorPosition -= autoLinearActuatorValue; // Modified to make it more extreme as you get farther away, hopefully making vision smarter
             //if (actuatorPosition > GUIDE_DOWN) actuatorPosition = GUIDE_DOWN;
@@ -96,12 +76,12 @@ public class BasePleaseAutoINeedThis extends ThePlantRobotOpMode {
 
     double autoTurretValue = 0f;
     private void autoTurret() {
-        HuskyLens.Block target = Config.getTargetBlock(huskyLens);
+        HuskyLens.Block target = getTargetBlock();
         telemetry.addLine("AUTO TURRET");
 
 
         if (target != null) {
-            autoTurretValue = Config.calculateTurret(target);
+            autoTurretValue = calculateTurret(target);
 
             telemetry.addLine("Can see target!");
             telemetry.addData("Size", target.height);
@@ -115,7 +95,7 @@ public class BasePleaseAutoINeedThis extends ThePlantRobotOpMode {
     }
 
     private void autoShooter() {
-        HuskyLens.Block target = Config.getTargetBlock(huskyLens);
+        HuskyLens.Block target = getTargetBlock();
         if (target == null) return;
 
         shooterPower = 1.0; // Make it 1 to make sure it hits all the shots
@@ -152,20 +132,6 @@ public class BasePleaseAutoINeedThis extends ThePlantRobotOpMode {
 
         telemetry.addData("Front left/Right drive", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
         telemetry.addData("Back  left/Right drive", "%4.2f, %4.2f", backLeftPower, backRightPower);
-    }
-    private void driveFieldRelative(double forward, double right, double rotate) {
-        double theta = Math.atan2(forward, right);
-        double r = Math.hypot(right, forward);
-
-        // Second, rotate angle by the angle the robot is pointing
-        theta = AngleUnit.normalizeRadians(theta - imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
-
-        // Third, convert back to cartesian
-        double newForward = r * Math.sin(theta);
-        double newRight = r * Math.cos(theta);
-
-        // Finally, call the drive method with robot relative forward and right amounts
-        drive(newForward, newRight, rotate);
     }
 
     private void setTurretServosPower(double position) {
