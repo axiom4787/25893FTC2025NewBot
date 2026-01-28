@@ -14,6 +14,7 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
     private boolean driveInFieldRelative = true;
     private double lastHuskyLensPower = Shooter.SHOOT_POWER;
 
+
     private static class Hood {
         public static final double DOWN_POSITION = 0.75;
         public static final double UP_POSITION = 0.25;

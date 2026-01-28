@@ -65,12 +65,12 @@ public abstract class ThePlantRobotOpMode extends LinearOpMode {
         }
 
         public double calculateTurret(LLResult target) {
-            double base = -((target.getTx() / 160f) - 1f) * 0.5f;   // TODO: Fix for LL coordinates
+            double base = target.getTx() * 0.5f;
             return Math.signum(base) * Math.pow(Math.abs(base), 1.4f) * 2.5f;
         }
 
         public double calculateHood(LLResult target) {
-            double base = (target.getTy() - 110f) / 160f * 0.035f;  // TODO: Fix for LL coordinates
+            double base = target.getTy() * 0.035f;
             return Math.signum(base) * Math.pow(Math.abs(base), 1.4f) * 12f;
         }
     }
