@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Experiments;
+package org.firstinspires.ftc.teamcode.TestOpModes;
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -28,6 +28,7 @@ public class TestLimelightVsHuskyLens extends LinearOpMode {
         int ll_seen = 0;
         int hl_seen = 0;
         while (opModeIsActive()) {
+            telemetry.addData(">", "Robot Running.");
             LLResult result = limelight.getLatestResult();
             if (result.isValid()) {
                 ll_seen += 1;
@@ -38,8 +39,10 @@ public class TestLimelightVsHuskyLens extends LinearOpMode {
                 hl_seen += 1;
             }
 
+            telemetry.addLine();
             telemetry.addData("LL Seen", ll_seen);
             telemetry.addData("HL Seen", hl_seen);
+            telemetry.update();
         }
     }
 }
