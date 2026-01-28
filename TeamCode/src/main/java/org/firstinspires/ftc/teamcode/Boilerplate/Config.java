@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Boilerplate;
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -14,6 +15,7 @@ public class Config {
     public CRServo turretServoLeft, turretServoRight;
     public Servo linearActuator;
     public HuskyLens huskyLens;
+    public Limelight3A limeLight;
     public IMU imu;
 
     public void init(HardwareMap hardwareMap) {
@@ -40,6 +42,7 @@ public class Config {
         linearActuator.setDirection(Servo.Direction.FORWARD);
 
         huskyLens = hardwareMap.get(HuskyLens.class, "ebk"); // elite ball knowledge
+        limeLight = hardwareMap.get(Limelight3A.class, "limelight"); // elite tag knowledge
 
         imu = hardwareMap.get(IMU.class, "imu");
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD;
