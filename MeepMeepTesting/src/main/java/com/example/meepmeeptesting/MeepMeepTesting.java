@@ -19,10 +19,16 @@ public class MeepMeepTesting {
                         .waitSeconds(0.5)
                         .lineToY(-30)
                         .waitSeconds(0.5)
-                        .setTangent(Math.toRadians(45))
+
                         .strafeToLinearHeading(new Vector2d(-12, -25), Math.toRadians(270))
-//                        .splineToLinearHeading(new Pose2d(-12, -25, 270), Math.toRadians(0))
-                        .waitSeconds(1)
+                        .strafeToLinearHeading(new Vector2d(-12, -45), Math.toRadians(270))
+                        .splineToLinearHeading(new Pose2d(-45, -30, Math.toRadians(234)), Math.toRadians(180))
+                        .waitSeconds(0.5)
+
+                        .strafeToLinearHeading(new Vector2d(12, -25), Math.toRadians(270))
+                        .strafeToLinearHeading(new Vector2d(12, -45), Math.toRadians(270))
+                        .splineToLinearHeading(new Pose2d(-45, -30, Math.toRadians(234)), Math.toRadians(180))
+                        .waitSeconds(0.5)
                         .build());
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_DECODE_JUICE_DARK)
