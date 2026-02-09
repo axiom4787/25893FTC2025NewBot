@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.AutoShootAndLeave;
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
+import com.qualcomm.hardware.limelightvision.LLResult;
 
+import org.firstinspires.ftc.teamcode.Boilerplate.LimeLightCalculator;
 import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 
 public class BasePleaseAutoINeedThis extends ThePlantRobotOpMode {
@@ -55,13 +57,16 @@ public class BasePleaseAutoINeedThis extends ThePlantRobotOpMode {
     }
 
     double autoLinearActuatorValue = 0f;
+
+    LimeLightCalculator LLC = new LimeLightCalculator(hardwareMap);
+
     private void autoLinearActuator() {
-        HuskyLens.Block target = getTargetBlock();
+        LLResult target = LLC.getTarget();
         telemetry.addLine("AUTO ACTUATOR");
 
         double actuatorPosition = linearActuator.getPosition();
         if (target != null) {
-            autoLinearActuatorValue = calculateHood(target);
+            autoLinearActuatorValue = LLC.calculateHood(target);
 
             actuatorPosition -= autoLinearActuatorValue; // Modified to make it more extreme as you get farther away, hopefully making vision smarter
             //if (actuatorPosition > GUIDE_DOWN) actuatorPosition = GUIDE_DOWN;
@@ -76,15 +81,14 @@ public class BasePleaseAutoINeedThis extends ThePlantRobotOpMode {
 
     double autoTurretValue = 0f;
     private void autoTurret() {
-        HuskyLens.Block target = getTargetBlock();
+        LLResult target = LLC.getTarget();
         telemetry.addLine("AUTO TURRET");
 
 
         if (target != null) {
-            autoTurretValue = calculateTurret(target);
+            autoTurretValue = LLC.calculateTurret(target);
 
             telemetry.addLine("Can see target!");
-            telemetry.addData("Size", target.height);
         } else {
             autoTurretValue /= 2f;
         }
@@ -95,7 +99,7 @@ public class BasePleaseAutoINeedThis extends ThePlantRobotOpMode {
     }
 
     private void autoShooter() {
-        HuskyLens.Block target = getTargetBlock();
+        LLResult target = LLC.getTarget();
         if (target == null) return;
 
         shooterPower = 1.0; // Make it 1 to make sure it hits all the shots

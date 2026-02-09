@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.Boilerplate.LimeLightCalculator;
 import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 
 @TeleOp(name="not comp ready code", group="Linear OpMode")
@@ -71,7 +74,7 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
     private Intake.State intakeState = Intake.State.OFF;
     private Turret.State turretState = Turret.State.AUTO;
 
-    HuskyLens.Block target = null;
+    LLResult target = null;
 
     @Override public void opModeInit() {}
 
@@ -174,10 +177,12 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
         telemetry.addData("Shooter aim control mode", useHuskyLensForAim ? "Auto" : "Manual");
     }
 
+    LimeLightCalculator LLC = new LimeLightCalculator(hardwareMap);
+
     private void huskyLensSystem() {
         if (!useHuskyLensForAim) return;
 
-        target = getTargetBlock();
+        target = LLC.getTarget();
     }
 
     private void linearActuatorSystem() {
@@ -187,7 +192,7 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
 
                 double actuatorPosition = linearActuator.getPosition();
 
-                actuatorPosition -= (target.y - 110f) / 160f * 0.025;
+                actuatorPosition -= (target.getTy() - 110f) / 160f * 0.025;
                 actuatorPosition = Hood.clampPosition(actuatorPosition);
                 linearActuator.setPosition(actuatorPosition);
                 break;
@@ -214,8 +219,8 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
                     break;
                 }
 
-                setTurretServosPower(- ( ( target.x / 160f ) - 1 ) * 0.5 );
-                telemetry.addData("HuskyLens target height", target.height);
+                setTurretServosPower(- ( ( target.getTx() / 160f ) - 1 ) * 0.5 );
+                telemetry.addData("HuskyLens target height", target.getTy());
 
                 break;
             case LEFT:
@@ -241,7 +246,7 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
             case AUTO:
                 if (target == null) break;
 
-                shooterPower = 0.8 - Math.max(0f, target.height - 30f) / 350f;
+                shooterPower = 0.8 - target.getTy(); // TODO: FIX
                 lastHuskyLensPower = shooterPower;
                 break;
             case OFF:
