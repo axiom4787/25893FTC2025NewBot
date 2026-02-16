@@ -43,6 +43,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Boilerplate.Config;
 import org.firstinspires.ftc.teamcode.Boilerplate.LimeLightCalculator;
+import org.firstinspires.ftc.teamcode.Boilerplate.PID;
 import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 
 @TeleOp(name="Robot Vision Tracking Please I need this", group="Linear OpMode")
@@ -59,7 +60,8 @@ public class PleaseRobotVisionTrackingINeedThis extends LinearOpMode {
     final double GUIDE_UP = 0.25;
     LimeLightCalculator LLC;
 
-
+    double hoodP, hoodD;
+    PID hoodPID;
     @Override
     public void runOpMode() {
         LLC = new LimeLightCalculator(hardwareMap);
@@ -76,13 +78,23 @@ public class PleaseRobotVisionTrackingINeedThis extends LinearOpMode {
         while (opModeIsActive()) {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
 
-            if (gamepad1.aWasPressed()) {
-                imu.resetYaw();
-                gamepad1.rumble(100);
-            }
-
             autoControlToggles();
 
+            hoodPID = new PID(hoodP, 0f, hoodD);
+            LLC.hoodPID = hoodPID;
+
+            if (gamepad1.aWasPressed()) {
+                hoodP += 0.01;
+            }
+            if (gamepad1.bWasPressed()) {
+                hoodP -= 0.01;
+            }
+            if (gamepad1.xWasPressed()) {
+                hoodD += 0.01;
+            }
+            if (gamepad1.yWasPressed()) {
+                hoodD -= 0.01;
+            }
 
             if (useHuskyLensForAim) {
                 autoTurret();
@@ -92,18 +104,6 @@ public class PleaseRobotVisionTrackingINeedThis extends LinearOpMode {
                 linearActuator();
                 turret();
                 shooter();
-            }
-            if (gamepad1.right_bumper) {
-                shooterPower = -0.5;
-            }
-            if (gamepad1.left_trigger > 0) {
-                // shooter.setPower(shooterPower);
-            } else {
-                if (intakeSpeed > 0.1) {
-                    shooter.setPower(-intakeSpeed * 2);
-                } else {
-                    shooter.setPower(shooterPower / 1.5);
-                }
             }
 
             telemetry.update();
