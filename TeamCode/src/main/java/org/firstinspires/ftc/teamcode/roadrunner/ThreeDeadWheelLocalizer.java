@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.roadrunner;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.DualNum;
@@ -17,14 +17,14 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.messages.ThreeDeadWheelInputsMessage;
+import org.firstinspires.ftc.teamcode.roadrunner.messages.ThreeDeadWheelInputsMessage;
 
 @Config
 public final class ThreeDeadWheelLocalizer implements Localizer {
     public static class Params {
-        public double par0YTicks = 3151.2707591244393; // y position of the first parallel encoder (in tick units)
-        public double par1YTicks = -3483.703841967179; // y position of the second parallel encoder (in tick units)
-        public double perpXTicks = -2470.1712101824273; // x position of the perpendicular encoder (in tick units)
+        public double par0YTicks = -3450.9846084933392; // y position of the first parallel encoder (in tick units)
+        public double par1YTicks = 3068.5009946185323; // y position of the second parallel encoder (in tick units)
+        public double perpXTicks = -2515.175604467683; // x position of the perpendicular encoder (in tick units)
     }
 
     public static Params PARAMS = new Params();
@@ -46,9 +46,9 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         perp = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "backLeftDrive"))); // slot 1
 
         // TODO: reverse encoder directions if needed
-//        par0.setDirection(DcMotorSimple.Direction.REVERSE);
-//        par1.setDirection(DcMotorSimple.Direction.REVERSE);
-//        perp.setDirection(DcMotorSimple.Direction.REVERSE);
+        par0.setDirection(DcMotorSimple.Direction.REVERSE);
+        par1.setDirection(DcMotorSimple.Direction.REVERSE);
+        perp.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.inPerTick = inPerTick;
 
