@@ -76,7 +76,11 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
 
     LLResult target = null;
 
-    @Override public void opModeInit() {}
+    @Override public void opModeInit() {
+        LLC = new LimeLightCalculator(hardwareMap);
+    }
+
+    LimeLightCalculator LLC;
 
     @Override public void opModeRunOnce() {
         gamepad1.setLedColor(0, 1, 0, Gamepad.LED_DURATION_CONTINUOUS);
@@ -177,7 +181,6 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
         telemetry.addData("Shooter aim control mode", useHuskyLensForAim ? "Auto" : "Manual");
     }
 
-    LimeLightCalculator LLC = new LimeLightCalculator(hardwareMap);
 
     private void huskyLensSystem() {
         if (!useHuskyLensForAim) return;
@@ -332,7 +335,7 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
     }
 
     private void setTurretServosPower(double position) {
-        turretRight.setPosition(turretRight.getPosition() + position);
-        turretLeft.setPosition(turretLeft.getPosition() + position);
+        //turretRight.setPosition(turretRight.getPosition() + position);
+        //turretLeft.setPosition(turretLeft.getPosition() + position);
     }
 }

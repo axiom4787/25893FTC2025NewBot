@@ -50,7 +50,7 @@ public class PleaseRobotINeedThis extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive;
     private DcMotor intake, shooter;
-    private Servo turretLeft, turretRight;
+    private CRServo turretLeft, turretRight;
     private Servo linearActuator;
     private HuskyLens huskyLens;
     private IMU imu;
@@ -323,8 +323,8 @@ public class PleaseRobotINeedThis extends LinearOpMode {
         drive(newForward, newRight, rotate);
     }
     private void setTurretServosPower(double position) {
-        turretRight.setPosition(turretRight.getPosition() + position);
-        turretLeft.setPosition(turretLeft.getPosition() + position);
+        //turretRight.setPosition(turretRight.getPosition() + position);
+        //turretLeft.setPosition(turretLeft.getPosition() + position);
     }
 
     private static double calculateTurret(HuskyLens.Block target) {

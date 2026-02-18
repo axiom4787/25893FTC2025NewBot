@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public abstract class ThePlantRobotOpMode extends LinearOpMode {
     public DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
     public DcMotor intake, shooter;
-    public Servo turretLeft, turretRight;
+    public CRServo turretLeft, turretRight;
     public Servo linearActuator;
     public IMU imu;
     static Config config = new Config();

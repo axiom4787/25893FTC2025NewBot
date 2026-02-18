@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.Boilerplate.Config;
 
 @TeleOp(name="Test what vision do visiony things (TM)", group="Linear OpMode")
 public class TestTheVision extends LinearOpMode {
-    private Servo turretLeft, turretRight;
+    private CRServo turretLeft, turretRight;
     private HuskyLens huskyLens;
     Config config = new Config();
     double amt = 0;
@@ -41,8 +41,8 @@ public class TestTheVision extends LinearOpMode {
     private void initElectronics() {
         config.init(hardwareMap);
 
-        turretLeft = config.turretServoLeft;
-        turretRight = config.turretServoRight;
+//        turretLeft = config.turretServoLeft;
+//        turretRight = config.turretServoRight;
         huskyLens = config.huskyLens;
     }
     HuskyLens.Block target;
@@ -68,7 +68,7 @@ public class TestTheVision extends LinearOpMode {
 
     }
     private void setTurretServosPosition(double position) {
-        turretRight.setPosition(turretRight.getPosition() + position);
-        turretLeft.setPosition(turretLeft.getPosition() + position);
+//        turretRight.setPosition(turretRight.getPosition() + position);
+//        turretLeft.setPosition(turretLeft.getPosition() + position);
     }
 }
