@@ -5,7 +5,6 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -15,6 +14,7 @@ public class Config {
     public DcMotor intake, shooter;
     public CRServo turretServoLeft, turretServoRight;
     public Servo linearActuator;
+//    public Servo smartServo;
     public HuskyLens huskyLens;
     public Limelight3A limeLight;
     public IMU imu;
@@ -36,8 +36,9 @@ public class Config {
 
         turretServoLeft = hardwareMap.get(CRServo.class, "turretServoLeft");
         turretServoRight = hardwareMap.get(CRServo.class, "turretServoRight");
+//        smartServo = hardwareMap.get(Servo.class, "smartServo");
         turretServoLeft.setDirection(CRServo.Direction.REVERSE);
-        turretServoRight.setDirection(CRServo.Direction.FORWARD);
+        turretServoRight.setDirection(CRServo.Direction.REVERSE);
 
         linearActuator = hardwareMap.get(Servo.class, "linearActuator");
         linearActuator.setDirection(Servo.Direction.FORWARD);

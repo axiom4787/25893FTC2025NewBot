@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
-public class HuskyLensCalculator  {
+public class HuskyLensCalculator {
     static Config config = new Config();
     HuskyLens huskyLens;
     public HuskyLensCalculator(HardwareMap hardwareMap) {
