@@ -332,7 +332,7 @@ public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpM
     }
 
     private void setTurretServosPower(double position) {
-        turretRight.setPower(position);
-        turretLeft.setPower(position);
+        turretRight.setPosition(turretRight.getPosition() + position);
+        turretLeft.setPosition(turretLeft.getPosition() + position);
     }
 }

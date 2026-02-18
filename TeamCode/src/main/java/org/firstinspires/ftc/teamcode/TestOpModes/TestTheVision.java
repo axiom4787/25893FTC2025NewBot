@@ -4,12 +4,13 @@ import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.Boilerplate.Config;
 
 @TeleOp(name="Test what vision do visiony things (TM)", group="Linear OpMode")
 public class TestTheVision extends LinearOpMode {
-    private CRServo turretLeft, turretRight;
+    private Servo turretLeft, turretRight;
     private HuskyLens huskyLens;
     Config config = new Config();
     double amt = 0;
@@ -67,7 +68,7 @@ public class TestTheVision extends LinearOpMode {
 
     }
     private void setTurretServosPosition(double position) {
-        turretRight.setPower(position);
-        turretLeft.setPower(position);
+        turretRight.setPosition(turretRight.getPosition() + position);
+        turretLeft.setPosition(turretLeft.getPosition() + position);
     }
 }

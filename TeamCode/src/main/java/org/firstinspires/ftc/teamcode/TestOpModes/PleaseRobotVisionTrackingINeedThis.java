@@ -50,7 +50,7 @@ import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 public class PleaseRobotVisionTrackingINeedThis extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor shooter;
-    private CRServo turretLeft, turretRight;
+    private Servo turretLeft, turretRight;
     private Servo linearActuator;
     private HuskyLens huskyLens;
     private IMU imu;
@@ -136,6 +136,7 @@ public class PleaseRobotVisionTrackingINeedThis extends LinearOpMode {
         turretLeft = config.turretServoLeft;
         turretRight = config.turretServoRight;
         linearActuator = config.linearActuator;
+//        smartServo = config.smartServo;
 
         imu = config.imu;
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD;
@@ -179,7 +180,7 @@ public class PleaseRobotVisionTrackingINeedThis extends LinearOpMode {
         if (gamepad1.dpad_right) turretRotationChange = 1;
         if (gamepad1.dpad_left) turretRotationChange = -1;
 
-        setTurretServosPower(turretRotationChange);
+//        setTurretServosPower(turretRotationChange + smartServo.getPosition()); // fix me
 
 //        telemetry.addData("Turret rotation offset", "%4.2f", turretRotationChange);
     }
@@ -202,7 +203,6 @@ public class PleaseRobotVisionTrackingINeedThis extends LinearOpMode {
         }
         setTurretServosPower(autoTurretValue);
         telemetry.addData("Turret Direction", String.valueOf(autoTurretValue));
-        telemetry.update();
 
 
 
@@ -222,7 +222,6 @@ public class PleaseRobotVisionTrackingINeedThis extends LinearOpMode {
     double intakeSpeed;
 
     private void setTurretServosPower(double position) {
-        turretRight.setPower(position);
-        turretLeft.setPower(position);
+        turretLeft.setPosition(turretLeft.getPosition() + position);
     }
 }

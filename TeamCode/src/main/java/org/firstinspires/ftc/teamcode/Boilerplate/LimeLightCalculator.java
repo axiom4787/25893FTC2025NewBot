@@ -7,7 +7,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class LimeLightCalculator {
     static Config config = new Config();
     Limelight3A limeLight;
-    public PID hoodPID = new PID(4e-5f, 0, 1e-5f, -1, 1);
+    public PID hoodPID = new PID(4e-5f, 0, 1e-5f);
+    public PID turretPID = new PID(0f, 0f, 0f);
     public LimeLightCalculator(HardwareMap hardwareMap) {
         config.init(hardwareMap);
         limeLight = config.limeLight;
@@ -23,8 +24,7 @@ public class LimeLightCalculator {
     }
 
     public double calculateTurret(LLResult target) {
-        double base = -target.getTx() / 2f;
-        return base;
+        return turretPID.calculate(target.getTx(), 0f);
     }
 
     public double calculateHood(LLResult target) {
