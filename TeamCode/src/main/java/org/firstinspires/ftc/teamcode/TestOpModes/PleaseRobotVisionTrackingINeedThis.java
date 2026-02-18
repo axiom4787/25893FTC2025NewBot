@@ -60,8 +60,6 @@ public class PleaseRobotVisionTrackingINeedThis extends LinearOpMode {
     final double GUIDE_UP = 0.25;
     LimeLightCalculator LLC;
     PID hoodPID;
-    double P = 4e-5f;
-    double D = 1e-5f;
 
     @Override
     public void runOpMode() {
@@ -77,27 +75,7 @@ public class PleaseRobotVisionTrackingINeedThis extends LinearOpMode {
         linearActuator.setPosition(GUIDE_DOWN);
 
         while (opModeIsActive()) {
-            hoodPID = new PID(P, 0, D, -1, 1);
-
-            //LLC.hoodPID = hoodPID;
-
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("P", P);
-            telemetry.addData("P", D);
-
-            if (gamepad1.aWasPressed()) {
-                P = P + 1e-5;
-            }
-            if (gamepad1.bWasPressed()) {
-                P = P - 1e-5;
-            }
-
-            if (gamepad1.xWasPressed()) {
-                D = D + 1e-5;
-            }
-            if (gamepad1.yWasPressed()) {
-                D = D - 1e-5;
-            }
 
             autoTurret();
             autoLinearActuator();
@@ -190,7 +168,6 @@ public class PleaseRobotVisionTrackingINeedThis extends LinearOpMode {
         LLResult target = LLC.getTarget();
         telemetry.addLine("AUTO TURRET");
 
-
         if (target != null) {
             autoTurretValue = LLC.calculateTurret(target);
 
@@ -202,9 +179,6 @@ public class PleaseRobotVisionTrackingINeedThis extends LinearOpMode {
         }
         setTurretServosPower(autoTurretValue);
         telemetry.addData("Turret Direction", String.valueOf(autoTurretValue));
-        telemetry.update();
-
-
 
     }
 
@@ -213,7 +187,7 @@ public class PleaseRobotVisionTrackingINeedThis extends LinearOpMode {
         LLResult target = LLC.getTarget();
         if (target == null) return;
 
-        shooterPower = 0.7 - Math.max(0f, target.getTx() - 30f) / 350f;
+        shooterPower = 0.0f;
     }
     private void shooter() {
         shooterPower = 0.7;
@@ -222,7 +196,6 @@ public class PleaseRobotVisionTrackingINeedThis extends LinearOpMode {
     double intakeSpeed;
 
     private void setTurretServosPower(double position) {
-        turretRight.setPower(position);
         turretLeft.setPower(position);
     }
 }

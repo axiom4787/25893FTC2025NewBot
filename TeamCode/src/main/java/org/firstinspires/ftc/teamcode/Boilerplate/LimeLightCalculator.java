@@ -8,6 +8,7 @@ public class LimeLightCalculator {
     static Config config = new Config();
     Limelight3A limeLight;
     public PID hoodPID = new PID(4e-5f, 0, 1e-5f, -1, 1);
+    public PID turretPID = new PID(0.02, 0, 0.01, -1, 1);
     public LimeLightCalculator(HardwareMap hardwareMap) {
         config.init(hardwareMap);
         limeLight = config.limeLight;
@@ -23,13 +24,11 @@ public class LimeLightCalculator {
     }
 
     public double calculateTurret(LLResult target) {
-        double base = -target.getTx() / 2f;
-        return base;
+        return turretPID.calculate(0f, target.getTx());
     }
 
     public double calculateHood(LLResult target) {
-        double base = hoodPID.calculate(-target.getTy(), 0f); // 0f is the center of the camera, so if we are off, we should make the motors move towards that
-        return base * 2f;
+        return hoodPID.calculate(-target.getTy(), 0f) * 2f; // 0f is the center of the camera, so if we are off, we should make the motors move towards that
     }
 
     public enum LogWhat {
