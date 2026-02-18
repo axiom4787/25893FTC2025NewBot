@@ -1,28 +1,46 @@
 package org.firstinspires.ftc.teamcode.Boilerplate;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class PID {
-    double kP, kI, kD;
+    // P, I, D coefficients
+    public double kP;
+    public double kI;
+    public double kD;
 
-    double P, I, D;
+    // PID state
+    public double integral;
+    public double previousError;
+    public double previousTime;
+        // PID output limits
+    public double minOutput;
+    public double maxOutput;
+    private ElapsedTime time;
+    public PID(double kP, double kI, double kD, double minOutput, double maxOutput) {
+        time = new ElapsedTime();
 
-    double error;
-    double integral = 0;
-    double derivative = 0;
-    double prevError = 0;
-    public PID(double p, double i, double d){
-        kP = p;
-        kI = i;
-        kD = d;
+        this.kP = kP;
+        this.kI = kI;
+        this.kD = kD;
+        this.integral = 0;
+        this.previousError = 0;
+        this.previousTime = time.milliseconds();
+        this.minOutput = minOutput;
+        this.maxOutput = maxOutput;
     }
-    public double calculate(double setpoint, double current) {
-        error = setpoint - current;
-        integral += error;
-        derivative = prevError - error;
-        P = error * kP;
-        I = integral * kI;
-        D = derivative * kD;
+    public double calculate(double setpoint, double actual) {
+        double currentTime = time.milliseconds();
+        double deltaTime = currentTime - previousTime;
+        previousTime = currentTime;
 
-        prevError = error;
-        return P + I + D;
+        double error = setpoint - actual;
+        integral += error * deltaTime;
+        double derivative = (error - previousError) / deltaTime;
+        previousError = error;
+
+        double output = (kP * error) + (kI * integral) + (kD * derivative);
+        // Clamp output between minOutput and maxOutput
+        if (output > maxOutput) output = maxOutput;
+        if (output < minOutput) output = minOutput;
+        return output;
     }
 }

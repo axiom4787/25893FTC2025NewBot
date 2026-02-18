@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class LimeLightCalculator {
     static Config config = new Config();
     Limelight3A limeLight;
-    public PID hoodPID = new PID(0f, 0f, 0f); // public for overriding and testing
+    public PID hoodPID = new PID(4e-5f, 0, 1e-5f);
     public PID turretPID = new PID(0f, 0f, 0f);
     public LimeLightCalculator(HardwareMap hardwareMap) {
         config.init(hardwareMap);
@@ -28,7 +28,8 @@ public class LimeLightCalculator {
     }
 
     public double calculateHood(LLResult target) {
-        return turretPID.calculate(target.getTy(), 0f);
+        double base = hoodPID.calculate(-target.getTy(), 0f); // 0f is the center of the camera, so if we are off, we should make the motors move towards that
+        return base * 2f;
     }
 
     public enum LogWhat {
