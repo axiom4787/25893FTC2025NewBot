@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
@@ -12,7 +10,7 @@ import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 
 @TeleOp(name="not comp ready code", group="Linear OpMode")
 //@Disabled
-public class PleaseRobotINeedThisWithPossiblyBetterCode extends ThePlantRobotOpMode {
+public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
     private boolean useHuskyLensForAim = true;
     private boolean driveInFieldRelative = true;
     private double lastHuskyLensPower = Shooter.SHOOT_POWER;

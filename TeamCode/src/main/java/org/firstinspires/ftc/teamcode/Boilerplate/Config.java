@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Boilerplate;
 import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -17,6 +18,7 @@ public class Config {
     public HuskyLens huskyLens;
     public Limelight3A limeLight;
     public IMU imu;
+    public AnalogInput axonServoEncoder;
 
     public void init(HardwareMap hardwareMap) {
         frontLeftDrive = hardwareMap.get(DcMotor.class, "frontLeftDrive");
@@ -49,5 +51,8 @@ public class Config {
         RevHubOrientationOnRobot.UsbFacingDirection usbDirection = RevHubOrientationOnRobot.UsbFacingDirection.RIGHT;
         RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
         imu.initialize(new IMU.Parameters(orientationOnRobot));
+
+        axonServoEncoder = hardwareMap.get(AnalogInput.class, "verySmartServo");
+        // TODO: Confirm encoder name
     }
 }
