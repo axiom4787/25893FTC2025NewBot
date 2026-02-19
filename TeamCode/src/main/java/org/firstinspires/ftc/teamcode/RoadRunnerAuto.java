@@ -43,9 +43,10 @@ public final class RoadRunnerAuto extends LinearOpMode {
                     .waitSeconds(0.5)
 
                     .strafeToLinearHeading(new Vector2d(-12, -25), Math.toRadians(270))
+                    .stopAndAdd(new StartIntakeAction())
                     .strafeToLinearHeading(new Vector2d(-12, -45), Math.toRadians(270))
+                    .stopAndAdd(new StopIntakeAction())
                     .splineToLinearHeading(new Pose2d(-45, -30, Math.toRadians(234)), Math.toRadians(180))
-                    .afterDisp(0.0, new IntakeAction())
                     .stopAndAdd(new ShootAction())
                     .waitSeconds(0.5)
 
@@ -58,12 +59,19 @@ public final class RoadRunnerAuto extends LinearOpMode {
                     .build());
     }
 
-    class IntakeAction implements Action {
+    class StartIntakeAction implements Action {
         @Override
         public boolean run(TelemetryPacket p) {
-            intakeMotor.setPower(0.4);
+            intakeMotor.setPower(0.6);
             shooterMotor.setPower(-0.4);
-            sleep(2000);
+
+            return false;
+        }
+    }
+
+    class StopIntakeAction implements Action {
+        @Override
+        public boolean run(TelemetryPacket p) {
             intakeMotor.setPower(0.0);
             shooterMotor.setPower(0.0);
 
@@ -74,8 +82,10 @@ public final class RoadRunnerAuto extends LinearOpMode {
     class ShootAction implements Action {
         @Override
         public boolean run(TelemetryPacket p) {
-            shooterMotor.setPower(1.0);
-            sleep(1500);
+            shooterMotor.setPower(0.6);
+            sleep(2500);
+            intakeMotor.setPower(-0.4);
+            sleep(200);
             intakeMotor.setPower(1.0);
             sleep(5000);
             shooterMotor.setPower(0.0);
