@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.tuning.TuningOpModes;
 
 @Autonomous(name="Auto")
 public final class RoadRunnerAuto extends LinearOpMode {
-    DcMotor intakeMotor, shooterMotor;
+    DcMotor intakeMotor, shooterMotor, indexerMotor;
     Config config = new Config();
 
     @Override
@@ -26,8 +26,9 @@ public final class RoadRunnerAuto extends LinearOpMode {
 
         intakeMotor = config.intake;
         shooterMotor = config.shooter;
+        indexerMotor = config.indexer;
 
-        Pose2d beginPose = new Pose2d(-55, -44, Math.toRadians(234));
+        Pose2d beginPose = new Pose2d(-56, -47, Math.toRadians(234));
 
         if (!TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) throw new RuntimeException();
 
@@ -38,15 +39,17 @@ public final class RoadRunnerAuto extends LinearOpMode {
         Actions.runBlocking(
             drive.actionBuilder(beginPose)
                     .waitSeconds(0.5)
+                    .stopAndAdd(new StartShooterAction())
                     .lineToY(-30)
+                    .waitSeconds(1.0)
                     .stopAndAdd(new ShootAction())
                     .waitSeconds(0.5)
 
                     .strafeToLinearHeading(new Vector2d(-12, -25), Math.toRadians(270))
                     .stopAndAdd(new StartIntakeAction())
                     .strafeToLinearHeading(new Vector2d(-12, -45), Math.toRadians(270))
-                    .stopAndAdd(new StopIntakeAction())
-                    .splineToLinearHeading(new Pose2d(-45, -30, Math.toRadians(234)), Math.toRadians(180))
+                    .splineToLinearHeading(new Pose2d(-43, -30, Math.toRadians(234)), Math.toRadians(180))
+                    .afterDisp(1.0, new StopIntakeAction())
                     .stopAndAdd(new ShootAction())
                     .waitSeconds(0.5)
 
@@ -62,8 +65,8 @@ public final class RoadRunnerAuto extends LinearOpMode {
     class StartIntakeAction implements Action {
         @Override
         public boolean run(TelemetryPacket p) {
-            intakeMotor.setPower(0.6);
-            shooterMotor.setPower(-0.4);
+            intakeMotor.setPower(0.8);
+//            indexerMotor.setPower(-0.2);
 
             return false;
         }
@@ -73,7 +76,7 @@ public final class RoadRunnerAuto extends LinearOpMode {
         @Override
         public boolean run(TelemetryPacket p) {
             intakeMotor.setPower(0.0);
-            shooterMotor.setPower(0.0);
+//            indexerMotor.setPower(0.0);
 
             return false;
         }
@@ -82,14 +85,20 @@ public final class RoadRunnerAuto extends LinearOpMode {
     class ShootAction implements Action {
         @Override
         public boolean run(TelemetryPacket p) {
-            shooterMotor.setPower(0.6);
-            sleep(2500);
-            intakeMotor.setPower(-0.4);
-            sleep(200);
             intakeMotor.setPower(1.0);
+            indexerMotor.setPower(0.3);
             sleep(5000);
-            shooterMotor.setPower(0.0);
             intakeMotor.setPower(0.0);
+            indexerMotor.setPower(0.0);
+
+            return false;
+        }
+    }
+
+    class StartShooterAction implements Action {
+        @Override
+        public boolean run(TelemetryPacket p) {
+            shooterMotor.setPower(0.7);
 
             return false;
         }

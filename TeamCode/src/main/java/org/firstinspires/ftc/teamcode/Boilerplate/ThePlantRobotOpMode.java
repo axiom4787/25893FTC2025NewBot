@@ -5,6 +5,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -13,12 +14,13 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 public abstract class ThePlantRobotOpMode extends LinearOpMode {
     public DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
-    public DcMotor intake, shooter;
+    public DcMotor intake, shooter, indexer;
     public CRServo turretLeft, turretRight;
     public Servo linearActuator;
     public IMU imu;
-    static Config config = new Config();
+    public Config config = new Config();
     public ElapsedTime runtime = new ElapsedTime();
+    public AnalogInput axonServoEncoder;
 
     @Override
     final public void runOpMode() {
@@ -42,9 +44,9 @@ public abstract class ThePlantRobotOpMode extends LinearOpMode {
         }
     }
 
-    public abstract void opModeInit();
-    public abstract void opModeRunOnce();
-    public abstract void opModeRunLoop();
+    public void opModeInit() {};
+    public void opModeRunOnce() {};
+    public void opModeRunLoop() {};
 
     private void internalInitElectronics() {
         config.init(hardwareMap);
@@ -58,6 +60,8 @@ public abstract class ThePlantRobotOpMode extends LinearOpMode {
         turretLeft = config.turretServoLeft;
         turretRight = config.turretServoRight;
         linearActuator = config.linearActuator;
+        axonServoEncoder = config.axonServoEncoder;
+        indexer = config.indexer;
 
         imu = config.imu;
     }

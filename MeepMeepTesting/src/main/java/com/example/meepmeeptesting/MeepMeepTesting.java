@@ -18,21 +18,22 @@ public class MeepMeepTesting {
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-55, -45, Math.toRadians(234)))
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-56, -47, Math.toRadians(234)))
+                        .waitSeconds(5)
                         .lineToY(-30)
                         .stopAndAdd(new ShootAction())
                         .waitSeconds(0.5)
 
-                        .strafeToLinearHeading(new Vector2d(-12, -25), Math.toRadians(270))
+                        .strafeToLinearHeading(new Vector2d(-12 , -25), Math.toRadians(270))
                         .strafeToLinearHeading(new Vector2d(-12, -45), Math.toRadians(270))
-                        .splineToLinearHeading(new Pose2d(-45, -30, Math.toRadians(234)), Math.toRadians(180))
+                        .splineToLinearHeading(new Pose2d(-43, -30, Math.toRadians(234)), Math.toRadians(180))
                         .afterDisp(0.0, new IntakeAction())
                         .stopAndAdd(new ShootAction())
                         .waitSeconds(0.5)
 
                         .strafeToLinearHeading(new Vector2d(12, -25), Math.toRadians(270))
                         .strafeToLinearHeading(new Vector2d(12, -45), Math.toRadians(270))
-                        .splineToLinearHeading(new Pose2d(-45, -30, Math.toRadians(234)), Math.toRadians(180))
+                        .splineToLinearHeading(new Pose2d(-43, -30, Math.toRadians(234)), Math.toRadians(180))
                         .afterDisp(0.0, new IntakeAction())
                         .stopAndAdd(new ShootAction())
                         .waitSeconds(0.5)

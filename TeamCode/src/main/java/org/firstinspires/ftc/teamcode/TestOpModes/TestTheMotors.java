@@ -35,9 +35,6 @@ import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 
 @TeleOp(name="Test what motors do what", group="Linear OpMode")
 public class TestTheMotors extends ThePlantRobotOpMode {
-    @Override public void opModeInit() {}
-    @Override public void opModeRunOnce() {}
-
     @Override public void opModeRunLoop() {
         if (gamepad1.dpad_up) {
             frontLeftDrive.setPower(0.5);

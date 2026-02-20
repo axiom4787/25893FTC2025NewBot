@@ -6,15 +6,15 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Boilerplate.LimeLightCalculator;
+import org.firstinspires.ftc.teamcode.Boilerplate.RTPAxon;
 import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 
-@TeleOp(name="not comp ready code", group="Linear OpMode")
+@TeleOp(name="comp ready code", group="Linear OpMode")
 //@Disabled
 public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
-    private boolean useHuskyLensForAim = true;
+    private boolean useLimeLightForAim = true;
     private boolean driveInFieldRelative = true;
-    private double lastHuskyLensPower = Shooter.SHOOT_POWER;
-
+    private double lastLimeLightPower = Shooter.SHOOT_POWER;
 
     private static class Hood {
         public static final double DOWN_POSITION = 0.75;
@@ -66,16 +66,28 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
             RIGHT,
         }
     }
+    private static class Indexer {
+        enum State { OFF, FORWARD, REVERSE, }
+        public static final double OFF_POWER = 0.0;
+        public static final double FORWARD_POWER = 0.4;
+        public static final double REVERSE_POWER = 1.0;
+    }
 
     private Hood.State hoodState = Hood.State.DOWN;
     private Shooter.State shooterState = Shooter.State.OFF;
     private Intake.State intakeState = Intake.State.OFF;
     private Turret.State turretState = Turret.State.AUTO;
+    private Indexer.State indexerState = Indexer.State.OFF;
+
+    RTPAxon smartServoController;
 
     LLResult target = null;
 
     @Override public void opModeInit() {
         LLC = new LimeLightCalculator(hardwareMap);
+        smartServoController = new RTPAxon(config.turretServoLeft, config.axonServoEncoder, RTPAxon.Direction.REVERSE);
+        smartServoController.setRtp(false);
+        smartServoController.forceResetTotalRotation();
     }
 
     LimeLightCalculator LLC;
@@ -85,6 +97,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
     }
 
     @Override public void opModeRunLoop() {
+        smartServoController.update();
         robotControls();
 
         huskyLensSystem();
@@ -94,6 +107,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         turretSystem();
         linearActuatorSystem();
         shooterSystem();
+        indexerSystem();
     }
 
     private void robotControls() {
@@ -107,7 +121,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         }
 
         if (gamepad1.bWasPressed()) {
-            useHuskyLensForAim = !useHuskyLensForAim;
+            useLimeLightForAim = !useLimeLightForAim;
             gamepad1.rumble(300);
         }
 
@@ -117,12 +131,12 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         }
 
         // Hood
-        // If HuskyLens aiming is enabled:
-        // - Use HuskyLens to determine linear actuator position
+        // If LimeLight aiming is enabled:
+        // - Use LimeLight to determine linear actuator position
         // Otherwise:
         // - dpad down -> Move linear actuator to CLOSE shooting position
         // - dpad up   -> Move linear actuator to FAR shooting position
-        if (useHuskyLensForAim) {
+        if (useLimeLightForAim) {
             hoodState = Hood.State.AUTO;
         } else {
             if (gamepad1.dpadUpWasPressed())         hoodState = Hood.State.UP;
@@ -131,12 +145,12 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         }
 
         // Turret
-        // If HuskyLens aiming is enabled:
+        // If LimeLight aiming is enabled:
         // - Use HuskyLens to aim turret
         // Otherwise:
         // - dpad left  -> turn turret left
         // - dpad right -> turn turret right
-        if (useHuskyLensForAim) {
+        if (useLimeLightForAim) {
             turretState = Turret.State.AUTO;
         } else {
             if (gamepad1.dpad_left)       turretState = Turret.State.LEFT;
@@ -151,10 +165,8 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         // - Right bumper -> Reverse (Also: reverse intake)
         // - Left trigger -> Shoot
 
-        // It might be advantageous to map left bumper to reverse shooter instead of right bumper
-        // so that they can be independently reversed
         if (gamepad1.left_trigger > 0) {
-            if (useHuskyLensForAim) shooterState = Shooter.State.AUTO;
+            if (useLimeLightForAim) shooterState = Shooter.State.AUTO;
             else                    shooterState = Shooter.State.SHOOT;
         } else if (gamepad1.left_bumper) {
             shooterState = Shooter.State.REVERSE;
@@ -164,24 +176,30 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
 
         // Intake
         // Right trigger -> Intake
-        // Right bumper  -> Reverse intake (Also: reverse shooter)
+        // Right bumper  -> Intake WITH INDEXER -> Shoot
         if (gamepad1.right_trigger != 0) intakeState = Intake.State.INTAKE;
-        else if (gamepad1.right_bumper)  intakeState = Intake.State.REVERSE;
+        else if (gamepad1.right_bumper)  intakeState = Intake.State.INTAKE;
         else                             intakeState = Intake.State.OFF;
 
-        // Log to driver station
-        telemetry.addData("Hood state", hoodState.name());
-        telemetry.addData("Shooter state", shooterState.name());
-        telemetry.addData("Turret state", turretState.name());
-        telemetry.addData("Intake state", intakeState.name());
+        // Indexer
+        // Right bumper -> Intake + Index -> Shoot
+        if (gamepad1.right_bumper)       indexerState = Indexer.State.FORWARD;
+        else                             indexerState = Indexer.State.OFF;
 
-        telemetry.addData("Driving mode", driveInFieldRelative ? "Field relative" : "Robot relative");
-        telemetry.addData("Shooter aim control mode", useHuskyLensForAim ? "Auto" : "Manual");
+        // Log to driver station
+//        telemetry.addData("Hood state   ", hoodState.name());
+//        telemetry.addData("Shooter state", shooterState.name());
+//        telemetry.addData("Turret state ", turretState.name());
+//        telemetry.addData("Intake state ", intakeState.name());
+//        telemetry.addData("Indexer state", indexerState.name());
+
+        telemetry.addData("Driving mode", driveInFieldRelative ? "FIELD relative" : "ROBOT relative");
+        telemetry.addData("Shooter aim control mode", useLimeLightForAim ? "LIMELIGHT" : "MANUAL");
     }
 
 
     private void huskyLensSystem() {
-        if (!useHuskyLensForAim) return;
+        if (!useLimeLightForAim) return;
 
         target = LLC.getTarget();
     }
@@ -212,31 +230,38 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         telemetry.addData("Linear actuator position", "%4.2f", linearActuator.getPosition());
     }
 
+    double autoTurretValue = 0;
     private void turretSystem() {
         switch (turretState) {
             case AUTO:
-                if (target == null) {
-                    setTurretServosPower(Turret.OFF_POWER);
-                    break;
-                }
+                LLResult target = LLC.getTarget();
 
-                setTurretServosPower(- ( ( target.getTx() / 160f ) - 1 ) * 0.5 );
-                telemetry.addData("HuskyLens target height", target.getTy());
+                if (target != null) {
+                    autoTurretValue = LLC.calculateTurret(target);
+
+                    telemetry.addLine("CAN SEE TARGET");
+                    telemetry.addData("Target TX:", LLC.log(target, LimeLightCalculator.LogWhat.TX));
+                    telemetry.addData("Target TY:", LLC.log(target, LimeLightCalculator.LogWhat.TY));
+                    telemetry.addData("LimeLight target height", target.getTy());
+                } else {
+                    autoTurretValue /= 1.2f;
+                }
+                setTurretPower(autoTurretValue);
 
                 break;
             case LEFT:
-                setTurretServosPower(Turret.LEFT_POWER);
+                setTurretPowerConstrained(Turret.LEFT_POWER);
                 break;
             case RIGHT:
-                setTurretServosPower(Turret.RIGHT_POWER);
+                setTurretPowerConstrained(Turret.RIGHT_POWER);
                 break;
             case OFF:
-                setTurretServosPower(Turret.OFF_POWER);
+                setTurretPower(Turret.OFF_POWER);
         }
     }
 
     private void shooterSystem() {
-        double shooterPower = lastHuskyLensPower;
+        double shooterPower = lastLimeLightPower;
         switch (shooterState) {
             case SHOOT:
                 shooterPower = Shooter.SHOOT_POWER;
@@ -245,10 +270,12 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
                 shooterPower = Shooter.REVERSE_POWER;
                 break;
             case AUTO:
+                LLResult target = LLC.getTarget();
                 if (target == null) break;
 
-                shooterPower = 0.8 - target.getTy(); // TODO: FIX
-                lastHuskyLensPower = shooterPower;
+                telemetry.addData("LL Target size %", target.getTa());
+                shooterPower = 0.8; // TODO: FIX
+                lastLimeLightPower = shooterPower;
                 break;
             case OFF:
                 shooterPower = Shooter.OFF_POWER;
@@ -256,6 +283,20 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
 
         shooter.setPower(shooterPower);
         telemetry.addData("Shooter power", "%.2f", shooterPower);
+    }
+
+    private void indexerSystem() {
+        double indexerPower = Indexer.OFF_POWER;
+        switch (indexerState) {
+            case FORWARD:
+                indexerPower = Indexer.FORWARD_POWER;
+                break;
+            case REVERSE:
+                indexerPower = Indexer.REVERSE_POWER;
+                break;
+        }
+
+        indexer.setPower(indexerPower);
     }
 
     private void intakeSystem() {
@@ -332,8 +373,21 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         drive(newForward, newRight, rotate);
     }
 
-    private void setTurretServosPower(double position) {
-        //turretRight.setPosition(turretRight.getPosition() + position);
-        //turretLeft.setPosition(turretLeft.getPosition() + position);
+    public void setTurretPower(double power) {
+        turretLeft.setPower(power);
+        turretRight.setPower(power);
+    }
+
+    public final double MAX_SERVO_ANGLE = 150;
+    public void setTurretPowerConstrained(double power) {
+        if (getTurretAngle() > MAX_SERVO_ANGLE && power > 0) return;
+        if (getTurretAngle() < -MAX_SERVO_ANGLE && power < 0) return;
+        setTurretPower(power);
+    }
+
+    // Check out https://github.com/The-Robotics-Catalyst-Foundation/FIRST-Opensource/blob/main/FTC/RTPAxon/RTPAxon.java
+    // for more possibly advantageous code
+    public double getTurretAngle() {
+        return smartServoController.getTotalRotation();
     }
 }
