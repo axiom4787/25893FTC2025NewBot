@@ -38,6 +38,8 @@ public class Config {
         shooter.setDirection(DcMotor.Direction.FORWARD);
         indexer.setDirection(DcMotor.Direction.FORWARD);
 
+        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         turretServoLeft = hardwareMap.get(CRServo.class, "turretServoLeft");
         turretServoRight = hardwareMap.get(CRServo.class, "turretServoRight");
         turretServoLeft.setDirection(CRServo.Direction.REVERSE);

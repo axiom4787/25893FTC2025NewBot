@@ -11,34 +11,36 @@ import com.noahbres.meepmeep.roadrunner.entity.RoadRunnerBotEntity;
 
 public class MeepMeepTesting {
     public static void main(String[] args) {
+        // TODO: Fix Math being weird or something.
         MeepMeep meepMeep = new MeepMeep(800);
 
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
-                .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
+                .setConstraints(60, 60, java.lang.Math.toRadians(180), java.lang.Math.toRadians(180), 15)
+                .setDimensions(16, 16)
                 .build();
 
-        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-56, -47, Math.toRadians(234)))
-                        .waitSeconds(5)
-                        .lineToY(-30)
-                        .stopAndAdd(new ShootAction())
-                        .waitSeconds(0.5)
+        myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-56, i(-47), java.lang.Math.toRadians(i(234))))
+                .stopAndAdd(new StartShooterAction())
+                .lineToY(i(-30))
+                .waitSeconds(1.0)
+                .stopAndAdd(new ShootAction())
 
-                        .strafeToLinearHeading(new Vector2d(-12 , -25), Math.toRadians(270))
-                        .strafeToLinearHeading(new Vector2d(-12, -45), Math.toRadians(270))
-                        .splineToLinearHeading(new Pose2d(-43, -30, Math.toRadians(234)), Math.toRadians(180))
-                        .afterDisp(0.0, new IntakeAction())
-                        .stopAndAdd(new ShootAction())
-                        .waitSeconds(0.5)
+                .strafeToLinearHeading(new Vector2d(-12, i(-25)), java.lang.Math.toRadians(i(270)))
+                .stopAndAdd(new StartIntakeAction())
+                .strafeToLinearHeading(new Vector2d(-12, i(-45)), java.lang.Math.toRadians(i(270)))
+                .splineToLinearHeading(new Pose2d(-43, i(-30), java.lang.Math.toRadians(i(234))), java.lang.Math.toRadians(i(180)))
+                .afterDisp(1.0, new StopIntakeAction())
+                .stopAndAdd(new ShootAction())
 
-                        .strafeToLinearHeading(new Vector2d(12, -25), Math.toRadians(270))
-                        .strafeToLinearHeading(new Vector2d(12, -45), Math.toRadians(270))
-                        .splineToLinearHeading(new Pose2d(-43, -30, Math.toRadians(234)), Math.toRadians(180))
-                        .afterDisp(0.0, new IntakeAction())
-                        .stopAndAdd(new ShootAction())
-                        .waitSeconds(0.5)
-                        .build());
+                .strafeToLinearHeading(new Vector2d(12, i(-25)), java.lang.Math.toRadians(i(270)))
+                .stopAndAdd(new StartIntakeAction())
+                .strafeToLinearHeading(new Vector2d(12, i(-45)), java.lang.Math.toRadians(i(270)))
+                .splineToLinearHeading(new Pose2d(-43, i(-30), java.lang.Math.toRadians(i(234))), Math.toRadians(i(180)))
+                .afterDisp(1.0, new StopIntakeAction())
+                .stopAndAdd(new ShootAction())
 
+                .build());
         meepMeep.setBackground(MeepMeep.Background.FIELD_DECODE_JUICE_DARK)
                 .setDarkMode(true)
                 .setBackgroundAlpha(0.95f)
@@ -46,17 +48,26 @@ public class MeepMeepTesting {
                 .start();
     }
 
-    static class IntakeAction implements Action {
+    static double i(double n) {
+        return -n;
+    }
+
+    static class StartIntakeAction implements Action {
         @Override
         public boolean run(TelemetryPacket p) {
-            try {
-                wait(2000);
-            } catch (InterruptedException ignore) {}
-//            intakeMotor.setPower(0.4);
-//            shooterMotor.setPower(-0.4);
-//            sleep(2000);
+//            intakeMotor.setPower(0.7);
+//            indexerMotor.setPower(-0.2);
+
+            return false;
+        }
+    }
+
+    static class StopIntakeAction implements Action {
+        @Override
+        public boolean run(TelemetryPacket p) {
 //            intakeMotor.setPower(0.0);
-//            shooterMotor.setPower(0.0);
+//            indexerMotor.setPower(0.0);
+
             return false;
         }
     }
@@ -65,14 +76,18 @@ public class MeepMeepTesting {
         @Override
         public boolean run(TelemetryPacket p) {
             try {
-                wait(6500);
-            } catch (InterruptedException ignore) {}
-//            shooterMotor.setPower(1.0);
-//            sleep(1500);
-//            intakeMotor.setPower(0.3);
-//            sleep(5000);
-//            shooterMotor.setPower(0.0);
-//            intakeMotor.setPower(0.0);
+                wait(6000);
+            } catch (Exception ignore) {}
+
+            return false;
+        }
+    }
+
+    static class StartShooterAction implements Action {
+        @Override
+        public boolean run(TelemetryPacket p) {
+//            smartShooter.setVelocity(1450);
+
             return false;
         }
     }

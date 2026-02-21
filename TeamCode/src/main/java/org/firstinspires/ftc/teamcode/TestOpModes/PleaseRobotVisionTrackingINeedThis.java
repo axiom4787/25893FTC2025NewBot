@@ -131,6 +131,7 @@ public class PleaseRobotVisionTrackingINeedThis extends LinearOpMode {
           }
           telemetry.addData("Linear actuator position", "%4.2f", linearActuator.getPosition());
     }
+
     double autoLinearActuatorValue = 0f;
     private void autoLinearActuator() {
         Config config = new Config();

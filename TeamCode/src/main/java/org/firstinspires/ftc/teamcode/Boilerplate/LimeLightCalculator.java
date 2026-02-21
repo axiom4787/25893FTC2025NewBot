@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class LimeLightCalculator {
     static Config config = new Config();
     Limelight3A limeLight;
-    public PID hoodPID = new PID(4e-5f, 0, 1e-5f, -1, 1);
+    public PID hoodPID = new PID(0.0005, 0, 1e-5f, -1, 1);
     public PID turretPID = new PID(0.02, 0, 0.01, -1, 1);
     public LimeLightCalculator(HardwareMap hardwareMap) {
         config.init(hardwareMap);

@@ -1,7 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.ValueProvider;
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -9,12 +14,15 @@ import org.firstinspires.ftc.teamcode.Boilerplate.LimeLightCalculator;
 import org.firstinspires.ftc.teamcode.Boilerplate.RTPAxon;
 import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 
+import java.util.List;
+
 @TeleOp(name="comp ready code", group="Linear OpMode")
 //@Disabled
 public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
     private boolean useLimeLightForAim = true;
     private boolean driveInFieldRelative = true;
     private double lastLimeLightPower = Shooter.SHOOT_POWER;
+    DcMotorEx goodShooter;
 
     private static class Hood {
         public static final double DOWN_POSITION = 0.75;
@@ -34,11 +42,13 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         }
     }
     private static class Shooter {
-        public static double OFF_POWER = 0.0;
-        public static double SHOOT_POWER = 0.8;
-        public static double REVERSE_POWER = -0.5;
+        public static double OFF_POWER = 0;
+        public static double SHOOT_POWER = 1800;
+        public static double REVERSE_POWER = -500;
+        public static double IDLE_POWER = 800;
         public enum State {
             OFF,
+            IDLE,
             SHOOT,
             REVERSE,
             AUTO,
@@ -70,7 +80,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         enum State { OFF, FORWARD, REVERSE, }
         public static final double OFF_POWER = 0.0;
         public static final double FORWARD_POWER = 0.4;
-        public static final double REVERSE_POWER = 1.0;
+        public static final double REVERSE_POWER = -1.0;
     }
 
     private Hood.State hoodState = Hood.State.DOWN;
@@ -83,11 +93,19 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
 
     LLResult target = null;
 
+    private double P = 600;
+    private double I = 0.0;
+    private double D = 0;
+    private double F = 14.6;
+
     @Override public void opModeInit() {
         LLC = new LimeLightCalculator(hardwareMap);
         smartServoController = new RTPAxon(config.turretServoLeft, config.axonServoEncoder, RTPAxon.Direction.REVERSE);
         smartServoController.setRtp(false);
         smartServoController.forceResetTotalRotation();
+
+        goodShooter = (DcMotorEx) shooter;
+        goodShooter.setVelocityPIDFCoefficients(P, I, D, F);
     }
 
     LimeLightCalculator LLC;
@@ -146,7 +164,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
 
         // Turret
         // If LimeLight aiming is enabled:
-        // - Use HuskyLens to aim turret
+        // - Use LimeLight to aim turret
         // Otherwise:
         // - dpad left  -> turn turret left
         // - dpad right -> turn turret right
@@ -162,7 +180,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         // If HuskyLens aiming enabled:
         // - Use HuskyLens to determine shooter speed
         // Otherwise:
-        // - Right bumper -> Reverse (Also: reverse intake)
+        // - Right bumper -> Reverse
         // - Left trigger -> Shoot
 
         if (gamepad1.left_trigger > 0) {
@@ -171,19 +189,20 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         } else if (gamepad1.left_bumper) {
             shooterState = Shooter.State.REVERSE;
         } else {
-            shooterState = Shooter.State.OFF;
+            shooterState = Shooter.State.IDLE;
         }
 
         // Intake
         // Right trigger -> Intake
         // Right bumper  -> Intake WITH INDEXER -> Shoot
-        if (gamepad1.right_trigger != 0) intakeState = Intake.State.INTAKE;
-        else if (gamepad1.right_bumper)  intakeState = Intake.State.INTAKE;
+        if (gamepad1.right_trigger != 0 || gamepad1.right_bumper) intakeState = Intake.State.INTAKE;
+//        else if (gamepad1.right_bumper)  intakeState = Intake.State.INTAKE;
         else                             intakeState = Intake.State.OFF;
 
         // Indexer
         // Right bumper -> Intake + Index -> Shoot
-        if (gamepad1.right_bumper)       indexerState = Indexer.State.FORWARD;
+        if (gamepad1.right_trigger != 0) indexerState = Indexer.State.REVERSE;
+        else if (gamepad1.right_bumper)  indexerState = Indexer.State.FORWARD;
         else                             indexerState = Indexer.State.OFF;
 
         // Log to driver station
@@ -204,16 +223,22 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         target = LLC.getTarget();
     }
 
+    double autoLinearActuatorValue = 0.0;
+    double actuatorPosition = Hood.DOWN_POSITION;
     private void linearActuatorSystem() {
         switch (hoodState) {
             case AUTO:
-                if (target == null) break;
+                LLResult target = LLC.getTarget();
+                if (target == null) {
+                    autoTurretValue /= 1.5;
+                    break;
+                }
 
-                double actuatorPosition = linearActuator.getPosition();
-
-                actuatorPosition -= (target.getTy() - 110f) / 160f * 0.025;
-                actuatorPosition = Hood.clampPosition(actuatorPosition);
+                autoLinearActuatorValue = LLC.calculateHood(target);
+                actuatorPosition -= autoLinearActuatorValue;
                 linearActuator.setPosition(actuatorPosition);
+                telemetry.addData("Hood pos", actuatorPosition);
+                telemetry.addData("Hood value", autoLinearActuatorValue);
                 break;
             case DOWN:
                 linearActuator.setPosition(Hood.DOWN_POSITION);
@@ -261,28 +286,48 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
     }
 
     private void shooterSystem() {
-        double shooterPower = lastLimeLightPower;
+//        goodShooter.setVelocity(1800);
+
+        FtcDashboard.getInstance().getTelemetry().addData("chudbud", goodShooter.getVelocity());
+        FtcDashboard.getInstance().getTelemetry().update();
+
+        double shooterVelocity = lastLimeLightPower;
         switch (shooterState) {
             case SHOOT:
-                shooterPower = Shooter.SHOOT_POWER;
+                shooterVelocity = Shooter.SHOOT_POWER;
                 break;
             case REVERSE:
-                shooterPower = Shooter.REVERSE_POWER;
+                shooterVelocity = Shooter.REVERSE_POWER;
+                break;
+            case IDLE:
+                shooterVelocity = Shooter.IDLE_POWER;
                 break;
             case AUTO:
                 LLResult target = LLC.getTarget();
                 if (target == null) break;
 
                 telemetry.addData("LL Target size %", target.getTa());
-                shooterPower = 0.8; // TODO: FIX
-                lastLimeLightPower = shooterPower;
+                shooterVelocity = lastLimeLightPower;
+                double targetSizePct = target.getTa();
+                if (targetSizePct > 0.80) shooterVelocity = 1800;
+                if (targetSizePct > 1.00) shooterVelocity = 1650; // far
+                if (targetSizePct > 2.00) shooterVelocity = 1500; // med
+                if (targetSizePct > 5.00) shooterVelocity = 1350; // med/close
+                if (targetSizePct > 8.00) shooterVelocity = 1250; // super close
+                // 0.75 % = far
+                // 1.3% = mid/far
+                // 2.20 % = mid
+                // 5% = mid/close
+                // 10 % = close
+                lastLimeLightPower = shooterVelocity;
                 break;
             case OFF:
-                shooterPower = Shooter.OFF_POWER;
+                shooterVelocity = Shooter.OFF_POWER;
         }
 
-        shooter.setPower(shooterPower);
-        telemetry.addData("Shooter power", "%.2f", shooterPower);
+        goodShooter.setVelocity(shooterVelocity);
+        telemetry.addData("chudbud", goodShooter.getVelocity());
+        telemetry.addData("Shooter velocity", "%.2f", shooterVelocity);
     }
 
     private void indexerSystem() {
@@ -303,7 +348,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         double intakePower = 0f;
         switch (intakeState) {
             case INTAKE:
-                intakePower = gamepad1.right_trigger;
+                intakePower = 0.8;
                 break;
             case REVERSE:
                 intakePower = Intake.REVERSE_POWER;
