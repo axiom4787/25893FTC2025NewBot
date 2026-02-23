@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode.Boilerplate;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import java.util.List;
 
 public class LimeLightCalculator {
     static Config config = new Config();
@@ -16,7 +19,9 @@ public class LimeLightCalculator {
     }
     public LLResult getTarget() {
         LLResult result = limeLight.getLatestResult();
-        if (result.isValid()) {
+        List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
+
+        if (result.isValid() && (fiducialResults.get(0).getFiducialId() == 24 | fiducialResults.get(0).getFiducialId() == 20)) {
             return result;
         } else {
             return null;

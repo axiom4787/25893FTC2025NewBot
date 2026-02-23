@@ -19,14 +19,14 @@ import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 import org.firstinspires.ftc.teamcode.roadrunner.tuning.TuningOpModes;
 import org.jetbrains.annotations.NotNull;
 
-@Autonomous(name="Auto BLUE")
-public class RoadRunnerAuto extends LinearOpMode {
+@Autonomous(name="Auto RED")
+public class RoadRunnerAutoRED extends LinearOpMode {
     DcMotor intakeMotor, shooterMotor, indexerMotor;
     DcMotorEx smartShooter;
     Config config = new Config();
 
     enum Alliance { RED, BLUE, }
-    Alliance alliance = Alliance.BLUE;
+    Alliance alliance = Alliance.RED;
 
     // reverse if on red alliance
     public double i(double n) {
@@ -48,14 +48,18 @@ public class RoadRunnerAuto extends LinearOpMode {
         double F = 14.6;
         smartShooter.setVelocityPIDFCoefficients(P, I, D, F);
 
-        // -53, -47
-        Pose2d beginPose = new Pose2d(-54, i(-50), Math.toRadians(i(234)));
+        Pose2d beginPose = new Pose2d(-56, i(-47), Math.toRadians(i(234)));
 
         if (!TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) throw new RuntimeException();
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, beginPose);
 
-        VelConstraint velConstraint = (pose2dDual, posePath, v) -> 12.5;
+        VelConstraint velConstraint = new VelConstraint() {
+            @Override
+            public double maxRobotVel(@NotNull Pose2dDual<Arclength> pose2dDual, @NotNull PosePath posePath, double v) {
+                return 10;
+            }
+        };
 
         waitForStart();
 
@@ -88,8 +92,8 @@ public class RoadRunnerAuto extends LinearOpMode {
     class StartIntakeAction implements Action {
         @Override
         public boolean run(TelemetryPacket p) {
-            intakeMotor.setPower(0.85);
-            indexerMotor.setPower(-1.0);
+            intakeMotor.setPower(0.7);
+//            indexerMotor.setPower(-0.2);
 
             return false;
         }
@@ -99,7 +103,7 @@ public class RoadRunnerAuto extends LinearOpMode {
         @Override
         public boolean run(TelemetryPacket p) {
             intakeMotor.setPower(0.0);
-            indexerMotor.setPower(0.0);
+//            indexerMotor.setPower(0.0);
 
             return false;
         }
@@ -110,7 +114,7 @@ public class RoadRunnerAuto extends LinearOpMode {
         public boolean run(TelemetryPacket p) {
             sleep(1000);
             intakeMotor.setPower(1.0);
-            indexerMotor.setPower(0.4);
+            indexerMotor.setPower(0.3);
             sleep(4000);
             intakeMotor.setPower(0.0);
             indexerMotor.setPower(0.0);

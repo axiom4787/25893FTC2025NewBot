@@ -265,9 +265,9 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
                     autoTurretValue = LLC.calculateTurret(target);
 
                     telemetry.addLine("CAN SEE TARGET");
-                    telemetry.addData("Target TX:", LLC.log(target, LimeLightCalculator.LogWhat.TX));
-                    telemetry.addData("Target TY:", LLC.log(target, LimeLightCalculator.LogWhat.TY));
-                    telemetry.addData("LimeLight target height", target.getTy());
+//                    telemetry.addData("Target TX:", LLC.log(target, LimeLightCalculator.LogWhat.TX));
+//                    telemetry.addData("Target TY:", LLC.log(target, LimeLightCalculator.LogWhat.TY));
+//                    telemetry.addData("LimeLight target height", target.getTy());
                 } else {
                     autoTurretValue /= 1.2f;
                 }
@@ -424,6 +424,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
     }
 
     public final double MAX_SERVO_ANGLE = 150;
+    // TODO: make it actually work
     public void setTurretPowerConstrained(double power) {
         if (getTurretAngle() > MAX_SERVO_ANGLE && power > 0) return;
         if (getTurretAngle() < -MAX_SERVO_ANGLE && power < 0) return;
