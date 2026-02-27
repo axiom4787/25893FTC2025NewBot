@@ -1,20 +1,15 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
-
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Boilerplate.Config;
 
 public class DriveSubsystem {
-    Config config = new Config();
     DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
     IMU imu;
 
-    public DriveSubsystem(HardwareMap hardwareMap) {
-        config.init(hardwareMap);
-
+    public DriveSubsystem(Config config) {
         frontLeftDrive = config.frontLeftDrive;
         frontRightDrive = config.frontRightDrive;
         backLeftDrive = config.backLeftDrive;

@@ -22,9 +22,24 @@ import org.firstinspires.ftc.teamcode.roadrunner.messages.ThreeDeadWheelInputsMe
 @Config
 public final class ThreeDeadWheelLocalizer implements Localizer {
     public static class Params {
-        public double par0YTicks = -3450.9846084933392; // y position of the first parallel encoder (in tick units)
-        public double par1YTicks = 3068.5009946185323; // y position of the second parallel encoder (in tick units)
-        public double perpXTicks = -2515.175604467683; // x position of the perpendicular encoder (in tick units)
+        public double par0YTicks = -3473.169540864; // y position of the first parallel encoder (in tick units)
+        // -3462.8378511947153
+        // -3481.7696452012115
+        // -3471.375219238488
+        // -3466.201867465421
+        // -3483.66312121889
+        public double par1YTicks = 3072.539116877; // y position of the second parallel encoder (in tick units)
+        // 3073.1133032811244
+        // 3072.2986653617804
+        // 3068.6727280509917
+        // 3078.441934498417
+        // 3070.1689531949687
+        public double perpXTicks = -2422.217075473; // x position of the perpendicular encoder (in tick units)
+        // -2417.4754414409326
+        // -2438.6318667794694
+        // -2420.6506839951235
+        // -2406.1536808250094
+        // -2428.173704322045
     }
 
     public static Params PARAMS = new Params();
@@ -43,7 +58,7 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
         par0 = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "frontLeftDrive"))); // slot 0
         par1 = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "indexer"))); // slot 3
-        perp = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "intake"))); // slot 3 of expansion hub
+        perp = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "backLeftDrive"))); // slot 1
 
         // TODO: reverse encoder directions if needed
         par0.setDirection(DcMotorSimple.Direction.REVERSE);

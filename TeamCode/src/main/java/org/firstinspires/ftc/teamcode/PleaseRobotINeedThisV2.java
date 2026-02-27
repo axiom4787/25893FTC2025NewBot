@@ -189,7 +189,8 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         } else if (gamepad1.left_bumper) {
             shooterState = Shooter.State.REVERSE;
         } else {
-            shooterState = Shooter.State.IDLE;
+            shooterState = Shooter.State.OFF;
+//            shooterState = Shooter.State.IDLE;
         }
 
         // Intake
@@ -257,6 +258,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
 
     double autoTurretValue = 0;
     private void turretSystem() {
+        telemetry.addData("servo angle", getTurretAngle());
         switch (turretState) {
             case AUTO:
                 LLResult target = LLC.getTarget();
@@ -271,7 +273,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
                 } else {
                     autoTurretValue /= 1.2f;
                 }
-                setTurretPower(autoTurretValue);
+                setTurretPowerConstrained(autoTurretValue);
 
                 break;
             case LEFT:
@@ -424,11 +426,15 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
     }
 
     public final double MAX_SERVO_ANGLE = 150;
-    // TODO: make it actually work
     public void setTurretPowerConstrained(double power) {
-        if (getTurretAngle() > MAX_SERVO_ANGLE && power > 0) return;
-        if (getTurretAngle() < -MAX_SERVO_ANGLE && power < 0) return;
-        setTurretPower(power);
+        if (
+            (getTurretAngle() > MAX_SERVO_ANGLE && power < 0) ||
+            (getTurretAngle() < -MAX_SERVO_ANGLE && power > 0)
+        ) {
+            setTurretPower(0.0);
+        } else {
+            setTurretPower(power);
+        }
     }
 
     // Check out https://github.com/The-Robotics-Catalyst-Foundation/FIRST-Opensource/blob/main/FTC/RTPAxon/RTPAxon.java

@@ -1,18 +1,51 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
-import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.hardware.Servo;
-
 import org.firstinspires.ftc.teamcode.Boilerplate.Config;
 
 public class HoodSubsystem {
-    Config config = new Config();
+    public enum State { OFF, UP, MIDDLE, DOWN, AUTO }
+    public State state = State.OFF;
+    public static class Position {
+        public static final double DOWN = 0.75;
+        public static final double MIDDLE = 0.5;
+        public static final double UP = 0.25;
+    }
+
     Servo hoodActuator;
+    LimeLightSubsystem limeLightSubsystem;
 
-    public HoodSubsystem(HardwareMap hardwareMap) {
-        config.init(hardwareMap);
-
+    public HoodSubsystem(Config config, LimeLightSubsystem limeLightSubsystem) {
+        this.limeLightSubsystem = limeLightSubsystem;
         hoodActuator = config.linearActuator;
+    }
+
+    double autoLinearActuatorValue = 0.0;
+    public void update() {
+        double actuatorPosition = hoodActuator.getPosition();
+        switch (state) {
+            case AUTO:
+                LLResult target = limeLightSubsystem.getTarget();
+                if (target == null) break;
+
+                autoLinearActuatorValue = limeLightSubsystem.calculateHood(target);
+                actuatorPosition -= autoLinearActuatorValue;
+                hoodActuator.setPosition(actuatorPosition);
+                break;
+
+            case UP:
+                setActuatorPosition(Position.UP);
+                break;
+
+            case MIDDLE:
+                setActuatorPosition(Position.MIDDLE);
+                break;
+
+            case DOWN:
+                setActuatorPosition(Position.DOWN);
+                break;
+        }
     }
 
     public void setActuatorPosition(double position) {

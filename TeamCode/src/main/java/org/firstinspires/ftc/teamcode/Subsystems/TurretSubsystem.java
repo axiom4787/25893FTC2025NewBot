@@ -2,21 +2,16 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-
 import org.firstinspires.ftc.teamcode.Boilerplate.Config;
 import org.firstinspires.ftc.teamcode.Boilerplate.RTPAxon;
 
 public class TurretSubsystem {
-    Config config = new Config();
     CRServo leftTurretServo, rightTurretServo;
     AnalogInput servoEncoder;
     public final double MAX_SERVO_ANGLE = 140;
     RTPAxon smartServoController;
 
-    public TurretSubsystem(HardwareMap hardwareMap) {
-        config.init(hardwareMap);
-
+    public TurretSubsystem(Config config) {
         leftTurretServo = config.turretServoLeft;
         rightTurretServo = config.turretServoRight;
         servoEncoder = config.axonServoEncoder;
