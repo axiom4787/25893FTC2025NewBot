@@ -13,19 +13,24 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Boilerplate.LimeLightCalculator;
 import org.firstinspires.ftc.teamcode.Boilerplate.RTPAxon;
 import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 @TeleOp(name="comp ready code", group="Linear OpMode")
 //@Disabled
 public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
+    private static final Logger log = LoggerFactory.getLogger(PleaseRobotINeedThisV2.class);
     private boolean useLimeLightForAim = true;
     private boolean driveInFieldRelative = true;
+    private boolean driveSlower = false;
     private double lastLimeLightPower = Shooter.SHOOT_POWER;
     DcMotorEx goodShooter;
 
     private static class Hood {
         public static final double DOWN_POSITION = 0.75;
+        public static final double MIDDLE_POSITION = 0.5;
         public static final double UP_POSITION = 0.25;
 
         public static double clampPosition(double pos) {
@@ -36,7 +41,8 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
 
         public enum State {
             OFF,
-            DOWN, // Lower hood pos -> close shooting
+            DOWN, // Lower hood pos -> don't shoot you'll probably miss from anywhere
+            MIDDLE, // Middle hood pos -> close shooting
             UP,   // Raise hood pos -> far shooting
             AUTO, // Use HuskyLens to aim
         }
@@ -93,11 +99,6 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
 
     LLResult target = null;
 
-    private double P = 600;
-    private double I = 0.0;
-    private double D = 0;
-    private double F = 14.6;
-
     @Override public void opModeInit() {
         LLC = new LimeLightCalculator(hardwareMap);
         smartServoController = new RTPAxon(config.turretServoLeft, config.axonServoEncoder, RTPAxon.Direction.REVERSE);
@@ -105,7 +106,8 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         smartServoController.forceResetTotalRotation();
 
         goodShooter = (DcMotorEx) shooter;
-        goodShooter.setVelocityPIDFCoefficients(P, I, D, F);
+        goodShooter.setVelocityPIDFCoefficients(600, 0, 0, 14.6);
+        // i don't think F is supposed to be that big...
     }
 
     LimeLightCalculator LLC;
@@ -129,10 +131,19 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
     }
 
     private void robotControls() {
-        // Misc controls
+        // Controls
         // A -> Reset gyro
-        // B -> Toggle manual turret aim
+        // B -> Toggle LimeLight/manual control modes
         // X -> Toggle field relative
+        // Y -> Hold to drive slower for better parking
+
+        //                  | intake    | indexer   | shooter   |
+        // -----------------+-----------+-----------+-----------+
+        // Left trigger     | ---       | ---       | Shoot     |
+        // Left bumper      | Reverse   | Reverse   | Reverse   |
+        // Right trigger    | Forward   | Reverse   | ---       |
+        // Right bumper     | Forward   | Forward   | ---       |
+
         if (gamepad1.aWasPressed()) {
             imu.resetYaw();
             gamepad1.rumble(100);
@@ -148,6 +159,8 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
             gamepad1.rumble(600);
         }
 
+        driveSlower = gamepad1.y;
+
         // Hood
         // If LimeLight aiming is enabled:
         // - Use LimeLight to determine linear actuator position
@@ -158,7 +171,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
             hoodState = Hood.State.AUTO;
         } else {
             if (gamepad1.dpadUpWasPressed())         hoodState = Hood.State.UP;
-            else if (gamepad1.dpadDownWasPressed())  hoodState = Hood.State.DOWN;
+            else if (gamepad1.dpadDownWasPressed())  hoodState = Hood.State.MIDDLE;
             else                                     hoodState = Hood.State.OFF;
         }
 
@@ -177,34 +190,49 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         }
 
         // Shooter
-        // If HuskyLens aiming enabled:
-        // - Use HuskyLens to determine shooter speed
+        // If LimeLight aiming enabled:
+        // - Use LimeLight to determine shooter speed
         // Otherwise:
         // - Right bumper -> Reverse
         // - Left trigger -> Shoot
+        // - Left bumper  ->
+
+        boolean isDriving = gamepad1.left_stick_y != 0 || gamepad1.left_stick_x != 0 || gamepad1.right_stick_x != 0;
 
         if (gamepad1.left_trigger > 0) {
-            if (useLimeLightForAim) shooterState = Shooter.State.AUTO;
-            else                    shooterState = Shooter.State.SHOOT;
+            shooterState = useLimeLightForAim
+                    ? Shooter.State.AUTO
+                    : Shooter.State.SHOOT;
+
         } else if (gamepad1.left_bumper) {
             shooterState = Shooter.State.REVERSE;
+
+        } else if (!isDriving) {
+            // If not driving, idle
+            shooterState = Shooter.State.IDLE;
+
         } else {
+            // If driving, turn off shooter idling to give more power to drive
             shooterState = Shooter.State.OFF;
-//            shooterState = Shooter.State.IDLE;
         }
 
         // Intake
         // Right trigger -> Intake
         // Right bumper  -> Intake WITH INDEXER -> Shoot
-        if (gamepad1.right_trigger != 0 || gamepad1.right_bumper) intakeState = Intake.State.INTAKE;
-//        else if (gamepad1.right_bumper)  intakeState = Intake.State.INTAKE;
-        else                             intakeState = Intake.State.OFF;
+        // Left bumper   -> Reverse Intake, Indexer, and Shooter
+        if (gamepad1.right_trigger != 0)    intakeState = Intake.State.INTAKE;
+        else if (gamepad1.right_bumper)     intakeState = Intake.State.INTAKE;
+        else if (gamepad1.left_bumper)      intakeState = Intake.State.REVERSE;
+        else                                intakeState = Intake.State.OFF;
 
         // Indexer
-        // Right bumper -> Intake + Index -> Shoot
-        if (gamepad1.right_trigger != 0) indexerState = Indexer.State.REVERSE;
-        else if (gamepad1.right_bumper)  indexerState = Indexer.State.FORWARD;
-        else                             indexerState = Indexer.State.OFF;
+        // Right trigger -> Intake + reverse Indexer -> Intake
+        // Right bumper  -> Intake + Index -> Shoot
+        // Left bumper   -> Reverse Intake, Indexer, and Shooter
+        if (gamepad1.right_trigger != 0)    indexerState = Indexer.State.REVERSE;
+        else if (gamepad1.right_bumper)     indexerState = Indexer.State.FORWARD;
+        else if (gamepad1.left_bumper)      indexerState = Indexer.State.REVERSE;
+        else                                indexerState = Indexer.State.OFF;
 
         // Log to driver station
 //        telemetry.addData("Hood state   ", hoodState.name());
@@ -243,11 +271,12 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
                 break;
             case DOWN:
                 linearActuator.setPosition(Hood.DOWN_POSITION);
-//                hoodState = HOOD.STATE.OFF;
+                break;
+            case MIDDLE:
+                linearActuator.setPosition(Hood.MIDDLE_POSITION);
                 break;
             case UP:
                 linearActuator.setPosition(Hood.UP_POSITION);
-//                hoodState = HOOD.STATE.OFF;
                 break;
             case OFF:
                 break;
@@ -368,6 +397,12 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         double forward = -gamepad1.left_stick_y; // Note: pushing stick forward gives negative value
         double right   =  gamepad1.left_stick_x;
         double rotate  =  gamepad1.right_stick_x;
+
+        if (driveSlower) {
+            forward /= 2;
+            right /= 2;
+            rotate /= 2;
+        } // slow it down for parking
 
         if (driveInFieldRelative) {
             driveFieldRelative(forward, right, rotate);
