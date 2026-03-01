@@ -4,6 +4,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.bylazar.telemetry.PanelsTelemetry;
+
+import org.firstinspires.ftc.teamcode.Boilerplate.Config;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
@@ -18,10 +20,14 @@ public class FarRed6Ball extends OpMode {
     public Follower follower; // Pedro Pathing follower instance
     private int pathState = 0; // Current autonomous path state (state machine)
     private Paths paths; // Paths defined in the Paths class
+    private final Config config = new Config();
+    private RobotControls robot;
 
     @Override
     public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+        config.init(hardwareMap);
+        robot = new RobotControls(config);
 
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(72, 8, Math.toRadians(90)));
@@ -46,97 +52,89 @@ public class FarRed6Ball extends OpMode {
     }
 
     public static class Paths {
-        public PathChain starttoshootpos;
-        public PathChain shootpostoballs3;
-        public PathChain intakeballs3;
-        public PathChain balls3toshootpos;
+        public PathChain startToShootPos;
+        public PathChain shootPosToBalls3;
+        public PathChain intakeBalls3;
+        public PathChain balls3ToShootPos;
 
         public Paths(Follower follower) {
-            starttoshootpos = follower.pathBuilder()
-                    .addPath(
-                            new BezierLine(
-                                    new Pose(84.000, 8.000),
-                                    new Pose(84.000, 20.000)
-                            )
-                    )
+            startToShootPos = follower.pathBuilder()
+                    .addPath(new BezierLine(new Pose(84.000, 8.000), new Pose(84.000, 20.000)))
                     .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(67))
                     .build();
 
-            shootpostoballs3 = follower.pathBuilder()
-                    .addPath(
-                            new BezierCurve(
-                                    new Pose(84.000, 20.000),
-                                    new Pose(84.666, 35.666),
-                                    new Pose(104.000, 36.000)
-                            )
-                    )
+            shootPosToBalls3 = follower.pathBuilder()
+                    .addPath(new BezierLine(new Pose(84.000, 20.000), new Pose(104.000, 36.000)))
                     .setLinearHeadingInterpolation(Math.toRadians(67), Math.toRadians(0))
                     .build();
 
-            intakeballs3 = follower.pathBuilder()
-                    .addPath(
-                            new BezierLine(
-                                    new Pose(104.000, 36.000),
-                                    new Pose(135.000, 36.000)
-                            )
-                    )
+            intakeBalls3 = follower.pathBuilder()
+                    .addPath(new BezierLine(new Pose(104.000, 36.000), new Pose(135.000, 36.000)))
                     .setConstantHeadingInterpolation(Math.toRadians(0))
                     .build();
 
-            balls3toshootpos = follower.pathBuilder()
-                    .addPath(
-                            new BezierLine(
-                                    new Pose(135.000, 36.000),
-                                    new Pose(84.000, 20.000)
-                            )
-                    )
+            balls3ToShootPos = follower.pathBuilder()
+                    .addPath(new BezierLine(new Pose(135.000, 36.000), new Pose(84.000, 20.000)))
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(65))
                     .build();
         }
     }
 
+    private double actionStartTime = 0;
+
     public int autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                // TODO: Start shooter
-                follower.followPath(paths.starttoshootpos);
+                robot.enableShooter();
+                follower.followPath(paths.startToShootPos);
                 pathState = 1;
                 break;
             case 1:
-                if (!follower.isBusy()) {
-                    // TODO: Shoot balls
+                if (follower.isBusy()) break;
 
-                    follower.followPath(paths.shootpostoballs3);
-                    pathState = 2;
-                }
+                actionStartTime = time;
+                robot.enableScoring();
+                pathState = 2;
                 break;
             case 2:
-                if (!follower.isBusy()) {
-                    // TODO: Start intake
+                if (actionStartTime - time < 3500) break;
 
-                    follower.followPath(paths.intakeballs3);
-                    pathState = 3;
-                }
+                robot.disableScoring();
+                follower.followPath(paths.shootPosToBalls3);
+                pathState = 3;
                 break;
             case 3:
-                if (!follower.isBusy()) {
-                    // TODO: Stop intake
+                if (follower.isBusy()) break;
 
-                    follower.followPath(paths.balls3toshootpos);
-                    pathState = 4;
-                }
+                robot.enableIntake();
+                follower.followPath(paths.intakeBalls3);
+                pathState = 4;
                 break;
             case 4:
-                if (!follower.isBusy()) {
-                    // TODO: Score balls
+                if (follower.isBusy()) break;
+                robot.disableIntake();
 
-                    pathState = -1;
-                }
+                follower.followPath(paths.balls3ToShootPos);
+                pathState = 5;
+                break;
+            case 5:
+                if (follower.isBusy()) break;
+
+                actionStartTime = time;
+                robot.enableScoring();
+                pathState = 6;
+                break;
+            case 6:
+                if (actionStartTime - time < 3500) break;
+
+                robot.disableScoring();
+                robot.disableShooter();
+                pathState = -1;
                 break;
             case -1:
-                // TODO: Stop shooter
                 break;
         }
+
         return pathState;
     }
 }
