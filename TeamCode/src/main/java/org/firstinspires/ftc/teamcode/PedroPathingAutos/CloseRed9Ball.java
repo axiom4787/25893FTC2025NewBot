@@ -30,7 +30,7 @@ public class CloseRed9Ball extends OpMode {
         robot = new RobotControls(config);
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(72, 8, Math.toRadians(90)));
+        follower.setStartingPose(new Pose(120, 129, Math.toRadians(36)));
 
         paths = new Paths(follower); // Build paths
 
@@ -62,38 +62,75 @@ public class CloseRed9Ball extends OpMode {
 
         public Paths(Follower follower) {
             startToShootPos = follower.pathBuilder()
-                    .addPath(new BezierLine(new Pose(24.000, 129.000), new Pose(48.000, 112.000)))
-                    .setLinearHeadingInterpolation(Math.toRadians(144), Math.toRadians(144))
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(120.000, 129.000),
+                                    new Pose(96.000, 112.000)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(36), Math.toRadians(36))
                     .build();
 
             shootPosToBalls1 = follower.pathBuilder()
-                    .addPath(new BezierLine(new Pose(48.000, 112.000), new Pose(40.000, 84.000)))
-                    .setLinearHeadingInterpolation(Math.toRadians(144), Math.toRadians(180))
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(96.000, 112.000),
+                                    new Pose(102.000, 84.000)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(36), Math.toRadians(0))
                     .build();
 
             intakeBalls1 = follower.pathBuilder()
-                    .addPath(new BezierLine(new Pose(40.000, 84.000), new Pose(16.000, 84.000)))
-                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(102.000, 84.000),
+                                    new Pose(126.000, 84.000)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
                     .build();
 
             balls1ToShootPos = follower.pathBuilder()
-                    .addPath(new BezierCurve(new Pose(16.000, 84.000), new Pose(46.840, 88.846), new Pose(48.000, 112.000)))
-                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(144))
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(126.000, 84.000),
+                                    new Pose(96.000, 112.000)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(36))
                     .build();
 
             shootPosToBalls2 = follower.pathBuilder()
-                    .addPath(new BezierLine(new Pose(48.000, 112.000), new Pose(40.000, 60.000)))
-                    .setLinearHeadingInterpolation(Math.toRadians(144), Math.toRadians(180))
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(96.000, 112.000),
+                                    new Pose(102.000, 60.000)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(36), Math.toRadians(0))
+                    .setReversed()
                     .build();
 
             intakeBalls2 = follower.pathBuilder()
-                    .addPath(new BezierLine(new Pose(40.000, 60.000), new Pose(9.000, 60.000)))
-                    .setConstantHeadingInterpolation(Math.toRadians(180))
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(102.000, 60.000),
+                                    new Pose(133.000, 60.000)
+                            )
+                    )
+                    .setConstantHeadingInterpolation(Math.toRadians(0))
                     .build();
 
             balls2ToShootPos = follower.pathBuilder()
-                    .addPath(new BezierCurve(new Pose(9.000, 60.000), new Pose(46.483, 56.369), new Pose(48.000, 112.000)))
-                    .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(144))
+                    .addPath(
+                            new BezierCurve(
+                                    new Pose(133.000, 60.000),
+                                    new Pose(97.517, 56.369),
+                                    new Pose(96.000, 112.000)
+                            )
+                    )
+                    .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(36))
                     .build();
         }
     }
@@ -115,7 +152,7 @@ public class CloseRed9Ball extends OpMode {
                 pathState = 2;
                 break;
             case 2:
-                if (actionStartTime - time < 3500) break;
+                if (time - actionStartTime < robot.shootTime) break;
 
                 robot.disableScoring();
                 follower.followPath(paths.shootPosToBalls1);
@@ -126,7 +163,7 @@ public class CloseRed9Ball extends OpMode {
 
                 robot.enableIntake();
                 follower.followPath(paths.intakeBalls1);
-                pathState = 3;
+                pathState = 4;
                 break;
             case 4:
                 if (follower.isBusy()) break;
@@ -143,7 +180,7 @@ public class CloseRed9Ball extends OpMode {
                 pathState = 6;
                 break;
             case 6:
-                if (actionStartTime - time < 3500) break;
+                if (time - actionStartTime < robot.shootTime) break;
 
                 robot.disableScoring();
                 follower.followPath(paths.shootPosToBalls2);
@@ -171,7 +208,7 @@ public class CloseRed9Ball extends OpMode {
                 pathState = 10;
                 break;
             case 10:
-                if (actionStartTime - time < 3500) break;
+                if (time - actionStartTime < robot.shootTime) break;
 
                 robot.disableScoring();
                 robot.disableShooter();

@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -15,6 +16,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public abstract class ThePlantRobotOpMode extends LinearOpMode {
     public DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
     public DcMotor intake, shooter, indexer;
+    public DcMotorEx smartShooter;
     public CRServo turretLeft, turretRight;
     public Servo linearActuator;
     public IMU imu;
@@ -57,6 +59,7 @@ public abstract class ThePlantRobotOpMode extends LinearOpMode {
         backRightDrive = config.backRightDrive;
         intake = config.intake;
         shooter = config.shooter;
+        smartShooter = config.smartShooter;
         turretLeft = config.turretServoLeft;
         turretRight = config.turretServoRight;
         linearActuator = config.linearActuator;

@@ -30,7 +30,7 @@ public class FarBlue6Ball extends OpMode {
         robot = new RobotControls(config);
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(72, 8, Math.toRadians(90)));
+        follower.setStartingPose(new Pose(60, 8, Math.toRadians(90)));
 
         paths = new Paths(follower); // Build paths
 
@@ -85,7 +85,9 @@ public class FarBlue6Ball extends OpMode {
     public int autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                robot.enableShooter();
+                config.linearActuator.setPosition(0.25);
+                config.shooter.setPower(1.0); // make it 1 so it hits all the shots
+                config.turretServoLeft.setPower(0.0);
                 follower.followPath(paths.startToShootPos);
                 pathState = 1;
                 break;
@@ -93,39 +95,49 @@ public class FarBlue6Ball extends OpMode {
                 if (follower.isBusy()) break;
 
                 actionStartTime = time;
-                robot.enableScoring();
                 pathState = 2;
                 break;
             case 2:
-                if (actionStartTime - time < 3500) break;
+                if (time - actionStartTime < 1.5) break;
 
-                robot.disableScoring();
-                follower.followPath(paths.shootPosToBalls3);
+                robot.enableScoring(0.75, 0.35);
                 pathState = 3;
                 break;
             case 3:
-                if (follower.isBusy()) break;
+                if (time - actionStartTime < robot.farShootTime) break;
 
-                robot.enableIntake();
-                follower.followPath(paths.intakeBalls3);
+                robot.disableScoring();
+                follower.followPath(paths.shootPosToBalls3);
                 pathState = 4;
                 break;
             case 4:
                 if (follower.isBusy()) break;
-                robot.disableIntake();
 
-                follower.followPath(paths.balls3ToShootPos);
+                robot.enableIntake();
+                follower.followPath(paths.intakeBalls3);
                 pathState = 5;
                 break;
             case 5:
                 if (follower.isBusy()) break;
+                robot.disableIntake();
 
-                actionStartTime = time;
-                robot.enableScoring();
+                follower.followPath(paths.balls3ToShootPos);
                 pathState = 6;
                 break;
             case 6:
-                if (actionStartTime - time < 3500) break;
+                if (follower.isBusy()) break;
+
+                actionStartTime = time;
+                pathState = 7;
+                break;
+            case 7:
+                if (time - actionStartTime < 1.0) break;
+
+                robot.enableScoring(0.75, 0.35);
+                pathState = 8;
+                break;
+            case 8:
+                if (time - actionStartTime < robot.farShootTime) break;
 
                 robot.disableScoring();
                 robot.disableShooter();

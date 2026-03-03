@@ -41,6 +41,7 @@ public class Config {
         indexer.setDirection(DcMotor.Direction.FORWARD);
 
         smartShooter = (DcMotorEx) shooter;
+        smartShooter.setVelocityPIDFCoefficients(800, 0, 0, 200);
 
         turretServoLeft = hardwareMap.get(CRServo.class, "turretServoLeft");
         turretServoRight = hardwareMap.get(CRServo.class, "turretServoRight");
@@ -60,6 +61,5 @@ public class Config {
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
         axonServoEncoder = hardwareMap.get(AnalogInput.class, "verySmartServo");
-        // TODO: Confirm encoder name
     }
 }

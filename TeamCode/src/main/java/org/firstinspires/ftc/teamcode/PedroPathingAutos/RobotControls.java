@@ -4,6 +4,8 @@ import org.firstinspires.ftc.teamcode.Boilerplate.Config;
 
 public class RobotControls {
     Config config;
+    public double shootTime = 3.5;
+    public double farShootTime = 6.0;
     public RobotControls(Config config) {
         this.config = config;
     }
@@ -11,6 +13,11 @@ public class RobotControls {
     public void enableScoring() {
         config.intake.setPower(1);
         config.indexer.setPower(1);
+    }
+
+    public void enableScoring(double intake, double indexer) {
+        config.intake.setPower(intake);
+        config.indexer.setPower(indexer);
     }
 
     public void disableScoring() {
@@ -29,7 +36,13 @@ public class RobotControls {
     }
 
     public void enableShooter() {
-        config.smartShooter.setVelocity(1500);
+        enableShooter(1350, 0.45);
+    }
+
+    public void enableShooter(double vel, double pos) {
+        config.smartShooter.setVelocity(vel);
+        config.linearActuator.setPosition(pos);
+        config.turretServoLeft.setPower(0.0);
     }
 
     public void disableShooter() {
