@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.ValueProvider;
+import com.bylazar.panels.Panels;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -319,8 +318,8 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
     private void shooterSystem() {
 //        goodShooter.setVelocity(1800);
 
-        FtcDashboard.getInstance().getTelemetry().addData("chudbud", goodShooter.getVelocity());
-        FtcDashboard.getInstance().getTelemetry().update();
+//        FtcDashboard.getInstance().getTelemetry().addData("chudbud", goodShooter.getVelocity());
+//        FtcDashboard.getInstance().getTelemetry().update();
 
         double shooterVelocity = lastLimeLightPower;
         switch (shooterState) {

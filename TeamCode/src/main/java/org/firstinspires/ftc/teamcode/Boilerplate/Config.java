@@ -6,6 +6,7 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -14,6 +15,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class Config {
     public DcMotor frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive;
     public DcMotor intake, shooter, indexer;
+    public DcMotorEx smartShooter;
     public CRServo turretServoLeft, turretServoRight;
     public Servo linearActuator;
     public HuskyLens huskyLens;
@@ -38,7 +40,8 @@ public class Config {
         shooter.setDirection(DcMotor.Direction.FORWARD);
         indexer.setDirection(DcMotor.Direction.FORWARD);
 
-        shooter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        smartShooter = (DcMotorEx) shooter;
+        smartShooter.setVelocityPIDFCoefficients(800, 0, 0, 200);
 
         turretServoLeft = hardwareMap.get(CRServo.class, "turretServoLeft");
         turretServoRight = hardwareMap.get(CRServo.class, "turretServoRight");
@@ -58,6 +61,5 @@ public class Config {
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
         axonServoEncoder = hardwareMap.get(AnalogInput.class, "verySmartServo");
-        // TODO: Confirm encoder name
     }
 }
