@@ -12,11 +12,40 @@ public class LimeLightCalculator {
     Limelight3A limeLight;
     public PID hoodPID = new PID(0.0005, 0, 1e-5f, -1, 1);
     public PID turretPID = new PID(0.02, 0, 0.01, -1, 1);
+
     public LimeLightCalculator(HardwareMap hardwareMap) {
         config.init(hardwareMap);
         limeLight = config.limeLight;
         limeLight.start();
     }
+
+    public static class TagResult {
+        public double tx, ty, ta;
+
+        public TagResult(double tx, double ty, double ta) {
+            this.tx = tx;
+            this.ty = ty;
+            this.ta = ta;
+        }
+    }
+
+    public TagResult getTargetTag(int tagId) {
+        LLResult llResult = limeLight.getLatestResult();
+        if (!llResult.isValid()) return null;
+
+        for (LLResultTypes.FiducialResult res : llResult.getFiducialResults()) {
+            if (res.getFiducialId() == tagId) {
+                return new TagResult(
+                        res.getTargetXDegrees(),
+                        res.getTargetYDegrees(),
+                        res.getTargetArea()
+                );
+            }
+        }
+
+        return null;
+    }
+
     public LLResult getTarget() {
         LLResult result = limeLight.getLatestResult();
         List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();

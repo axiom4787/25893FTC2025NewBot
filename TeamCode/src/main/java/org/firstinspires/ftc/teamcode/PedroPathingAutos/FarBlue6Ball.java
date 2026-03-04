@@ -85,9 +85,7 @@ public class FarBlue6Ball extends OpMode {
     public int autonomousPathUpdate() {
         switch (pathState) {
             case 0:
-                config.linearActuator.setPosition(0.25);
-                config.shooter.setPower(1.0); // make it 1 so it hits all the shots
-                config.turretServoLeft.setPower(0.0);
+                robot.enableShooterFar();
                 follower.followPath(paths.startToShootPos);
                 pathState = 1;
                 break;
@@ -98,9 +96,9 @@ public class FarBlue6Ball extends OpMode {
                 pathState = 2;
                 break;
             case 2:
-                if (time - actionStartTime < 1.5) break;
+                if (time - actionStartTime < robot.farRevTime) break;
 
-                robot.enableScoring(0.75, 0.35);
+                robot.enableScoringFar();
                 pathState = 3;
                 break;
             case 3:
@@ -131,9 +129,9 @@ public class FarBlue6Ball extends OpMode {
                 pathState = 7;
                 break;
             case 7:
-                if (time - actionStartTime < 1.0) break;
+                if (time - actionStartTime < robot.farRevTime2) break;
 
-                robot.enableScoring(0.75, 0.35);
+                robot.enableScoringFar();
                 pathState = 8;
                 break;
             case 8:

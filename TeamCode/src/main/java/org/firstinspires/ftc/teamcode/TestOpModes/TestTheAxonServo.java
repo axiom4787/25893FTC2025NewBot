@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.TestOpModes;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Boilerplate.RTPAxon;
 import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 
 @TeleOp(name = "Test the super smart servo")
+@Disabled
 public class TestTheAxonServo extends ThePlantRobotOpMode {
     RTPAxon smartServo;
 

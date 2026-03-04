@@ -6,6 +6,8 @@ public class RobotControls {
     Config config;
     public double shootTime = 3.5;
     public double farShootTime = 6.0;
+    public double farRevTime = 1.5; // extra time to let the shooter rev up
+    public double farRevTime2 = 1.0;
     public RobotControls(Config config) {
         this.config = config;
     }
@@ -15,9 +17,9 @@ public class RobotControls {
         config.indexer.setPower(1);
     }
 
-    public void enableScoring(double intake, double indexer) {
-        config.intake.setPower(intake);
-        config.indexer.setPower(indexer);
+    public void enableScoringFar() {
+        config.intake.setPower(0.75);
+        config.indexer.setPower(0.35);
     }
 
     public void disableScoring() {
@@ -36,12 +38,14 @@ public class RobotControls {
     }
 
     public void enableShooter() {
-        enableShooter(1350, 0.45);
+        config.smartShooter.setVelocity(1350);
+        config.linearActuator.setPosition(0.45);
+        config.turretServoLeft.setPower(0.0);
     }
 
-    public void enableShooter(double vel, double pos) {
-        config.smartShooter.setVelocity(vel);
-        config.linearActuator.setPosition(pos);
+    public void enableShooterFar() {
+        config.smartShooter.setPower(1.0); // make it 1 so it hits all the shots
+        config.linearActuator.setPosition(0.25);
         config.turretServoLeft.setPower(0.0);
     }
 

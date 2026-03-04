@@ -1,10 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.bylazar.panels.Panels;
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
@@ -15,16 +12,13 @@ import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 @TeleOp(name="comp ready code", group="Linear OpMode")
 //@Disabled
 public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
-    private static final Logger log = LoggerFactory.getLogger(PleaseRobotINeedThisV2.class);
     private boolean useLimeLightForAim = true;
     private boolean driveInFieldRelative = true;
     private boolean driveSlower = false;
-    private double lastLimeLightPower = Shooter.SHOOT_POWER;
+    private double lastLimeLightVelocity = Shooter.SHOOT_VELOCITY;
     DcMotorEx goodShooter;
 
     private static class Hood {
@@ -47,10 +41,10 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         }
     }
     private static class Shooter {
-        public static double OFF_POWER = 0;
-        public static double SHOOT_POWER = 1800;
-        public static double REVERSE_POWER = -500;
-        public static double IDLE_POWER = 800;
+        public static double OFF_VELOCITY = 0;
+        public static double SHOOT_VELOCITY = 1800;
+        public static double REVERSE_VELOCITY = -500;
+        public static double IDLE_VELOCITY = 800;
         public enum State {
             OFF,
             IDLE,
@@ -131,10 +125,10 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
 
     private void robotControls() {
         // Controls
-        // A -> Reset gyro
-        // B -> Toggle LimeLight/manual control modes
-        // X -> Toggle field relative
-        // Y -> Hold to drive slower for better parking
+        // A / cross    -> Reset gyro
+        // B / circle   -> Toggle LimeLight/manual control modes
+        // X / square   -> Toggle field relative
+        // Y / triangle -> Hold to drive slower for better parking
 
         //                  | intake    | indexer   | shooter   |
         // -----------------+-----------+-----------+-----------+
@@ -163,30 +157,22 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         // Hood
         // If LimeLight aiming is enabled:
         // - Use LimeLight to determine linear actuator position
-        // Otherwise:
         // - dpad down -> Move linear actuator to CLOSE shooting position
         // - dpad up   -> Move linear actuator to FAR shooting position
-        if (useLimeLightForAim) {
-            hoodState = Hood.State.AUTO;
-        } else {
-            if (gamepad1.dpadUpWasPressed())         hoodState = Hood.State.UP;
-            else if (gamepad1.dpadDownWasPressed())  hoodState = Hood.State.MIDDLE;
-            else                                     hoodState = Hood.State.OFF;
-        }
+        if (gamepad1.dpadUpWasPressed())         hoodState = Hood.State.UP;
+        else if (gamepad1.dpadDownWasPressed())  hoodState = Hood.State.MIDDLE;
+        else if (useLimeLightForAim)             hoodState = Hood.State.AUTO;
+        else                                     hoodState = Hood.State.OFF;
 
         // Turret
         // If LimeLight aiming is enabled:
         // - Use LimeLight to aim turret
-        // Otherwise:
         // - dpad left  -> turn turret left
         // - dpad right -> turn turret right
-        if (useLimeLightForAim) {
-            turretState = Turret.State.AUTO;
-        } else {
-            if (gamepad1.dpad_left)       turretState = Turret.State.LEFT;
-            else if (gamepad1.dpad_right) turretState = Turret.State.RIGHT;
-            else                          turretState = Turret.State.OFF;
-        }
+        if (gamepad1.dpad_left)       turretState = Turret.State.LEFT;
+        else if (gamepad1.dpad_right) turretState = Turret.State.RIGHT;
+        else if (useLimeLightForAim)  turretState = Turret.State.AUTO;
+        else                          turretState = Turret.State.OFF;
 
         // Shooter
         // If LimeLight aiming enabled:
@@ -202,14 +188,11 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
             shooterState = useLimeLightForAim
                     ? Shooter.State.AUTO
                     : Shooter.State.SHOOT;
-
         } else if (gamepad1.left_bumper) {
             shooterState = Shooter.State.REVERSE;
-
         } else if (!isDriving) {
             // If not driving, idle
             shooterState = Shooter.State.IDLE;
-
         } else {
             // If driving, turn off shooter idling to give more power to drive
             shooterState = Shooter.State.OFF;
@@ -316,48 +299,39 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
     }
 
     private void shooterSystem() {
-//        goodShooter.setVelocity(1800);
+        double shooterVelocity = lastLimeLightVelocity;
 
-//        FtcDashboard.getInstance().getTelemetry().addData("chudbud", goodShooter.getVelocity());
-//        FtcDashboard.getInstance().getTelemetry().update();
-
-        double shooterVelocity = lastLimeLightPower;
         switch (shooterState) {
             case SHOOT:
-                shooterVelocity = Shooter.SHOOT_POWER;
+                shooterVelocity = Shooter.SHOOT_VELOCITY;
                 break;
             case REVERSE:
-                shooterVelocity = Shooter.REVERSE_POWER;
+                shooterVelocity = Shooter.REVERSE_VELOCITY;
                 break;
             case IDLE:
-                shooterVelocity = Shooter.IDLE_POWER;
+                shooterVelocity = Shooter.IDLE_VELOCITY;
                 break;
             case AUTO:
                 LLResult target = LLC.getTarget();
                 if (target == null) break;
 
-                telemetry.addData("LL Target size %", target.getTa());
-                shooterVelocity = lastLimeLightPower;
+//                telemetry.addData("LL Target size %", target.getTa());
                 double targetSizePct = target.getTa();
-                if (targetSizePct > 0.80) shooterVelocity = 1800;
-                if (targetSizePct > 1.00) shooterVelocity = 1650; // far
-                if (targetSizePct > 2.00) shooterVelocity = 1500; // med
-                if (targetSizePct > 5.00) shooterVelocity = 1350; // med/close
-                if (targetSizePct > 8.00) shooterVelocity = 1250; // super close
-                // 0.75 % = far
-                // 1.3% = mid/far
-                // 2.20 % = mid
-                // 5% = mid/close
-                // 10 % = close
-                lastLimeLightPower = shooterVelocity;
+                shooterVelocity = 1612.1 * Math.pow(targetSizePct, -0.148175);
+                // shooterVelocity = 1662.23416 * Math.pow(targetSizePct, -0.143368)
+                // ^ is the same but with all the velocities bumped up by 50 because
+                // we measured the min velocity, and optimal might be slightly higher
+                // but i also don't want to break anything
+
+                lastLimeLightVelocity = shooterVelocity;
                 break;
             case OFF:
-                shooterVelocity = Shooter.OFF_POWER;
+                shooterVelocity = Shooter.OFF_VELOCITY;
         }
 
         goodShooter.setVelocity(shooterVelocity);
-        telemetry.addData("chudbud", goodShooter.getVelocity());
-        telemetry.addData("Shooter velocity", "%.2f", shooterVelocity);
+        telemetry.addData("Shooter set velocity", goodShooter.getVelocity());
+        telemetry.addData("Shooter actual velocity", shooterVelocity);
     }
 
     private void indexerSystem() {
@@ -389,7 +363,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         }
 
         intake.setPower(intakePower);
-        telemetry.addData("Intake power", "%.2f", intakePower);
+        telemetry.addData("Intake power", intakePower);
     }
 
     private void driveSystem() {

@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode.TestOpModes;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.bylazar.configurables.annotations.Configurable;
@@ -12,6 +13,7 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.geometry.Pose;
 
 @Autonomous(name = "square", group = "Autonomous")
+@Disabled
 @Configurable // Panels
 public class TestAutoSquare extends OpMode {
     private TelemetryManager panelsTelemetry; // Panels Telemetry instance

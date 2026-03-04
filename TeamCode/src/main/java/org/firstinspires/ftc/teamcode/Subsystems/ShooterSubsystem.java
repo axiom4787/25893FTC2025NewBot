@@ -1,16 +1,23 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
-import org.firstinspires.ftc.teamcode.Boilerplate.Config;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 public class ShooterSubsystem {
-    DcMotor shooterMotor;
+    private final DcMotorEx smartShooter;
 
-    public ShooterSubsystem(Config config) {
-        shooterMotor = config.shooter;
+    public ShooterSubsystem(DcMotorEx smartShooter) {
+        this.smartShooter = smartShooter;
     }
 
-    public DcMotor getShooterMotor() {
-        return shooterMotor;
+    public void setShooterVelocity(double velocity) {
+        smartShooter.setVelocity(velocity);
+    }
+
+    public double getShooterVelocity() {
+        return smartShooter.getVelocity();
+    }
+
+    public void setShooterPower(double power) {
+        smartShooter.setPower(power);
     }
 }

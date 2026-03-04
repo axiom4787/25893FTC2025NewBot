@@ -4,12 +4,14 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.panels.Panels;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 
 @TeleOp(name = "test the smart shooter")
+@Disabled
 @Configurable
 public class TestTheSmartShooter extends ThePlantRobotOpMode {
     TelemetryManager panelsTelemetry;

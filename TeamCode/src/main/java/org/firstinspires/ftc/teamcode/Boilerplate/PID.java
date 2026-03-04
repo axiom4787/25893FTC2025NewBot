@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode.Boilerplate;
+
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class PID {
@@ -11,10 +12,12 @@ public class PID {
     public double integral;
     public double previousError;
     public double previousTime;
-        // PID output limits
+
+    // PID output limits
     public double minOutput;
     public double maxOutput;
     private ElapsedTime time;
+
     public PID(double kP, double kI, double kD, double minOutput, double maxOutput) {
         time = new ElapsedTime();
 
@@ -27,6 +30,7 @@ public class PID {
         this.minOutput = minOutput;
         this.maxOutput = maxOutput;
     }
+
     public double calculate(double setpoint, double actual) {
         double currentTime = time.milliseconds();
         double deltaTime = currentTime - previousTime;
@@ -42,5 +46,11 @@ public class PID {
         if (output > maxOutput) output = maxOutput;
         if (output < minOutput) output = minOutput;
         return output;
+    }
+
+    public void reset() {
+        this.integral = 0;
+        this.previousError = 0;
+        this.previousTime = time.seconds();
     }
 }

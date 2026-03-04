@@ -29,11 +29,13 @@
 
 package org.firstinspires.ftc.teamcode.TestOpModes;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 
 @TeleOp(name="Test what motors do what", group="Linear OpMode")
+@Disabled
 public class TestTheMotors extends ThePlantRobotOpMode {
     @Override public void opModeRunLoop() {
         if (gamepad1.dpad_up) {

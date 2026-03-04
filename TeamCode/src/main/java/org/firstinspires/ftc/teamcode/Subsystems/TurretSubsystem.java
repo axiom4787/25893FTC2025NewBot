@@ -8,13 +8,16 @@ import org.firstinspires.ftc.teamcode.Boilerplate.RTPAxon;
 public class TurretSubsystem {
     CRServo leftTurretServo, rightTurretServo;
     AnalogInput servoEncoder;
-    public final double MAX_SERVO_ANGLE = 140;
+    public static final double MAX_SERVO_ANGLE = 140;
     RTPAxon smartServoController;
 
-    public TurretSubsystem(Config config) {
-        leftTurretServo = config.turretServoLeft;
-        rightTurretServo = config.turretServoRight;
-        servoEncoder = config.axonServoEncoder;
+    public TurretSubsystem(
+            CRServo turretServoLeft, CRServo turretServoRight,
+            AnalogInput axonServoEncoder
+    ) {
+        this.leftTurretServo = turretServoLeft;
+        this.rightTurretServo = turretServoRight;
+        this.servoEncoder = axonServoEncoder;
 
         smartServoController = new RTPAxon(leftTurretServo, servoEncoder, RTPAxon.Direction.REVERSE);
         smartServoController.forceResetTotalRotation();
@@ -26,13 +29,17 @@ public class TurretSubsystem {
     }
 
     public void setTurretPowerConstrained(double power) {
-        if (getTurretAngle() > MAX_SERVO_ANGLE && power > 0) return;
-        if (getTurretAngle() < -MAX_SERVO_ANGLE && power < 0) return;
-        setTurretPower(power);
+        if (
+                (getTurretAngle() > MAX_SERVO_ANGLE && power < 0) ||
+                (getTurretAngle() < -MAX_SERVO_ANGLE && power > 0)
+        ) {
+            setTurretPower(0.0);
+        } else {
+            setTurretPower(power);
+        }
+
     }
 
-    // Check out https://github.com/The-Robotics-Catalyst-Foundation/FIRST-Opensource/blob/main/FTC/RTPAxon/RTPAxon.java
-    // for more possibly advantageous code
     public double getTurretAngle() {
         return smartServoController.getTotalRotation();
     }
