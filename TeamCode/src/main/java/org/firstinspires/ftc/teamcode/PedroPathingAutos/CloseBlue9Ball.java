@@ -1,5 +1,4 @@
 package org.firstinspires.ftc.teamcode.PedroPathingAutos;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
@@ -12,43 +11,93 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.geometry.Pose;
+import com.seattlesolvers.solverslib.command.CommandOpMode;
+import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.WaitCommand;
+import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 @Autonomous(name = "Close Blue | 9 ball", group = "close")
 @Configurable // Panels
-public class CloseBlue9Ball extends OpMode {
-    private TelemetryManager panelsTelemetry; // Panels Telemetry instance
+public class CloseBlue9Ball extends CommandOpMode {
+    private TelemetryManager panelsTelemetry;
     public Follower follower; // Pedro Pathing follower instance
-    private int pathState = 0; // Current autonomous path state (state machine)
     private Paths paths; // Paths defined in the Paths class
     private final Config config = new Config();
     private RobotControls robot;
 
     @Override
-    public void init() {
+    public void initialize() {
+        super.reset();
+
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+
         config.init(hardwareMap);
         robot = new RobotControls(config);
 
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(24, 129, Math.toRadians(144)));
-
         paths = new Paths(follower); // Build paths
 
-        panelsTelemetry.debug("Status", "Initialized");
-        panelsTelemetry.update(telemetry);
+        SequentialCommandGroup auto = new SequentialCommandGroup(
+                // Turn on shooter, setup hood
+                new InstantCommand(robot::enableShooter),
+
+                // Go from start to shoot position
+                new FollowPathCommand(follower, paths.startToShootPos),
+
+                // Score preload
+                new InstantCommand(robot::enableScoring),
+                new WaitCommand((long) robot.shootTime),
+                new InstantCommand(robot::disableScoring),
+
+                // Go to in front of line 1 of balls
+                new FollowPathCommand(follower, paths.shootPosToBalls1),
+
+                // Intake 1st line of balls
+                new InstantCommand(robot::enableIntake),
+                new FollowPathCommand(follower, paths.intakeBalls1),
+                new InstantCommand(robot::disableIntake),
+
+                // Go to shoot position
+                new FollowPathCommand(follower, paths.balls1ToShootPos),
+
+                // Score balls
+                new InstantCommand(robot::enableScoring),
+                new WaitCommand((long) robot.shootTime),
+                new InstantCommand(robot::disableScoring),
+
+                // Go to in front of line 2 of balls
+                new FollowPathCommand(follower, paths.shootPosToBalls2),
+
+                // Intake 2nd line of balls
+                new InstantCommand(robot::enableIntake),
+                new FollowPathCommand(follower, paths.intakeBalls2),
+                new InstantCommand(robot::disableIntake),
+
+                // Go to shoot position
+                new FollowPathCommand(follower, paths.balls2ToShootPos),
+
+                // Score balls
+                new InstantCommand(robot::enableScoring),
+                new WaitCommand((long) robot.shootTime),
+                new InstantCommand(robot::disableScoring),
+
+                // Disable shooter
+                new InstantCommand(robot::disableShooter)
+        );
+
+        schedule(auto);
     }
 
     @Override
-    public void loop() {
-        follower.update(); // Update Pedro Pathing
-        pathState = autonomousPathUpdate(); // Update autonomous state machine
+    public void run() {
+        super.run();
 
-        // Log values to Panels and Driver Station
-        panelsTelemetry.debug("Path State", pathState);
         panelsTelemetry.debug("X", follower.getPose().getX());
         panelsTelemetry.debug("Y", follower.getPose().getY());
         panelsTelemetry.debug("Heading", follower.getPose().getHeading());
-        panelsTelemetry.update(telemetry);
+        panelsTelemetry.update();
     }
 
     public static class Paths {
@@ -132,89 +181,5 @@ public class CloseBlue9Ball extends OpMode {
                     .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(144))
                     .build();
         }
-    }
-
-    double actionStartTime = 0;
-
-    public int autonomousPathUpdate() {
-        switch (pathState) {
-            case 0: // enable shooter, go to first shooting position
-                robot.enableShooter();
-                follower.followPath(paths.startToShootPos);
-                pathState = 1;
-                break;
-            case 1: // wait until at shooting position, then feed into shooter
-                if (follower.isBusy()) break;
-
-                robot.enableScoring();
-                actionStartTime = time;
-                pathState = 2;
-                break;
-            case 2: // wait until 3.5 seconds elapsed, then disable feeder and go to first row of balls
-                if (time - actionStartTime < robot.shootTime) break;
-
-                robot.disableScoring();
-                follower.followPath(paths.shootPosToBalls1);
-                pathState = 3;
-                break;
-            case 3: // wait until at the row of balls, then enable the intake and move along the balls
-                if (follower.isBusy()) break;
-
-                robot.enableIntake();
-                follower.followPath(paths.intakeBalls1);
-                pathState = 4;
-                break;
-            case 4: // wait until moved along balls, then disable the intake and move back toward shooting pos
-                if (follower.isBusy()) break;
-
-                robot.disableIntake();
-                follower.followPath(paths.balls1ToShootPos);
-                pathState = 5;
-                break;
-            case 5: // wait until at position, then start feeding
-                if (follower.isBusy()) break;
-
-                robot.enableScoring();
-                actionStartTime = time;
-                pathState = 6;
-                break;
-            case 6: // wait until 3.5 seconds elapsed, then disable feeder and go to second row of balls
-                if (time - actionStartTime < robot.shootTime) break;
-
-                robot.disableScoring();
-                follower.followPath(paths.shootPosToBalls2);
-                pathState = 7;
-                break;
-            case 7: // wait until at second row, then start intaking and move down the row
-                if (follower.isBusy()) break;
-
-                robot.enableIntake();
-                follower.followPath(paths.intakeBalls2);
-                pathState = 8;
-                break;
-            case 8: // wait until down row, then disable intake and move back to shoot pos
-                if (follower.isBusy()) break;
-
-                robot.disableIntake();
-                follower.followPath(paths.balls2ToShootPos);
-                pathState = 9;
-                break;
-            case 9: // wait until at shoot pos, then enable feeding
-                if (follower.isBusy()) break;
-
-                robot.enableScoring();
-                actionStartTime = time;
-                pathState = 10;
-                break;
-            case 10: // wait until 3.5 seconds elapsed, then disable feed and shooter. path is done
-                if (time - actionStartTime < robot.shootTime) break;
-
-                robot.disableScoring();
-                robot.disableShooter();
-                pathState = -1;
-                break;
-        }
-
-        return pathState;
     }
 }
