@@ -2,8 +2,10 @@ package org.firstinspires.ftc.teamcode.Boilerplate;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.LLResultTypes.FiducialResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 import java.util.List;
 
@@ -58,7 +60,14 @@ public class LimeLightCalculator {
     }
 
     public double calculateTurret(LLResult target) {
-        return turretPID.calculate(0f, target.getTx());
+        FiducialResult fidel = target.getFiducialResults().get(0);
+        Pose3D chud = fidel.getTargetPoseCameraSpace();
+        double dist = Math.hypot(chud.getPosition().x, chud.getPosition().y);
+        boolean blue = fidel.getFiducialId() == 20;
+        if (dist > 1.7)
+            return turretPID.calculate(blue ? 4 : -4, target.getTx());
+        else
+            return turretPID.calculate(0f, target.getTx());
     }
 
     public double calculateHood(LLResult target) {

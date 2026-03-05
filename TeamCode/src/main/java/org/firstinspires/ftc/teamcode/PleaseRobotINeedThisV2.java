@@ -1,16 +1,20 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.Boilerplate.LimeLightCalculator;
 import org.firstinspires.ftc.teamcode.Boilerplate.RTPAxon;
 import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 @TeleOp(name="comp ready code", group="Linear OpMode")
 //@Disabled
@@ -44,7 +48,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         public static double OFF_VELOCITY = 0;
         public static double SHOOT_VELOCITY = 1800;
         public static double REVERSE_VELOCITY = -500;
-        public static double IDLE_VELOCITY = 800;
+        public static double IDLE_VELOCITY = 1000;
         public enum State {
             OFF,
             IDLE,
@@ -65,8 +69,8 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
     }
     private static class Turret {
         public static double OFF_POWER = 0.0;
-        public static double RIGHT_POWER = 1.0;
-        public static double LEFT_POWER = -1.0;
+        public static double RIGHT_POWER = -1.0;
+        public static double LEFT_POWER = 1.0;
 
         public enum State {
             OFF,
@@ -276,11 +280,6 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
 
                 if (target != null) {
                     autoTurretValue = LLC.calculateTurret(target);
-
-                    telemetry.addLine("CAN SEE TARGET");
-//                    telemetry.addData("Target TX:", LLC.log(target, LimeLightCalculator.LogWhat.TX));
-//                    telemetry.addData("Target TY:", LLC.log(target, LimeLightCalculator.LogWhat.TY));
-//                    telemetry.addData("LimeLight target height", target.getTy());
                 } else {
                     autoTurretValue /= 1.2f;
                 }
@@ -315,13 +314,14 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
                 LLResult target = LLC.getTarget();
                 if (target == null) break;
 
-//                telemetry.addData("LL Target size %", target.getTa());
-                double targetSizePct = target.getTa();
-                shooterVelocity = 1612.1 * Math.pow(targetSizePct, -0.148175);
-                // shooterVelocity = 1662.23416 * Math.pow(targetSizePct, -0.143368)
-                // ^ is the same but with all the velocities bumped up by 50 because
-                // we measured the min velocity, and optimal might be slightly higher
-                // but i also don't want to break anything
+                telemetry.addLine("CAN SEE TARGET");
+                List<LLResultTypes.FiducialResult> fidResults = target.getFiducialResults();
+                Pose3D tagPose = fidResults.get(0).getTargetPoseCameraSpace();
+                double x = tagPose.getPosition().x;
+                double z = tagPose.getPosition().z;
+                double dist = Math.hypot(x, z);
+                telemetry.addData("target distance", dist);
+                shooterVelocity = dist > 0.5 ? ( dist > 1.7 ? 2000 : (365.08107 * dist + 1216.35886)) : 1400;
 
                 lastLimeLightVelocity = shooterVelocity;
                 break;
@@ -330,8 +330,8 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         }
 
         goodShooter.setVelocity(shooterVelocity);
-        telemetry.addData("Shooter set velocity", goodShooter.getVelocity());
-        telemetry.addData("Shooter actual velocity", shooterVelocity);
+        telemetry.addData("Shooter actual velocity", goodShooter.getVelocity());
+        telemetry.addData("Shooter set velocity", shooterVelocity);
     }
 
     private void indexerSystem() {
