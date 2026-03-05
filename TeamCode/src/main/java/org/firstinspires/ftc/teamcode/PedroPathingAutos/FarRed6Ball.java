@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode.PedroPathingAutos;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
@@ -6,31 +7,25 @@ import com.bylazar.telemetry.PanelsTelemetry;
 
 import org.firstinspires.ftc.teamcode.Boilerplate.Config;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.geometry.Pose;
-import com.seattlesolvers.solverslib.command.CommandOpMode;
-import com.seattlesolvers.solverslib.command.InstantCommand;
-import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
-import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 @Autonomous(name = "Far Red | 6 ball", group = "far")
 @Configurable // Panels
-public class FarRed6Ball extends CommandOpMode {
-    private TelemetryManager panelsTelemetry;
+public class FarRed6Ball extends OpMode {
+    private TelemetryManager panelsTelemetry; // Panels Telemetry instance
     public Follower follower; // Pedro Pathing follower instance
+    private int pathState = 0; // Current autonomous path state (state machine)
     private Paths paths; // Paths defined in the Paths class
     private final Config config = new Config();
     private RobotControls robot;
 
     @Override
-    public void initialize() {
-        super.reset();
-
+    public void init() {
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
-
         config.init(hardwareMap);
         robot = new RobotControls(config);
 
@@ -39,55 +34,21 @@ public class FarRed6Ball extends CommandOpMode {
 
         paths = new Paths(follower); // Build paths
 
-        SequentialCommandGroup auto = new SequentialCommandGroup(
-                // Enable shooter, setup hood
-                new InstantCommand(robot::enableShooterFar),
-
-                // Go to shooting position
-                new FollowPathCommand(follower, paths.startToShootPos),
-
-                // Wait, then shoot preloaded balls
-                new WaitCommand(robot.farRevTime),
-                new InstantCommand(robot::enableShooterFar),
-                new WaitCommand(robot.farShootTime),
-                new InstantCommand(robot::disableScoring),
-
-                // Go to 3rd line of balls
-                new FollowPathCommand(follower, paths.shootPosToBalls3),
-
-                // Intake 3rd line of balls
-                new InstantCommand(robot::enableIntake),
-                new FollowPathCommand(follower, paths.intakeBalls3),
-                new InstantCommand(robot::disableIntake),
-
-                // Go to shooting position
-                new FollowPathCommand(follower, paths.balls3ToShootPos),
-
-                // Wait, then shoot balls
-                new WaitCommand(robot.farRevTime2),
-                new InstantCommand(robot::enableScoring),
-                new WaitCommand(robot.farShootTime),
-                new InstantCommand(robot::disableScoring),
-
-
-                // Disable shooter
-                new InstantCommand(robot::disableShooter),
-
-                // Leave the launch zone
-                new FollowPathCommand(follower, paths.leave)
-        );
-
-        schedule(auto);
+        panelsTelemetry.debug("Status", "Initialized");
+        panelsTelemetry.update(telemetry);
     }
 
     @Override
-    public void run() {
-        super.run();
+    public void loop() {
+        follower.update(); // Update Pedro Pathing
+        pathState = autonomousPathUpdate(); // Update autonomous state machine
 
+        // Log values to Panels and Driver Station
+        panelsTelemetry.debug("Path State", pathState);
         panelsTelemetry.debug("X", follower.getPose().getX());
         panelsTelemetry.debug("Y", follower.getPose().getY());
         panelsTelemetry.debug("Heading", follower.getPose().getHeading());
-        panelsTelemetry.update();
+        panelsTelemetry.update(telemetry);
     }
 
     public static class Paths {
@@ -95,7 +56,6 @@ public class FarRed6Ball extends CommandOpMode {
         public PathChain shootPosToBalls3;
         public PathChain intakeBalls3;
         public PathChain balls3ToShootPos;
-        public PathChain leave;
 
         public Paths(Follower follower) {
             startToShootPos = follower.pathBuilder()
@@ -117,11 +77,74 @@ public class FarRed6Ball extends CommandOpMode {
                     .addPath(new BezierLine(new Pose(135.000, 36.000), new Pose(84.000, 20.000)))
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(65))
                     .build();
-
-            leave = follower.pathBuilder()
-                    .addPath(new BezierLine(new Pose(84.000, 20.000), new Pose(108.000, 10.000)))
-                    .setLinearHeadingInterpolation(Math.toRadians(65), Math.toRadians(90))
-                    .build();
         }
+    }
+
+    private double actionStartTime = 0;
+
+    public int autonomousPathUpdate() {
+        switch (pathState) {
+            case 0:
+                robot.enableShooterFar();
+                follower.followPath(paths.startToShootPos);
+                pathState = 1;
+                break;
+            case 1:
+                if (follower.isBusy()) break;
+
+                actionStartTime = time;
+                pathState = 2;
+                break;
+            case 2:
+                if (time - actionStartTime < robot.farRevTime) break;
+
+                robot.enableScoringFar();
+                pathState = 3;
+                break;
+            case 3:
+                if (time - actionStartTime < robot.farShootTime) break;
+
+                robot.disableScoring();
+                follower.followPath(paths.shootPosToBalls3);
+                pathState = 4;
+                break;
+            case 4:
+                if (follower.isBusy()) break;
+
+                robot.enableIntake();
+                follower.followPath(paths.intakeBalls3);
+                pathState = 5;
+                break;
+            case 5:
+                if (follower.isBusy()) break;
+                robot.disableIntake();
+
+                follower.followPath(paths.balls3ToShootPos);
+                pathState = 6;
+                break;
+            case 6:
+                if (follower.isBusy()) break;
+
+                actionStartTime = time;
+                pathState = 7;
+                break;
+            case 7:
+                if (time - actionStartTime < robot.farRevTime2) break;
+
+                robot.enableScoringFar();
+                pathState = 8;
+                break;
+            case 8:
+                if (time - actionStartTime < robot.farShootTime) break;
+
+                robot.disableScoring();
+                robot.disableShooter();
+                pathState = -1;
+                break;
+            case -1:
+                break;
+        }
+
+        return pathState;
     }
 }

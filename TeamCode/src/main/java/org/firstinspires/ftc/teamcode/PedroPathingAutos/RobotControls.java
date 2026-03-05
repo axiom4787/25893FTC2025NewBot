@@ -4,10 +4,10 @@ import org.firstinspires.ftc.teamcode.Boilerplate.Config;
 
 public class RobotControls {
     Config config;
-    public long shootTime = 3500;
-    public long farShootTime = 6000;
-    public long farRevTime = 1500; // extra time to let the shooter rev up
-    public long farRevTime2 = 1000;
+    public double shootTime = 3.5;
+    public double farShootTime = 6.0;
+    public double farRevTime = 1.5; // extra time to let the shooter rev up
+    public double farRevTime2 = 1.0;
     public RobotControls(Config config) {
         this.config = config;
     }
