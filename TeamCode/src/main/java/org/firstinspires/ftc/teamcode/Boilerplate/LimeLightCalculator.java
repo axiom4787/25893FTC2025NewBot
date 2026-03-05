@@ -14,6 +14,7 @@ public class LimeLightCalculator {
     Limelight3A limeLight;
     public PID hoodPID = new PID(0.0005, 0, 1e-5f, -1, 1);
     public PID turretPID = new PID(0.02, 0, 0.01, -1, 1);
+//    public PID turretPID = new PID(0.02, 0.0, 0.0001, -1, 1);
 
     public LimeLightCalculator(HardwareMap hardwareMap) {
         config.init(hardwareMap);

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.PedroPathingAutos;
 
 import org.firstinspires.ftc.teamcode.Boilerplate.Config;
+import org.firstinspires.ftc.teamcode.Boilerplate.RTPAxon;
 
 public class RobotControls {
     Config config;
@@ -40,16 +41,30 @@ public class RobotControls {
     public void enableShooter() {
         config.smartShooter.setVelocity(1350);
         config.linearActuator.setPosition(0.45);
-        config.turretServoLeft.setPower(0.0);
+        centerTurret();
     }
 
     public void enableShooterFar() {
-        config.smartShooter.setPower(1.0); // make it 1 so it hits all the shots
+        config.smartShooter.setVelocity(1925); // make it 1925 so it hits all the shots
         config.linearActuator.setPosition(0.25);
-        config.turretServoLeft.setPower(0.0);
+        centerTurret();
+    }
+
+    RTPAxon smartServo;
+
+    private void centerTurret() {
+        smartServo = new RTPAxon(config.turretServoLeft, config.axonServoEncoder);
+        smartServo.forceResetTotalRotation();
+        smartServo.setPidCoeffs(0.015, 0.0, 0.0001);
+        smartServo.setRtp(true);
+        smartServo.setTargetRotation(0.0);
+    }
+
+    public void updateSmartServo() {
+        smartServo.update();
     }
 
     public void disableShooter() {
-        config.smartShooter.setPower(0);
+        config.smartShooter.setVelocity(0);
     }
 }

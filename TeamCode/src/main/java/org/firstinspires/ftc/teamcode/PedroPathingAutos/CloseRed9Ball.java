@@ -216,6 +216,7 @@ public class CloseRed9Ball extends OpMode {
                 break;
         }
 
+        robot.updateSmartServo();
         return pathState;
     }
 }

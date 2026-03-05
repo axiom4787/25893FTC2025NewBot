@@ -144,7 +144,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
             gamepad1.rumble(100);
         }
 
-        if (gamepad1.bWasPressed()) {
+        if (gamepad1.yWasPressed()) {
             useLimeLightForAim = !useLimeLightForAim;
             gamepad1.rumble(300);
         }
@@ -154,7 +154,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
             gamepad1.rumble(600);
         }
 
-        driveSlower = gamepad1.y;
+        driveSlower = gamepad1.b;
 
         // Hood
         // If LimeLight aiming is enabled:

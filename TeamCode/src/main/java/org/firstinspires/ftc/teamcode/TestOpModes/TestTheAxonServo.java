@@ -16,7 +16,7 @@ public class TestTheAxonServo extends ThePlantRobotOpMode {
         smartServo = new RTPAxon(turretLeft, axonServoEncoder, RTPAxon.Direction.REVERSE);
         smartServo.setRtp(true);
         smartServo.forceResetTotalRotation();
-        smartServo.setPidCoeffs(0.05, 0.0, 0.001);
+        smartServo.setPidCoeffs(0.015, 0.0, 0.0001);
     }
 
     @Override
@@ -27,6 +27,8 @@ public class TestTheAxonServo extends ThePlantRobotOpMode {
             smartServo.setTargetRotation(-120);
         } else if (gamepad1.dpad_right) {
             smartServo.setTargetRotation(120);
+        } else if (gamepad1.dpad_up) {
+            smartServo.setTargetRotation(0);
         } else if (gamepad1.circle) {
             smartServo.setRtp(false);
             smartServo.setPower(1);
