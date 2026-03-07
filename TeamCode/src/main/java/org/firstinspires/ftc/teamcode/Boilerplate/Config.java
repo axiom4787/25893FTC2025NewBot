@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Boilerplate;
 
 import com.qualcomm.hardware.dfrobot.HuskyLens;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -11,6 +12,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcontroller.external.samples.SampleRevBlinkinLedDriver;
 
 public class Config {
     public DcMotor frontLeftDrive, backLeftDrive, frontRightDrive, backRightDrive;
@@ -22,6 +25,7 @@ public class Config {
     public Limelight3A limeLight;
     public IMU imu;
     public AnalogInput axonServoEncoder;
+    public RevBlinkinLedDriver lights;
 
     public void init(HardwareMap hardwareMap) {
         frontLeftDrive = hardwareMap.get(DcMotor.class, "frontLeftDrive");
@@ -61,5 +65,7 @@ public class Config {
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
         axonServoEncoder = hardwareMap.get(AnalogInput.class, "verySmartServo");
+
+        lights = hardwareMap.get(RevBlinkinLedDriver.class, "lights");
     }
 }

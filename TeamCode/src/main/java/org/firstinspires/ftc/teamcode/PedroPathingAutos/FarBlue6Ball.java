@@ -60,52 +60,27 @@ public class FarBlue6Ball extends OpMode {
 
         public Paths(Follower follower) {
             startToShootPos = follower.pathBuilder()
-                    .addPath(
-                            new BezierLine(
-                                    new Pose(60.000, 8.500),
-                                    new Pose(60.000, 20.000)
-                            )
-                    )
+                    .addPath(new BezierLine(new Pose(60.000, 8.500), new Pose(60.000, 20.000)))
                     .setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(115))
                     .build();
 
             shootPosToBalls3 = follower.pathBuilder()
-                    .addPath(
-                            new BezierLine(
-                                    new Pose(60.000, 20.000),
-                                    new Pose(40.000, 35.000)
-                            )
-                    )
+                    .addPath(new BezierLine(new Pose(60.000, 20.000), new Pose(40.000, 35.000)))
                     .setLinearHeadingInterpolation(Math.toRadians(113), Math.toRadians(180))
                     .build();
 
             intakeBalls3 = follower.pathBuilder()
-                    .addPath(
-                            new BezierLine(
-                                    new Pose(40.000, 35.000),
-                                    new Pose(9.000, 35.000)
-                            )
-                    )
+                    .addPath(new BezierLine(new Pose(40.000, 35.000), new Pose(9.000, 35.000)))
                     .setConstantHeadingInterpolation(Math.toRadians(180))
                     .build();
 
             balls3ToShootPos = follower.pathBuilder()
-                    .addPath(
-                            new BezierLine(
-                                    new Pose(9.000, 35.000),
-                                    new Pose(60.000, 20.000)
-                            )
-                    )
+                    .addPath(new BezierLine(new Pose(9.000, 35.000), new Pose(60.000, 20.000)))
                     .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(115))
                     .build();
 
             leave = follower.pathBuilder()
-                    .addPath(
-                            new BezierLine(
-                                    new Pose(60.000, 20.000),
-                                    new Pose(36.000, 8.500)
-                            )
-                    )
+                    .addPath(new BezierLine(new Pose(60.000, 20.000), new Pose(36.000, 8.500)))
                     .setLinearHeadingInterpolation(Math.toRadians(115), Math.toRadians(90))
                     .build();
         }

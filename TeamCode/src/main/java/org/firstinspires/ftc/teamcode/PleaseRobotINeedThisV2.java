@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -22,6 +23,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
     private boolean driveSlower = false;
     private double lastLimeLightVelocity = Shooter.SHOOT_VELOCITY;
     DcMotorEx goodShooter;
+    RevBlinkinLedDriver lights;
 
     private static class Hood {
         public static final double DOWN_POSITION = 0.75;
@@ -44,7 +46,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
     }
     private static class Shooter {
         public static double OFF_VELOCITY = 0;
-        public static double SHOOT_VELOCITY = 1800;
+        public static double SHOOT_VELOCITY = 1600;
         public static double REVERSE_VELOCITY = -500;
         public static double IDLE_VELOCITY = 1000;
         public enum State {
@@ -84,6 +86,20 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         public static final double REVERSE_POWER = -1.0;
     }
 
+    private static class LightStatus {
+        // Flashing white: Actively shooting
+        // Green: Shooter at speed, target visible
+        // Blue: Shooter at speed, target not visible
+        // Yellow: Shooter not at speed, target visible
+        // Red: Shooter not at speed, target not visible
+        // Purple: Intaking
+
+        public static boolean at_speed = false;
+        public static boolean shooting = false;
+        public static boolean intaking = false;
+        public static boolean vision = false;
+    }
+
     private Hood.State hoodState = Hood.State.DOWN;
     private Shooter.State shooterState = Shooter.State.OFF;
     private Intake.State intakeState = Intake.State.OFF;
@@ -102,7 +118,9 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
 
         goodShooter = (DcMotorEx) shooter;
         goodShooter.setVelocityPIDFCoefficients(600, 0, 0, 14.6);
-        // i don't think F is supposed to be that big...
+        // this is the wrong PID, but it's tuned for this so we are going to leave it
+
+        lights = config.lights;
     }
 
     LimeLightCalculator LLC;
@@ -123,6 +141,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         linearActuatorSystem();
         shooterSystem();
         indexerSystem();
+        lightSystem();
     }
 
     private void robotControls() {
@@ -209,6 +228,9 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
         else if (gamepad1.left_bumper)      intakeState = Intake.State.REVERSE;
         else                                intakeState = Intake.State.OFF;
 
+        LightStatus.intaking = gamepad1.right_trigger != 0;
+        LightStatus.shooting = gamepad1.right_bumper;
+
         // Indexer
         // Right trigger -> Intake + reverse Indexer -> Intake
         // Right bumper  -> Intake + Index -> Shoot
@@ -225,6 +247,7 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
 //        telemetry.addData("Intake state ", intakeState.name());
 //        telemetry.addData("Indexer state", indexerState.name());
 
+        telemetry.addData("Driving speed", gamepad1.b ? "Slow" : "Normal");
         telemetry.addData("Driving mode", driveInFieldRelative ? "FIELD relative" : "ROBOT relative");
         telemetry.addData("Shooter aim control mode", useLimeLightForAim ? "LIMELIGHT" : "MANUAL");
     }
@@ -309,8 +332,19 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
                 shooterVelocity = Shooter.IDLE_VELOCITY;
                 break;
             case AUTO:
+                if (shooterVelocity > Shooter.SHOOT_VELOCITY && shooterVelocity - goodShooter.getVelocity() < 60) {
+                    LightStatus.at_speed = true;
+                } else {
+                    LightStatus.at_speed = false;
+                }
+
                 LLResult target = LLC.getTarget();
-                if (target == null) break;
+                if (target == null) {
+                    LightStatus.vision = false;
+                    break;
+                }
+
+                LightStatus.vision = true;
 
                 telemetry.addLine("CAN SEE TARGET");
                 List<LLResultTypes.FiducialResult> fidResults = target.getFiducialResults();
@@ -362,6 +396,23 @@ public class PleaseRobotINeedThisV2 extends ThePlantRobotOpMode {
 
         intake.setPower(intakePower);
         telemetry.addData("Intake power", intakePower);
+    }
+
+    private void lightSystem() {
+        if (LightStatus.at_speed && LightStatus.shooting) // shooting at the right speed
+            lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_WHITE);
+        else if (LightStatus.at_speed && LightStatus.vision) // ready to shoot, limelight has knowledge
+            lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+        else if (LightStatus.at_speed) // ready to shoot, limelight does not have knowledge
+            lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.AQUA);
+        else if (LightStatus.vision) // limelight has knowledge
+            lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.YELLOW);
+        else if (LightStatus.intaking) // we are intaking
+            lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.STROBE_RED);
+        else if (driveSlower) // we are in the end game, and limelight cannot see tags
+            lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.RAINBOW_FOREST_PALETTE);
+        else // default, vision is blind, no intake, no indexer, no shooter, no slow drive
+            lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.DARK_GREEN);
     }
 
     private void driveSystem() {
