@@ -62,42 +62,76 @@ public class CloseRed9Ball extends OpMode {
 
         public Paths(Follower follower) {
             startToShootPos = follower.pathBuilder()
-                    .addPath(new BezierLine(new Pose(120.000, 129.000), new Pose(96.000, 112.000)))
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(120.000, 129.000),
+                                    new Pose(96.000, 112.000)
+                            )
+                    )
                     .setLinearHeadingInterpolation(Math.toRadians(36), Math.toRadians(36))
                     .build();
 
             shootPosToBalls1 = follower.pathBuilder()
-                    .addPath(new BezierLine(new Pose(96.000, 112.000), new Pose(102.000, 84.000)))
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(96.000, 112.000),
+                                    new Pose(104.000, 84.000)
+                            )
+                    )
                     .setLinearHeadingInterpolation(Math.toRadians(36), Math.toRadians(0))
                     .build();
 
             intakeBalls1 = follower.pathBuilder()
-                    .addPath(new BezierLine(new Pose(102.000, 84.000), new Pose(126.000, 84.000)))
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(104.000, 84.000),
+                                    new Pose(126.000, 84.000)
+                            )
+                    )
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
                     .build();
 
             balls1ToShootPos = follower.pathBuilder()
-                    .addPath(new BezierLine(new Pose(126.000, 84.000), new Pose(96.000, 112.000)))
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(126.000, 84.000),
+                                    new Pose(96.000, 112.000)
+                            )
+                    )
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(36))
                     .build();
 
             shootPosToBalls2 = follower.pathBuilder()
-                    .addPath(new BezierLine(new Pose(96.000, 112.000), new Pose(102.000, 60.000)))
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(96.000, 112.000),
+                                    new Pose(104.000, 60.000)
+                            )
+                    )
                     .setLinearHeadingInterpolation(Math.toRadians(36), Math.toRadians(0))
-                    .setReversed()
                     .build();
 
             intakeBalls2 = follower.pathBuilder()
-                    .addPath(new BezierLine(new Pose(102.000, 60.000), new Pose(133.000, 60.000)))
+                    .addPath(
+                            new BezierLine(
+                                    new Pose(104.000, 60.000),
+                                    new Pose(133.000, 60.000)
+                            )
+                    )
                     .setConstantHeadingInterpolation(Math.toRadians(0))
                     .build();
 
             balls2ToShootPos = follower.pathBuilder()
-                    .addPath(new BezierCurve(new Pose(133.000, 60000), new Pose(97.517, 56369), new Pose(96.000, 11.000)))
+                    .addPath(
+                            new BezierCurve(
+                                    new Pose(133.000, 60.000),
+                                    new Pose(97.517, 56.369),
+                                    new Pose(96.000, 112.000)
+                            )
+                    )
                     .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(36))
                     .build();
-        }
-    }
+        }    }
 
     double actionStartTime = 0;
 
