@@ -1,30 +1,35 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
-import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.hardware.Servo;
-import org.firstinspires.ftc.teamcode.Boilerplate.Config;
+import com.qualcomm.robotcore.util.Range;
 
 public class HoodSubsystem {
-    public static class Position {
+    private static class PhysicalPosition {
         public static final double DOWN = 0.75;
-        public static final double MIDDLE = 0.5;
         public static final double UP = 0.25;
+    }
+
+    public static class Position {
+        public static final double DOWN = 0.0;
+        public static final double MIDDLE = 0.5;
+        public static final double UP = 1.0;
     }
 
     private final Servo hoodActuator;
 
-    public HoodSubsystem(Servo hoodActuator) {
-        this.hoodActuator = hoodActuator;
+    public HoodSubsystem() {
+        hoodActuator = Hardware.getHoodActuator();
     }
 
-    public void setActuatorPositionConstrained(double position) {
-//         TODO: Do math to turn the [0, 1] / [fully retracted, fully extended] range
-//          of the actuator into a [0, 1] / [hood down, hood up] range because that kinda
-//          makes more sense for what we're doing maybe?
+    /**
+     * @param angle 0: Down, 1: Up
+     */
+    public void setHoodAngle(double angle) {
+        double clippedAngle = Range.clip(angle, 0, 1);
 
-        if (position > Position.DOWN)   position = Position.DOWN;
-        if (position < Position.UP)     position = Position.UP;
+        // turn the [0, 1] range of inputs into [0.75, 0.25] of the hood
+        double physicalPosition = Range.scale(angle, Position.DOWN, Position.UP, PhysicalPosition.DOWN, PhysicalPosition.UP);
 
-        hoodActuator.setPosition(position);
+        hoodActuator.setPosition(physicalPosition);
     }
 }

@@ -8,25 +8,15 @@ public class DriveSubsystem {
     private final DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
     private final IMU imu;
 
-    public DriveSubsystem(
-            DcMotor frontLeftDrive, DcMotor frontRightDrive,
-            DcMotor backLeftDrive, DcMotor backRightDrive,
-            IMU imu
-    ) {
-        this.frontLeftDrive = frontLeftDrive;
-        this.frontRightDrive = frontRightDrive;
-        this.backLeftDrive = backLeftDrive;
-        this.backRightDrive = backRightDrive;
+    public DriveSubsystem() {
+        Hardware.DriveMotors driveMotors = Hardware.getDriveMotors();
 
-        this.imu = imu;
-    }
+        frontLeftDrive = driveMotors.frontLeft;
+        frontRightDrive = driveMotors.frontRight;
+        backLeftDrive = driveMotors.backLeft;
+        backRightDrive = driveMotors.backRight;
 
-    public void drive(double forward, double right, double rotate, boolean fieldRelative) {
-        if (fieldRelative) {
-            driveFieldRelative(forward, right, rotate);
-        } else {
-            driveRobotRelative(forward, right, rotate);
-        }
+        imu = Hardware.getIMU();
     }
 
     public void driveRobotRelative(double forward, double right, double rotate) {
@@ -54,9 +44,6 @@ public class DriveSubsystem {
         frontRightDrive.setPower(frontRightPower);
         backLeftDrive.setPower(backLeftPower);
         backRightDrive.setPower(backRightPower);
-
-//        telemetry.addData("Front left/Right drive", "%4.2f, %4.2f", frontLeftPower, frontRightPower);
-//        telemetry.addData("Back  left/Right drive", "%4.2f, %4.2f", backLeftPower, backRightPower);
     }
 
     public void driveFieldRelative(double forward, double right, double rotate) {

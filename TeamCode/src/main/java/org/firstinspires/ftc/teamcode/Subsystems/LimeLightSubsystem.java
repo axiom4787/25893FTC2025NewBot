@@ -1,10 +1,8 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
-import org.firstinspires.ftc.teamcode.Boilerplate.LimeLightCalculator;
 import org.firstinspires.ftc.teamcode.Boilerplate.PID;
 
 public class LimeLightSubsystem {
@@ -12,36 +10,8 @@ public class LimeLightSubsystem {
     public final PID hoodPID = new PID(4e-5f, 0, 1e-5f, -1, 1);
     public final PID turretPID = new PID(0.02, 0, 0.01, -1, 1);
 
-    public LimeLightSubsystem(Limelight3A limeLight) {
-        this.limeLight = limeLight;
-        limeLight.start();
-    }
-
-    public static class TagResult {
-        public double tx, ty, ta;
-
-        public TagResult(double tx, double ty, double ta) {
-            this.tx = tx;
-            this.ty = ty;
-            this.ta = ta;
-        }
-    }
-
-    public LimeLightCalculator.TagResult getTargetTag(int tagId) {
-        LLResult llResult = limeLight.getLatestResult();
-        if (!llResult.isValid()) return null;
-
-        for (LLResultTypes.FiducialResult res : llResult.getFiducialResults()) {
-            if (res.getFiducialId() == tagId) {
-                return new LimeLightCalculator.TagResult(
-                        res.getTargetXDegrees(),
-                        res.getTargetYDegrees(),
-                        res.getTargetArea()
-                );
-            }
-        }
-
-        return null;
+    public LimeLightSubsystem() {
+        limeLight = Hardware.getLimelight();
     }
 
     public double calculateTurret(LLResult target) {

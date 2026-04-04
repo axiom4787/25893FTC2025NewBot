@@ -3,21 +3,21 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 public class ShooterSubsystem {
-    private final DcMotorEx smartShooter;
+    private final DcMotorEx shooter;
 
-    public ShooterSubsystem(DcMotorEx smartShooter) {
-        this.smartShooter = smartShooter;
+    public ShooterSubsystem() {
+        shooter = Hardware.getShooterMotor();
     }
 
     public void setShooterVelocity(double velocity) {
-        smartShooter.setVelocity(velocity);
+        shooter.setVelocity(velocity);
     }
 
     public double getShooterVelocity() {
-        return smartShooter.getVelocity();
+        return shooter.getVelocity();
     }
 
-    public void setShooterPower(double power) {
-        smartShooter.setPower(power);
+    public void stopShooter() {
+        shooter.setPower(0.0);
     }
 }
