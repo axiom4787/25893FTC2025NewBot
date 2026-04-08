@@ -7,8 +7,10 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
+import org.firstinspires.ftc.teamcode.Boilerplate.CommandOpModeWithAlliance;
 import org.firstinspires.ftc.teamcode.Subsystems.Hardware;
 import org.firstinspires.ftc.teamcode.Subsystems.HoodSubsystem;
 import org.firstinspires.ftc.teamcode.Subsystems.IntakeSubsystem;
@@ -54,8 +56,8 @@ public class Solo12Ball extends CommandOpModeWithAlliance {
         if (!hasStarted) {
             hasStarted = true;
 
-            Shared.setAlliance(alliance);
-            follower.setStartingPose(Shared.Close.START_POSE);
+            Shared2.setAlliance(alliance);
+            follower.setStartingPose(Shared2.Close.START_POSE);
             buildPaths(follower);
             scheduleAuto();
         }
@@ -73,70 +75,90 @@ public class Solo12Ball extends CommandOpModeWithAlliance {
 
     public void scheduleAuto() {
         schedule(
+                new InstantCommand(shooterSubsystem::setShoot),
                 new FollowPathCommand(follower, startToScore),
-                // TODO: Score
+
+                new InstantCommand(intakeSubsystem::index),
+                new WaitCommand(3000),
+                new InstantCommand(intakeSubsystem::off),
+                new InstantCommand(shooterSubsystem::setIdle),
 
                 new FollowPathCommand(follower, scoreToRow1),
                 new FollowPathCommand(follower, intakeRow1),
+                new InstantCommand(shooterSubsystem::setShoot),
                 new FollowPathCommand(follower, row1ToScore),
-                // TODO: Score
+
+                new InstantCommand(intakeSubsystem::index),
+                new WaitCommand(3000),
+                new InstantCommand(intakeSubsystem::off),
+                new InstantCommand(shooterSubsystem::setIdle),
 
                 new FollowPathCommand(follower, scoreToRow2),
                 new FollowPathCommand(follower, intakeRow2),
+                new InstantCommand(shooterSubsystem::setShoot),
                 new FollowPathCommand(follower, row1ToScore),
-                // TODO: Score
+
+                new InstantCommand(intakeSubsystem::index),
+                new WaitCommand(3000),
+                new InstantCommand(intakeSubsystem::off),
+                new InstantCommand(shooterSubsystem::setIdle),
 
                 new FollowPathCommand(follower, scoreToRow3),
                 new FollowPathCommand(follower, intakeRow3),
+                new InstantCommand(shooterSubsystem::setShoot),
                 new FollowPathCommand(follower, row3ToScore),
-                // TODO: Score
+
+                new InstantCommand(intakeSubsystem::index),
+                new WaitCommand(3000),
+                new InstantCommand(intakeSubsystem::off),
+                new InstantCommand(shooterSubsystem::setOff),
 
                 new FollowPathCommand(follower, scoreToEnd),
-                Shared.saveAutoEndPose(follower)
+                Shared2.saveAutoEndPose(follower)
         );
     }
 
     public void buildPaths(Follower follower) {
-        startToScore = Shared.Close.START_TO_SCORE(follower);
+        startToScore = Shared2.Close.START_TO_SCORE(follower);
 
         scoreToRow1 = follower.pathBuilder()
-                .addPath(new BezierLine(Shared.Close.SCORE_POSE, Shared.Artifacts.ROW_1_START))
-                .setLinearHeadingInterpolation(Shared.Close.SCORE_POSE.getHeading(), Shared.Artifacts.INTAKE_HEADING)
+                .addPath(new BezierLine(Shared2.Close.SCORE_POSE, Shared2.Artifacts.ROW_1_START))
+                .setLinearHeadingInterpolation(Shared2.Close.SCORE_POSE.getHeading(), Shared2.Artifacts.INTAKE_HEADING)
                 .build();
 
-        intakeRow1 = Shared.Artifacts.INTAKE_ROW_1(follower);
+        intakeRow1 = Shared2.Artifacts.INTAKE_ROW_1(follower);
 
         row1ToScore = follower.pathBuilder()
-                .addPath(new BezierLine(Shared.Artifacts.ROW_1_END, Shared.Close.SCORE_POSE))
-                .setLinearHeadingInterpolation(Shared.Artifacts.INTAKE_HEADING, Shared.Close.SCORE_POSE.getHeading())
+                .addPath(new BezierLine(Shared2.Artifacts.ROW_1_END, Shared2.Close.SCORE_POSE))
+                .setLinearHeadingInterpolation(Shared2.Artifacts.INTAKE_HEADING, Shared2.Close.SCORE_POSE.getHeading())
                 .build();
 
         scoreToRow2 = follower.pathBuilder()
-                .addPath(new BezierLine(Shared.Close.SCORE_POSE, Shared.Artifacts.ROW_2_START))
-                .setLinearHeadingInterpolation(Shared.Close.SCORE_POSE.getHeading(), Shared.Artifacts.INTAKE_HEADING)
+                .addPath(new BezierLine(Shared2.Close.SCORE_POSE, Shared2.Artifacts.ROW_2_START))
+                .setLinearHeadingInterpolation(Shared2.Close.SCORE_POSE.getHeading(), Shared2.Artifacts.INTAKE_HEADING)
                 .build();
 
-        intakeRow2 = Shared.Artifacts.INTAKE_ROW_2(follower);
+        intakeRow2 = Shared2.Artifacts.INTAKE_ROW_2(follower);
 
         row2ToScore = follower.pathBuilder()
-                .addPath(new BezierLine(Shared.Artifacts.ROW_2_END, Shared.Artifacts.ROW_2_START))
-                .setConstantHeadingInterpolation(Shared.Artifacts.INTAKE_HEADING)
-                .addPath(new BezierLine(Shared.Artifacts.ROW_2_START, Shared.Close.SCORE_POSE))
-                .setLinearHeadingInterpolation(Shared.Artifacts.INTAKE_HEADING, Shared.Close.SCORE_POSE.getHeading())
+                .addPath(new BezierLine(Shared2.Artifacts.ROW_2_END, Shared2.Artifacts.ROW_2_START))
+                .setConstantHeadingInterpolation(Shared2.Artifacts.INTAKE_HEADING)
+                .addPath(new BezierLine(Shared2.Artifacts.ROW_2_START, Shared2.Close.SCORE_POSE))
+                .setLinearHeadingInterpolation(Shared2.Artifacts.INTAKE_HEADING, Shared2.Close.SCORE_POSE.getHeading())
                 .build();
 
         scoreToRow3 = follower.pathBuilder()
-                .addPath(new BezierLine(Shared.Close.SCORE_POSE, Shared.Artifacts.ROW_3_START))
-                .setLinearHeadingInterpolation(Shared.Close.SCORE_POSE.getHeading(), Shared.Artifacts.INTAKE_HEADING)
+                .addPath(new BezierLine(Shared2.Close.SCORE_POSE, Shared2.Artifacts.ROW_3_START))
+                .setLinearHeadingInterpolation(Shared2.Close.SCORE_POSE.getHeading(), Shared2.Artifacts.INTAKE_HEADING)
                 .build();
 
-        intakeRow3 = Shared.Artifacts.INTAKE_ROW_3(follower);
+        intakeRow3 = Shared2.Artifacts.INTAKE_ROW_3(follower);
 
         row3ToScore = follower.pathBuilder()
-                .addPath(new BezierLine(Shared.Artifacts.ROW_3_END, Shared.Far.SCORE_POSE))
-                .setLinearHeadingInterpolation(Shared.Artifacts.INTAKE_HEADING, Shared.Far.SCORE_POSE.getHeading())
+                .addPath(new BezierLine(Shared2.Artifacts.ROW_3_END, Shared2.Far.SCORE_POSE))
+                .setLinearHeadingInterpolation(Shared2.Artifacts.INTAKE_HEADING, Shared2.Far.SCORE_POSE.getHeading())
                 .build();
 
-        scoreToEnd = Shared.Close.SCORE_TO_END(follower);
+        scoreToEnd = Shared2.Close.SCORE_TO_END(follower);
     }
 }

@@ -17,12 +17,17 @@ public class IntakeSubsystem {
     }
 
     public void intake() {
-        runIndexerIn();
+        runIntakeIn();
         runIndexerOut();
     }
 
     public void index() {
         runIntakeIn();
+        runIndexerIn();
+    }
+
+    public void reverse() {
+        runIntakeOut();
         runIndexerOut();
     }
 

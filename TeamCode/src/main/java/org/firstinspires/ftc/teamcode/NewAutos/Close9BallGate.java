@@ -10,6 +10,7 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
+import org.firstinspires.ftc.teamcode.Boilerplate.CommandOpModeWithAlliance;
 import org.firstinspires.ftc.teamcode.Subsystems.Hardware;
 import org.firstinspires.ftc.teamcode.Subsystems.HoodSubsystem;
 import org.firstinspires.ftc.teamcode.Subsystems.IntakeSubsystem;
@@ -18,7 +19,7 @@ import org.firstinspires.ftc.teamcode.Subsystems.ShooterSubsystem;
 import org.firstinspires.ftc.teamcode.Subsystems.TurretSubsystem;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(name = "Test Close 9 ball", group = "close")
+@Autonomous(name = "Test Close 9 ball gate", group = "close")
 @Configurable
 public class Close9BallGate extends CommandOpModeWithAlliance {
     public Follower follower;
@@ -54,8 +55,8 @@ public class Close9BallGate extends CommandOpModeWithAlliance {
         if (!hasStarted) {
             hasStarted = true;
 
-            Shared.setAlliance(alliance);
-            follower.setStartingPose(Shared.Close.START_POSE);
+            Shared2.setAlliance(alliance);
+            follower.setStartingPose(Shared2.Close.START_POSE);
             buildPaths(follower);
             scheduleAuto();
         }
@@ -86,37 +87,37 @@ public class Close9BallGate extends CommandOpModeWithAlliance {
                 // TODO: Score
 
                 new FollowPathCommand(follower, scoreToEnd),
-                Shared.saveAutoEndPose(follower)
+                Shared2.saveAutoEndPose(follower)
         );
     }
 
     public void buildPaths(Follower follower) {
-        startToScore = Shared.Close.START_TO_SCORE(follower);
+        startToScore = Shared2.Close.START_TO_SCORE(follower);
 
         scoreToRow2 = follower.pathBuilder()
-                .addPath(new BezierLine(Shared.Close.SCORE_POSE, Shared.Artifacts.ROW_2_START))
-                .setLinearHeadingInterpolation(Shared.Close.SCORE_POSE.getHeading(), Shared.Artifacts.INTAKE_HEADING)
+                .addPath(new BezierLine(Shared2.Close.SCORE_POSE, Shared2.Artifacts.ROW_2_START))
+                .setLinearHeadingInterpolation(Shared2.Close.SCORE_POSE.getHeading(), Shared2.Artifacts.INTAKE_HEADING)
                 .build();
 
-        intakeRow2 = Shared.Artifacts.INTAKE_ROW_2(follower);
+        intakeRow2 = Shared2.Artifacts.INTAKE_ROW_2(follower);
 
         row2ToScore = follower.pathBuilder()
-                .addPath(new BezierLine(Shared.Artifacts.ROW_2_END, Shared.Artifacts.ROW_2_START))
-                .setConstantHeadingInterpolation(Shared.Artifacts.INTAKE_HEADING)
-                .addPath(new BezierLine(Shared.Artifacts.ROW_2_START, Shared.Close.SCORE_POSE))
-                .setLinearHeadingInterpolation(Shared.Artifacts.INTAKE_HEADING, Shared.Close.SCORE_POSE.getHeading())
+                .addPath(new BezierLine(Shared2.Artifacts.ROW_2_END, Shared2.Artifacts.ROW_2_START))
+                .setConstantHeadingInterpolation(Shared2.Artifacts.INTAKE_HEADING)
+                .addPath(new BezierLine(Shared2.Artifacts.ROW_2_START, Shared2.Close.SCORE_POSE))
+                .setLinearHeadingInterpolation(Shared2.Artifacts.INTAKE_HEADING, Shared2.Close.SCORE_POSE.getHeading())
                 .build();
 
         scoreToGate = follower.pathBuilder()
-                .addPath(new BezierCurve(Shared.Close.SCORE_POSE, new Pose(104, 73), Shared.Misc.GATE_INTAKE))
-                .setLinearHeadingInterpolation(Shared.Close.SCORE_POSE.getHeading(), Shared.Misc.GATE_INTAKE.getHeading())
+                .addPath(new BezierCurve(Shared2.Close.SCORE_POSE, new Pose(104, 73), Shared2.Misc.GATE_INTAKE))
+                .setLinearHeadingInterpolation(Shared2.Close.SCORE_POSE.getHeading(), Shared2.Misc.GATE_INTAKE.getHeading())
                 .build();
 
         gateToScore = follower.pathBuilder()
-                .addPath(new BezierCurve(Shared.Misc.GATE_INTAKE, new Pose(104, 73), Shared.Close.SCORE_POSE))
-                .setLinearHeadingInterpolation(Shared.Misc.GATE_INTAKE.getHeading(), Shared.Close.SCORE_POSE.getHeading())
+                .addPath(new BezierCurve(Shared2.Misc.GATE_INTAKE, new Pose(104, 73), Shared2.Close.SCORE_POSE))
+                .setLinearHeadingInterpolation(Shared2.Misc.GATE_INTAKE.getHeading(), Shared2.Close.SCORE_POSE.getHeading())
                 .build();
 
-        scoreToEnd = Shared.Close.SCORE_TO_END(follower);
+        scoreToEnd = Shared2.Close.SCORE_TO_END(follower);
     }
 }

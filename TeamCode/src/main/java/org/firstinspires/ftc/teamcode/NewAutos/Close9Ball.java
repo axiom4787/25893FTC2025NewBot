@@ -8,6 +8,7 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
+import org.firstinspires.ftc.teamcode.Boilerplate.CommandOpModeWithAlliance;
 import org.firstinspires.ftc.teamcode.Subsystems.Hardware;
 import org.firstinspires.ftc.teamcode.Subsystems.HoodSubsystem;
 import org.firstinspires.ftc.teamcode.Subsystems.IntakeSubsystem;
@@ -52,14 +53,17 @@ public class Close9Ball extends CommandOpModeWithAlliance {
         if (!hasStarted) {
             hasStarted = true;
 
-            Shared.setAlliance(alliance);
-            follower.setStartingPose(Shared.Close.START_POSE);
+            Shared2.setAlliance(alliance);
+            follower.setStartingPose(Shared2.Close.START_POSE);
             buildPaths(follower);
             scheduleAuto();
         }
 
         super.run();
         follower.update();
+
+        hoodSubsystem.update(follower);
+        turretSubsystem.update(follower);
 
         panelsTelemetry.debug("X", follower.getPose().getX());
         panelsTelemetry.debug("Y", follower.getPose().getY());
@@ -83,45 +87,45 @@ public class Close9Ball extends CommandOpModeWithAlliance {
                 // TODO: Score
 
                 new FollowPathCommand(follower, scoreToEnd),
-                Shared.saveAutoEndPose(follower)
+                Shared2.saveAutoEndPose(follower)
         );
     }
 
     public void buildPaths(Follower follower) {
-            startToScore = Shared.Close.START_TO_SCORE(follower);
+            startToScore = Shared2.Close.START_TO_SCORE(follower);
 
             scoreToRow1 = follower.pathBuilder()
-                    .addPath(new BezierLine(Shared.Close.SCORE_POSE, Shared.Artifacts.ROW_1_START))
-                    .setLinearHeadingInterpolation(Shared.Close.SCORE_POSE.getHeading(), Shared.Artifacts.INTAKE_HEADING)
+                    .addPath(new BezierLine(Shared2.Close.SCORE_POSE, Shared2.Artifacts.ROW_1_START))
+                    .setLinearHeadingInterpolation(Shared2.Close.SCORE_POSE.getHeading(), Shared2.Artifacts.INTAKE_HEADING)
                     .build();
 
             intakeRow1 = follower.pathBuilder()
-                    .addPath(new BezierLine(Shared.Artifacts.ROW_1_START, Shared.Artifacts.ROW_1_END))
-                    .setConstantHeadingInterpolation(Shared.Artifacts.INTAKE_HEADING)
+                    .addPath(new BezierLine(Shared2.Artifacts.ROW_1_START, Shared2.Artifacts.ROW_1_END))
+                    .setConstantHeadingInterpolation(Shared2.Artifacts.INTAKE_HEADING)
                     .build();
 
             row1ToScore = follower.pathBuilder()
-                    .addPath(new BezierLine(Shared.Artifacts.ROW_1_END, Shared.Close.SCORE_POSE))
-                    .setLinearHeadingInterpolation(Shared.Artifacts.INTAKE_HEADING, Shared.Close.SCORE_POSE.getHeading())
+                    .addPath(new BezierLine(Shared2.Artifacts.ROW_1_END, Shared2.Close.SCORE_POSE))
+                    .setLinearHeadingInterpolation(Shared2.Artifacts.INTAKE_HEADING, Shared2.Close.SCORE_POSE.getHeading())
                     .build();
 
             scoreToRow2 = follower.pathBuilder()
-                    .addPath(new BezierLine(Shared.Close.SCORE_POSE, Shared.Artifacts.ROW_2_START))
-                    .setLinearHeadingInterpolation(Shared.Close.SCORE_POSE.getHeading(), Shared.Artifacts.INTAKE_HEADING)
+                    .addPath(new BezierLine(Shared2.Close.SCORE_POSE, Shared2.Artifacts.ROW_2_START))
+                    .setLinearHeadingInterpolation(Shared2.Close.SCORE_POSE.getHeading(), Shared2.Artifacts.INTAKE_HEADING)
                     .build();
 
             intakeRow2 = follower.pathBuilder()
-                    .addPath(new BezierLine(Shared.Artifacts.ROW_2_START, Shared.Artifacts.ROW_2_END))
-                    .setConstantHeadingInterpolation(Shared.Artifacts.INTAKE_HEADING)
+                    .addPath(new BezierLine(Shared2.Artifacts.ROW_2_START, Shared2.Artifacts.ROW_2_END))
+                    .setConstantHeadingInterpolation(Shared2.Artifacts.INTAKE_HEADING)
                     .build();
 
             row2ToScore = follower.pathBuilder()
-                    .addPath(new BezierLine(Shared.Artifacts.ROW_2_END, Shared.Artifacts.ROW_2_START))
-                    .setConstantHeadingInterpolation(Shared.Artifacts.INTAKE_HEADING)
-                    .addPath(new BezierLine(Shared.Artifacts.ROW_2_START, Shared.Close.SCORE_POSE))
-                    .setLinearHeadingInterpolation(Shared.Artifacts.INTAKE_HEADING, Shared.Close.SCORE_POSE.getHeading())
+                    .addPath(new BezierLine(Shared2.Artifacts.ROW_2_END, Shared2.Artifacts.ROW_2_START))
+                    .setConstantHeadingInterpolation(Shared2.Artifacts.INTAKE_HEADING)
+                    .addPath(new BezierLine(Shared2.Artifacts.ROW_2_START, Shared2.Close.SCORE_POSE))
+                    .setLinearHeadingInterpolation(Shared2.Artifacts.INTAKE_HEADING, Shared2.Close.SCORE_POSE.getHeading())
                     .build();
 
-            scoreToEnd = Shared.Close.SCORE_TO_END(follower);
+            scoreToEnd = Shared2.Close.SCORE_TO_END(follower);
     }
 }

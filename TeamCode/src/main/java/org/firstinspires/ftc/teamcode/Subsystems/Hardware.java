@@ -35,18 +35,18 @@ public class Hardware {
     private Hardware() {}
 
     public static DriveMotors getDriveMotors() {
-        if (driveMotors != null) return driveMotors;
+//        if (driveMotors != null) return driveMotors;
 
         return driveMotors = new DriveMotors(
-            hwMap.get(DcMotor.class, "front_left_drive"),
-            hwMap.get(DcMotor.class, "front_right_drive"),
-            hwMap.get(DcMotor.class, "back_left_drive"),
-            hwMap.get(DcMotor.class, "back_right_drive")
+            hwMap.get(DcMotor.class, "frontLeftDrive"),
+            hwMap.get(DcMotor.class, "frontRightDrive"),
+            hwMap.get(DcMotor.class, "backLeftDrive"),
+            hwMap.get(DcMotor.class, "backRightDrive")
         );
     }
 
     public static DcMotorEx getShooterMotor() {
-        if (shooterMotor != null) return shooterMotor;
+//        if (shooterMotor != null) return shooterMotor;
 
         shooterMotor = (DcMotorEx) hwMap.get(DcMotor.class, "shooter");
         shooterMotor.setDirection(DcMotor.Direction.FORWARD);
@@ -55,7 +55,7 @@ public class Hardware {
     }
 
     public static DcMotor getIntakeMotor() {
-        if (intakeMotor != null) return intakeMotor;
+//        if (intakeMotor != null) return intakeMotor;
 
         intakeMotor = hwMap.get(DcMotor.class, "intake");
         intakeMotor.setDirection(DcMotor.Direction.REVERSE);
@@ -63,7 +63,7 @@ public class Hardware {
     }
 
     public static DcMotor getIndexerMotor() {
-        if (indexerMotor != null) return indexerMotor;
+//        if (indexerMotor != null) return indexerMotor;
 
         indexerMotor = hwMap.get(DcMotor.class, "indexer");
         indexerMotor.setDirection(DcMotor.Direction.FORWARD);
@@ -72,11 +72,11 @@ public class Hardware {
     }
 
     public static TurretServos getTurretServos() {
-        if (turretServos != null) return turretServos;
+//        if (turretServos != null) return turretServos;
 
         return turretServos = new TurretServos(
-                hwMap.get(CRServo.class, "left_turret"),
-                hwMap.get(CRServo.class, "right_turret")
+                hwMap.get(CRServo.class, "turretServoLeft"),
+                hwMap.get(CRServo.class, "turretServoRight")
         );
     }
 
@@ -87,13 +87,13 @@ public class Hardware {
     }
 
     public static AnalogInput getAxonServoEncoder() {
-        if (axonServoEncoder != null) return axonServoEncoder;
+//        if (axonServoEncoder != null) return axonServoEncoder;
 
-        return axonServoEncoder = hwMap.get(AnalogInput.class, "axon_servo_input");
+        return axonServoEncoder = hwMap.get(AnalogInput.class, "verySmartServo");
     }
 
     public static Limelight3A getLimelight() {
-        if (limelight != null) return limelight;
+//        if (limelight != null) return limelight;
 
         limelight = hwMap.get(Limelight3A.class, "limelight");
         limelight.start();
@@ -101,13 +101,13 @@ public class Hardware {
     }
 
     public static RevBlinkinLedDriver getLights() {
-        if (lights != null) return lights;
+//        if (lights != null) return lights;
 
         return lights = hwMap.get(RevBlinkinLedDriver.class, "lights");
     }
 
     public static IMU getIMU() {
-        if (imu != null) return imu;
+//        if (imu != null) return imu;
 
         imu = hwMap.get(IMU.class, "imu");
         RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.BACKWARD;

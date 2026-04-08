@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.Boilerplate.RTPAxon;
 import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 
 @TeleOp(name = "Test the super smart servo")
-@Disabled
+//@Disabled
 public class TestTheAxonServo extends ThePlantRobotOpMode {
     RTPAxon smartServo;
 

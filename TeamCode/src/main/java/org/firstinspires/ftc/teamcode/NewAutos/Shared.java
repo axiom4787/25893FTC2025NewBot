@@ -9,10 +9,11 @@ import com.seattlesolvers.solverslib.command.InstantCommand;
 import org.firstinspires.ftc.teamcode.Boilerplate.Alliance;
 import org.jetbrains.annotations.NotNull;
 
+// so not use me! i assume the field is 144x144, which it is not. use Shared2 instead!!
 public class Shared {
     private Shared() {}
 
-    public static Pose autoEndPose = new Pose();
+    public static Pose autoEndPose = new Pose(72, 72);
     public static InstantCommand saveAutoEndPose(Follower follower) {
         return new InstantCommand(() -> autoEndPose = follower.getPose());
     }
@@ -49,14 +50,14 @@ public class Shared {
         Artifacts.ROW_3_END   = Artifacts.ROW_3_END.mirror(FIELD_WIDTH);
         Artifacts.INTAKE_HEADING = Math.PI - Artifacts.INTAKE_HEADING;
 
-        Goal.X = FIELD_WIDTH - Goal.X;
-        Goal.POSE = Goal.POSE.mirror(FIELD_WIDTH);
-
+        Misc.GOAL_X = FIELD_WIDTH - Misc.GOAL_X;
+        Misc.GOAL = Misc.GOAL.mirror(FIELD_WIDTH);
         Misc.EDGE_INTAKE_Y = FIELD_WIDTH - Misc.EDGE_INTAKE_Y;
         Misc.CORNER_INTAKE = Misc.CORNER_INTAKE.mirror(FIELD_WIDTH);
         Misc.OPEN_GATE     = Misc.OPEN_GATE.mirror(FIELD_WIDTH);
         Misc.GATE_INTAKE   = Misc.GATE_INTAKE.mirror(FIELD_WIDTH);
         Misc.GATE_INTAKE_APPROACH = Misc.GATE_INTAKE_APPROACH.mirror(FIELD_WIDTH);
+        Misc.PARK = Misc.PARK.mirror(FIELD_WIDTH);
     }
 
     public static class Close {
@@ -141,19 +142,18 @@ public class Shared {
         }
     }
 
-    public static class Goal {
-        public static double X = 136;
-        public static double Y = 136;
-
-        public static Pose POSE = new Pose(X, Y);
-    }
-
     public static class Misc {
+        public static double GOAL_X = 136;
+        public static double GOAL_Y = 136;
+        public static Pose GOAL = new Pose(GOAL_X, GOAL_Y);
+
         public static double EDGE_INTAKE_Y = 9;
         public static Pose CORNER_INTAKE = new Pose(135, EDGE_INTAKE_Y, Math.toRadians(0));
 
         public static Pose OPEN_GATE = new Pose(128, 70, Math.toRadians(0));
         public static Pose GATE_INTAKE_APPROACH = new Pose(120, 60);
         public static Pose GATE_INTAKE = new Pose(133, 60, Math.toRadians(35));
+
+        public static Pose PARK = new Pose(38, 32.75, Math.toRadians(90));
     }
 }
