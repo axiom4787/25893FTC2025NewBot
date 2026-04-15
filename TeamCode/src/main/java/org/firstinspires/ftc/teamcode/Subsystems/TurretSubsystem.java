@@ -2,39 +2,29 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.math.MathFunctions;
-import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Boilerplate.RTPAxon;
-import org.firstinspires.ftc.teamcode.NewAutos.Shared2;
+import org.firstinspires.ftc.teamcode.Hardware.CachedRTPAxon;
+import org.firstinspires.ftc.teamcode.Boilerplate.Shared;
+import org.firstinspires.ftc.teamcode.Hardware.CachingHardware;
 
 public class TurretSubsystem {
-    private final CRServo leftTurretServo, rightTurretServo;
-    private final AnalogInput servoEncoder;
-    public final RTPAxon smartServoController;
+    public final CachedRTPAxon turretController;
     public static final double GEAR_RATIO = 98 / 35f;
-    public static final double MAX_SERVO_ANGLE_RIGHT = GEAR_RATIO * 70;
+    public static final double MAX_SERVO_ANGLE_RIGHT = GEAR_RATIO * 65;
     public static final double MAX_SERVO_ANGLE_LEFT  = GEAR_RATIO * 120;
 
     public TurretSubsystem() {
-        Hardware.TurretServos turretServos = Hardware.getTurretServos();
-
-        leftTurretServo = turretServos.left;
-        rightTurretServo = turretServos.right;
-        servoEncoder = Hardware.getAxonServoEncoder();
-
-        smartServoController = new RTPAxon(leftTurretServo, servoEncoder, RTPAxon.Direction.FORWARD);
-        smartServoController.setPidCoeffs(0.013, 0.0, 0.0);
-        smartServoController.setRtp(true);
+        turretController = CachingHardware.getTurretServo();
     }
 
+    // TODO: Custom PID accounting for wraparound, like RTPAxon for CRServoEx
+    //  because CRServoEx doesn't seem to be able to handle unnormalized angles
     public void update(Follower follower) {
         double robotHeading = follower.getHeading();
 
-        double diffX = Shared2.Misc.GOAL_X - follower.getPose().getX();
-        double diffY = Shared2.Misc.GOAL_Y - follower.getPose().getY();
+        double diffX = Shared.Misc.GOAL_X - follower.getPose().getX();
+        double diffY = Shared.Misc.GOAL_Y - follower.getPose().getY();
         double headingTowardsGoal = Math.atan2(diffY, diffX);
 
         double targetTurretAngle = MathFunctions.normalizeAngle(headingTowardsGoal - robotHeading);
@@ -43,15 +33,15 @@ public class TurretSubsystem {
         targetTurretAngle = Math.toDegrees(targetTurretAngle) * GEAR_RATIO; // convert to degrees and account for gear ratio
         targetTurretAngle = Range.clip(targetTurretAngle, -MAX_SERVO_ANGLE_RIGHT, MAX_SERVO_ANGLE_LEFT); // limit how far the turret can go
 
-        smartServoController.setTargetRotation(targetTurretAngle);
-        smartServoController.update();
+        turretController.setTargetRotation(targetTurretAngle);
+        turretController.update();
     }
 
-    public double getTurretAngle() {
-        return smartServoController.getTotalRotation();
+    public double getCurrentAngle() {
+        return turretController.getTotalRotation();
     }
 
-    public double getTurretTargetAngle() {
-        return smartServoController.getTargetRotation();
+    public double getTargetAngle() {
+        return turretController.getTargetRotation();
     }
 }

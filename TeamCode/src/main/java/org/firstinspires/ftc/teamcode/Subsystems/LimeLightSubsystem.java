@@ -4,6 +4,7 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import org.firstinspires.ftc.teamcode.Boilerplate.PID;
+import org.firstinspires.ftc.teamcode.Hardware.CachingHardware;
 
 public class LimeLightSubsystem {
     private final Limelight3A limeLight;
@@ -11,7 +12,7 @@ public class LimeLightSubsystem {
     public final PID turretPID = new PID(0.02, 0, 0.01, -1, 1);
 
     public LimeLightSubsystem() {
-        limeLight = Hardware.getLimelight();
+        limeLight = CachingHardware.getLimelight();
     }
 
     public double calculateTurret(LLResult target) {

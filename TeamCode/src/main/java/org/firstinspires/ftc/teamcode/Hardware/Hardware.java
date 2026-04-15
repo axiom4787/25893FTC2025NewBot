@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Subsystems;
+package org.firstinspires.ftc.teamcode.Hardware;
 
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
@@ -7,12 +7,9 @@ import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
-
-import java.util.Objects;
 
 public class Hardware {
     private static DriveMotors driveMotors;
@@ -81,7 +78,7 @@ public class Hardware {
     }
 
     public static Servo getHoodActuator() {
-        if (hoodActuator != null) return hoodActuator;
+//        if (hoodActuator != null) return hoodActuator;
 
         return hoodActuator = hwMap.get(Servo.class, "linearActuator");
     }

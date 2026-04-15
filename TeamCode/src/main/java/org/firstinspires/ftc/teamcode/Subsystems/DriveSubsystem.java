@@ -1,23 +1,26 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
 import com.pedropathing.follower.Follower;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.Hardware.CachingHardware;
+import org.firstinspires.ftc.teamcode.Hardware.DriveMotors;
 
 public class DriveSubsystem {
-    private final DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
+    private final MotorEx frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
     private final IMU imu;
 
     public DriveSubsystem() {
-        Hardware.DriveMotors driveMotors = Hardware.getDriveMotors();
+        DriveMotors driveMotors = CachingHardware.getDriveMotors();
 
         frontLeftDrive = driveMotors.frontLeft;
         frontRightDrive = driveMotors.frontRight;
         backLeftDrive = driveMotors.backLeft;
         backRightDrive = driveMotors.backRight;
 
-        imu = Hardware.getIMU();
+        imu = CachingHardware.getIMU();
     }
 
     public void driveRobotRelative(double forward, double right, double rotate) {
@@ -41,10 +44,10 @@ public class DriveSubsystem {
         }
 
         // Send calculated power to wheels
-        frontLeftDrive.setPower(frontLeftPower);
-        frontRightDrive.setPower(frontRightPower);
-        backLeftDrive.setPower(backLeftPower);
-        backRightDrive.setPower(backRightPower);
+        frontLeftDrive.set(frontLeftPower);
+        frontRightDrive.set(frontRightPower);
+        backLeftDrive.set(backLeftPower);
+        backRightDrive.set(backRightPower);
     }
 
     public void driveFieldRelative(double forward, double right, double rotate, Follower follower) {

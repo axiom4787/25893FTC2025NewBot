@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.NewAutos;
+package org.firstinspires.ftc.teamcode.Boilerplate;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
@@ -6,19 +6,24 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 
-import org.firstinspires.ftc.teamcode.Boilerplate.Alliance;
 import org.jetbrains.annotations.NotNull;
 
-// so not use me! i assume the field is 144x144, which it is not. use Shared2 instead!!
+// use me not Shared ty
 public class Shared {
     private Shared() {}
 
-    public static Pose autoEndPose = new Pose(72, 72);
+    private static final double FIELD_WIDTH = 141.5;
+
+    public static Pose autoEndPose = new Pose(FIELD_WIDTH/2, FIELD_WIDTH/2);
     public static InstantCommand saveAutoEndPose(Follower follower) {
         return new InstantCommand(() -> autoEndPose = follower.getPose());
     }
 
     private static Alliance alliance = Alliance.RED;
+
+    public static Alliance getAlliance() {
+        return alliance;
+    }
 
     public static void setAlliance(@NotNull Alliance alliance) {
         if (Shared.alliance != alliance) mirror();
@@ -26,43 +31,50 @@ public class Shared {
         Shared.alliance = alliance;
     }
 
+    public static Pose m(Pose pose) {
+        return alliance == Alliance.RED ? pose : pose.mirror();
+    }
+
+    public static double m(double h) {
+        return alliance == Alliance.RED ? h : Math.PI - h;
+    }
+
     private static void mirror() {
-        final double FIELD_WIDTH = 144;
+        Close.START_POSE = Close.START_POSE.mirror();
+        Close.SCORE_POSE = Close.SCORE_POSE.mirror();
+        Close.END_POSE   = Close.END_POSE.mirror();
 
-        Close.START_POSE = Close.START_POSE.mirror(FIELD_WIDTH);
-        Close.SCORE_POSE = Close.SCORE_POSE.mirror(FIELD_WIDTH);
-        Close.END_POSE   = Close.END_POSE.mirror(FIELD_WIDTH);
-
-        Far.START_POSE   = Far.START_POSE.mirror(FIELD_WIDTH);
-        Far.SCORE_POSE   = Far.SCORE_POSE.mirror(FIELD_WIDTH);
-        Far.END_POSE     = Far.END_POSE.mirror(FIELD_WIDTH);
+        Far.START_POSE   = Far.START_POSE.mirror();
+        Far.SCORE_POSE   = Far.SCORE_POSE.mirror();
+        Far.END_POSE     = Far.END_POSE.mirror();
 
         Artifacts.X_1_END = FIELD_WIDTH - Artifacts.X_1_END;
         Artifacts.X_2_END = FIELD_WIDTH - Artifacts.X_2_END;
         Artifacts.X_3_END = FIELD_WIDTH - Artifacts.X_3_END;
         Artifacts.X_START = FIELD_WIDTH - Artifacts.X_START;
 
-        Artifacts.ROW_1_START = Artifacts.ROW_1_START.mirror(FIELD_WIDTH);
-        Artifacts.ROW_1_END   = Artifacts.ROW_1_END.mirror(FIELD_WIDTH);
-        Artifacts.ROW_2_START = Artifacts.ROW_2_START.mirror(FIELD_WIDTH);
-        Artifacts.ROW_2_END   = Artifacts.ROW_2_END.mirror(FIELD_WIDTH);
-        Artifacts.ROW_3_START = Artifacts.ROW_3_START.mirror(FIELD_WIDTH);
-        Artifacts.ROW_3_END   = Artifacts.ROW_3_END.mirror(FIELD_WIDTH);
+        Artifacts.ROW_1_START = Artifacts.ROW_1_START.mirror();
+        Artifacts.ROW_1_END   = Artifacts.ROW_1_END.mirror();
+        Artifacts.ROW_2_START = Artifacts.ROW_2_START.mirror();
+        Artifacts.ROW_2_END   = Artifacts.ROW_2_END.mirror();
+        Artifacts.ROW_3_START = Artifacts.ROW_3_START.mirror();
+        Artifacts.ROW_3_END   = Artifacts.ROW_3_END.mirror();
         Artifacts.INTAKE_HEADING = Math.PI - Artifacts.INTAKE_HEADING;
 
         Misc.GOAL_X = FIELD_WIDTH - Misc.GOAL_X;
-        Misc.GOAL = Misc.GOAL.mirror(FIELD_WIDTH);
+        Misc.GOAL = Misc.GOAL.mirror();
         Misc.EDGE_INTAKE_Y = FIELD_WIDTH - Misc.EDGE_INTAKE_Y;
-        Misc.CORNER_INTAKE = Misc.CORNER_INTAKE.mirror(FIELD_WIDTH);
-        Misc.OPEN_GATE     = Misc.OPEN_GATE.mirror(FIELD_WIDTH);
-        Misc.GATE_INTAKE   = Misc.GATE_INTAKE.mirror(FIELD_WIDTH);
-        Misc.GATE_INTAKE_APPROACH = Misc.GATE_INTAKE_APPROACH.mirror(FIELD_WIDTH);
-        Misc.PARK = Misc.PARK.mirror(FIELD_WIDTH);
+        Misc.CORNER_INTAKE = Misc.CORNER_INTAKE.mirror();
+        Misc.OPEN_GATE     = Misc.OPEN_GATE.mirror();
+        Misc.GATE_INTAKE   = Misc.GATE_INTAKE.mirror();
+        Misc.GATE_INTAKE_APPROACH = Misc.GATE_INTAKE_APPROACH.mirror();
+        Misc.PARK = Misc.PARK.mirror();
     }
 
     public static class Close {
-        public static Pose START_POSE = new Pose(108, 136, Math.toRadians(0));
-        public static Pose SCORE_POSE = new Pose(108, 100, Math.toRadians(53));
+        public static Pose START_POSE = new Pose(106.25, 133, Math.toRadians(0));
+//        public static Pose SCORE_POSE = new Pose(106.25, 100, Math.toRadians(53));
+        public static Pose SCORE_POSE = new Pose(95, 90, 0);
         public static Pose END_POSE   = new Pose(120, 100);
 
         public static PathChain START_TO_SCORE(Follower follower) {
@@ -101,15 +113,15 @@ public class Shared {
     }
 
     public static class Artifacts {
-        public static double Y_1 = 84;
-        public static double Y_2 = 60;
-        public static double Y_3 = 36;
+        public static double Y_1 = 82.5;
+        public static double Y_2 = 59;
+        public static double Y_3 = 35.5;
 
-        public static double X_START = 102;
+        public static double X_START = 101;
 
-        public static double X_1_END = 128;
-        public static double X_2_END = 134;
-        public static double X_3_END = 134;
+        public static double X_1_END = 125;
+        public static double X_2_END = 131;
+        public static double X_3_END = 131;
 
         public static double INTAKE_HEADING = Math.toRadians(0);
 
@@ -143,16 +155,16 @@ public class Shared {
     }
 
     public static class Misc {
-        public static double GOAL_X = 136;
-        public static double GOAL_Y = 136;
+        public static double GOAL_X = 135;
+        public static double GOAL_Y = 135;
         public static Pose GOAL = new Pose(GOAL_X, GOAL_Y);
 
         public static double EDGE_INTAKE_Y = 9;
-        public static Pose CORNER_INTAKE = new Pose(135, EDGE_INTAKE_Y, Math.toRadians(0));
+        public static Pose CORNER_INTAKE = new Pose(132, EDGE_INTAKE_Y, Math.toRadians(0));
 
-        public static Pose OPEN_GATE = new Pose(128, 70, Math.toRadians(0));
-        public static Pose GATE_INTAKE_APPROACH = new Pose(120, 60);
-        public static Pose GATE_INTAKE = new Pose(133, 60, Math.toRadians(35));
+        public static Pose OPEN_GATE = new Pose(126, 69, Math.toRadians(0));
+        public static Pose GATE_INTAKE = new Pose(129.5, 59.5, Math.toRadians(35));
+        public static Pose GATE_INTAKE_APPROACH = new Pose(120, 59.5);
 
         public static Pose PARK = new Pose(38, 32.75, Math.toRadians(90));
     }

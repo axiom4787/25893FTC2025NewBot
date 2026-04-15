@@ -12,7 +12,6 @@ import org.firstinspires.ftc.teamcode.Boilerplate.ThePlantRobotOpMode;
 
 @TeleOp(name = "test the smart shooter")
 @Disabled
-@Configurable
 public class TestTheSmartShooter extends ThePlantRobotOpMode {
     TelemetryManager panelsTelemetry;
     public static double kP = 0.0;

@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.Subsystems;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
+
+import org.firstinspires.ftc.teamcode.Hardware.CachingHardware;
 
 public class IntakeSubsystem {
     public static class Power {
@@ -9,11 +11,11 @@ public class IntakeSubsystem {
         public static final double REVERSE = -1.0;
     }
 
-    private final DcMotor intakeMotor, indexerMotor;
+    private final MotorEx intakeMotor, indexerMotor;
 
     public IntakeSubsystem() {
-        intakeMotor = Hardware.getIntakeMotor();
-        indexerMotor = Hardware.getIndexerMotor();
+        intakeMotor = CachingHardware.getIntakeMotor();
+        indexerMotor = CachingHardware.getIndexerMotor();
     }
 
     public void intake() {
@@ -37,34 +39,34 @@ public class IntakeSubsystem {
     }
 
     public void runIntakeIn() {
-        intakeMotor.setPower(Power.FORWARD);
+        intakeMotor.set(Power.FORWARD);
     }
 
     public void runIntakeOut() {
-        intakeMotor.setPower(Power.REVERSE);
+        intakeMotor.set(Power.REVERSE);
     }
 
     public void stopIntake() {
-        intakeMotor.setPower(Power.OFF);
+        intakeMotor.set(Power.OFF);
     }
 
     public void runIntake(double power) {
-        intakeMotor.setPower(power);
+        intakeMotor.set(power);
     }
 
     public void runIndexerIn() {
-        indexerMotor.setPower(Power.FORWARD);
+        indexerMotor.set(Power.FORWARD);
     }
 
     public void runIndexerOut() {
-        indexerMotor.setPower(Power.REVERSE);
+        indexerMotor.set(Power.REVERSE);
     }
 
     public void stopIndexer() {
-        indexerMotor.setPower(Power.OFF);
+        indexerMotor.set(Power.OFF);
     }
 
     public void runIndexer(double power) {
-        indexerMotor.setPower(power);
+        indexerMotor.set(power);
     }
 }

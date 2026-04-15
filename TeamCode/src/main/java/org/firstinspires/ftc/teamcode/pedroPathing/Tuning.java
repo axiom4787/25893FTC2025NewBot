@@ -1645,7 +1645,6 @@ class OffsetsTuner extends OpMode {
     }
 }
 
-
 /**
  * This is the Drawing class. It handles the drawing of stuff on Panels Dashboard, like the robot.
  *
