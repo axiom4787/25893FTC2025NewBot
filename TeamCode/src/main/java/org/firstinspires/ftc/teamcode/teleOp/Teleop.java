@@ -97,8 +97,8 @@ public class Teleop extends LinearOpModeWithAlliance {
 
             follower.setTeleOpDrive(-forward, right, -turn, false, isRedAlliance() ? Math.PI : 0);
 
-            // This should work
-            vision.update(follower.getHeading());
+            // Vision.update expects heading in degrees; follower.getHeading() is radians.
+            vision.update(Math.toDegrees(follower.getHeading()));
             Follower limeLightFollower = vision.updatePose(follower);
             if (limeLightFollower != null) follower = limeLightFollower; // it mixes them for you, so just set it equals
 

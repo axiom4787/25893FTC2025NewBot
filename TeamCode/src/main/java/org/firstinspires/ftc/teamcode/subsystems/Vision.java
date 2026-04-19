@@ -25,7 +25,6 @@ public class Vision {
 
     public void start() {
         limeLight.pipelineSwitch(0);
-        limeLight.start();
     }
 
     private Pose3D botpose;
