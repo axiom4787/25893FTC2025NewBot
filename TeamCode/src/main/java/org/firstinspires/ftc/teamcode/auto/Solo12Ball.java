@@ -75,6 +75,8 @@ public class Solo12Ball extends CommandOpModeWithAlliance {
         super.run();
         follower.update();
 
+        // Relocalize here. Not sure how to constantly update Limelight localization
+
         turret.update(follower);
         hood.update(follower);
         shooter.update(follower);

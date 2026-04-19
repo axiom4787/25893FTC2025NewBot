@@ -42,6 +42,8 @@ public class Teleop extends LinearOpModeWithAlliance {
         shooter = new Shooter();
         turret = new Turret();
 
+        vision.start();
+
         allHubs = hardwareMap.getAll(LynxModule.class);
         allHubs.forEach(hub -> hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL));
         allHubs.forEach(hub -> hub.setConstant(0x8000FF));
@@ -95,6 +97,10 @@ public class Teleop extends LinearOpModeWithAlliance {
 
             follower.setTeleOpDrive(-forward, right, -turn, false, isRedAlliance() ? Math.PI : 0);
 
+            // Vision.update expects heading in degrees; follower.getHeading() is radians.
+            vision.update(Math.toDegrees(follower.getHeading()));
+            Follower limeLightFollower = vision.updatePose(follower);
+            if (limeLightFollower != null) follower = limeLightFollower; // it mixes them for you, so just set it equals
 
             double x = follower.getPose().getX();
             double y = follower.getPose().getY();
