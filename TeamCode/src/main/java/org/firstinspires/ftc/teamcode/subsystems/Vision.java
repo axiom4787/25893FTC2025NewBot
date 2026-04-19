@@ -56,8 +56,8 @@ public class Vision {
 
     public Follower updatePose(Follower follower) {
         if (trust <= 0.0) return null;
-        if (botpose.getPosition().equals(new Position())) return null;
         if (botpose == null) return null;
+        if (botpose.getPosition().equals(new Position())) return null;
 
         Pose currentPose = follower.getPose();
         Pose visionPose = getRobotPose();
