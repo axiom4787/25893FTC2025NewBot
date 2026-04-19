@@ -29,7 +29,7 @@ public class Vision {
     }
 
     private Pose3D botpose;
-    double trust; // How much to mix the limelight pose with the other pose (0 to 1)
+    double trust = 0.0; // How much to mix the limelight pose with the other pose (0 to 1)
     public void update(double gyroYawDegrees) {
         limeLight.updateRobotOrientation(gyroYawDegrees);
         LLResult result = limeLight.getLatestResult();
@@ -54,8 +54,10 @@ public class Vision {
                 Math.toRadians(botpose.getOrientation().getYaw()));
     }
 
-    public void updatePose(Follower follower) {
-        if (trust <= 0) return;
+    public Follower updatePose(Follower follower) {
+        if (trust <= 0.0) return null;
+        if (botpose.getPosition().equals(new Position())) return null;
+        if (botpose == null) return null;
 
         Pose currentPose = follower.getPose();
         Pose visionPose = getRobotPose();
@@ -68,5 +70,7 @@ public class Vision {
         double currentHeading = currentPose.getHeading();
 
         follower.setPose(new Pose(mixedX, mixedY, currentHeading));
+
+        return follower;
     }
 }
