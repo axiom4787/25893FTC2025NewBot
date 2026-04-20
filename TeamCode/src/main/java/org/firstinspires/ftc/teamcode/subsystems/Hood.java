@@ -57,4 +57,10 @@ public class Hood {
 
         hoodActuator.set(physicalPosition);
     }
+
+    public double getAngle() {
+        double pos = hoodActuator.get();
+
+        return Range.scale(pos, PhysicalPosition.DOWN, PhysicalPosition.UP, Position.DOWN, Position.UP);
+    }
 }

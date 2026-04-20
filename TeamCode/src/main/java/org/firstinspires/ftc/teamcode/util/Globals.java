@@ -69,6 +69,7 @@ public class Globals {
         Misc.GATE_INTAKE   = Misc.GATE_INTAKE.mirror();
         Misc.GATE_INTAKE_APPROACH = Misc.GATE_INTAKE_APPROACH.mirror();
         Misc.PARK = Misc.PARK.mirror();
+        Misc.CORNER_RELOCALIZE = Misc.CORNER_RELOCALIZE.mirror();
     }
 
     public static class Close {
@@ -167,5 +168,7 @@ public class Globals {
         public static Pose GATE_INTAKE_APPROACH = new Pose(120, 59.5);
 
         public static Pose PARK = new Pose(38, 32.75, Math.toRadians(90));
+
+        public static Pose CORNER_RELOCALIZE = new Pose(133.5, 8, Math.toRadians(90));
     }
 }

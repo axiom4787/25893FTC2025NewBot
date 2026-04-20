@@ -48,6 +48,8 @@ public class Teleop extends LinearOpModeWithAlliance {
         allHubs.forEach(hub -> hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL));
         allHubs.forEach(hub -> hub.setConstant(0x8000FF));
 
+        telemetry.setMsTransmissionInterval(100);
+
         selectAlliance();
         Globals.setAlliance(alliance);
 
@@ -62,15 +64,19 @@ public class Teleop extends LinearOpModeWithAlliance {
 
             follower.update();
 
-            double forward = -gamepad1.left_stick_y;
-            double right = gamepad1.left_stick_x;
-            double turn = gamepad1.right_stick_x;
+            double forward = signedSquare(-gamepad1.left_stick_y);
+            double right = signedSquare(gamepad1.left_stick_x);
+            double turn = signedSquare(gamepad1.right_stick_x);
             boolean isMoving = right != 0 || forward != 0 || turn != 0;
+
+            if (gamepad1.y) {
+                follower.setPose(Globals.Misc.CORNER_RELOCALIZE);
+            } // drive to the corner to relocalize
 
             if (gamepad1.left_trigger_pressed) {
                 intake.intake();
             } else if (gamepad1.right_trigger_pressed) {
-                if (shooter.getTargetVelocity() - shooter.getVelocity() < 60) {
+                if (shooter.getError() <= 60) {
                     intake.index();
                 } else {
                     intake.off();
@@ -82,25 +88,24 @@ public class Teleop extends LinearOpModeWithAlliance {
             }
 
             if (gamepad1.right_trigger_pressed) {
-                shooter.setShoot();
+                shooter.shoot();
             } else if (isMoving) {
-                shooter.setOff();
+                shooter.off();
             } else if (gamepad1.right_bumper) {
-                shooter.setReverse();
+                shooter.reverse();
             } else {
-                shooter.setIdle();
+                shooter.idle();
             }
 
             shooter.update(follower);
             turret.update(follower);
             hood.update(follower);
 
-            follower.setTeleOpDrive(-forward, right, -turn, false, isRedAlliance() ? Math.PI : 0);
-
             // Vision.update expects heading in degrees; follower.getHeading() is radians.
             vision.update(Math.toDegrees(follower.getHeading()));
-            Follower limeLightFollower = vision.updatePose(follower);
-            if (limeLightFollower != null) follower = limeLightFollower; // it mixes them for you, so just set it equals
+            vision.updatePose(follower);
+
+            follower.setTeleOpDrive(-forward, right, -turn, false, isRedAlliance() ? Math.PI : 0);
 
             double x = follower.getPose().getX();
             double y = follower.getPose().getY();
@@ -108,6 +113,7 @@ public class Teleop extends LinearOpModeWithAlliance {
 
             telemetry.addData("Alliance", alliance.name());
             telemetry.addData("Robot X | Y | H", "%4.2f | %4.2f | %4.2f", x, y, h);
+            telemetry.addData("looptime (ms)", timer.milliseconds());
             telemetry.addLine();
             telemetry.addData("Turret angle", turret.getCurrentAngle());
             telemetry.addData("Turret target", turret.getTargetAngle());
@@ -115,9 +121,15 @@ public class Teleop extends LinearOpModeWithAlliance {
             telemetry.addLine();
             telemetry.addData("Shooter vel", shooter.getVelocity());
             telemetry.addData("Shooter target", shooter.getTargetVelocity());
+            telemetry.addData("Shooter error", shooter.getError());
             telemetry.addLine();
-            telemetry.addData("looptime (ms)", timer.milliseconds());
+            telemetry.addData("Hood angle", hood.getAngle());
+            telemetry.addLine();
             telemetry.update();
         }
+    }
+
+    private double signedSquare(double n) {
+        return Math.signum(n) * Math.pow(n, 2);
     }
 }

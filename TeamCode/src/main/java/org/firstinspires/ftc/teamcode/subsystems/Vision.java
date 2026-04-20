@@ -53,10 +53,10 @@ public class Vision {
                 Math.toRadians(botpose.getOrientation().getYaw()));
     }
 
-    public Follower updatePose(Follower follower) {
-        if (trust <= 0.0) return null;
-        if (botpose == null) return null;
-        if (botpose.getPosition().equals(new Position())) return null;
+    public void updatePose(Follower follower) {
+        if (trust <= 0.0) return;
+        if (botpose == null) return;
+        if (botpose.getPosition().equals(new Position())) return;
 
         Pose currentPose = follower.getPose();
         Pose visionPose = getRobotPose();
@@ -69,7 +69,5 @@ public class Vision {
         double currentHeading = currentPose.getHeading();
 
         follower.setPose(new Pose(mixedX, mixedY, currentHeading));
-
-        return follower;
     }
 }

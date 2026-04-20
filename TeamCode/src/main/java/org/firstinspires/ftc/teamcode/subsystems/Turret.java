@@ -18,13 +18,15 @@ public class Turret {
         turretController = Hardware.getTurretServo();
     }
 
-    // TODO: Custom PID accounting for wraparound, like RTPAxon for CRServoEx
-    //  because CRServoEx doesn't seem to be able to handle unnormalized angles
     public void update(Follower follower) {
         double robotHeading = follower.getHeading();
 
-        double diffX = Globals.Misc.GOAL_X - follower.getPose().getX();
-        double diffY = Globals.Misc.GOAL_Y - follower.getPose().getY();
+        double turretOffset = 3.0; // 3 inches behind center of robot
+        double turretX = follower.getPose().getX() - turretOffset * Math.cos(follower.getHeading());
+        double turretY = follower.getPose().getY() - turretOffset * Math.sin(follower.getHeading());
+
+        double diffX = Globals.Misc.GOAL_X - turretX;
+        double diffY = Globals.Misc.GOAL_Y - turretY;
         double headingTowardsGoal = Math.atan2(diffY, diffX);
 
         double targetTurretAngle = MathFunctions.normalizeAngle(headingTowardsGoal - robotHeading);
@@ -37,11 +39,19 @@ public class Turret {
         turretController.update();
     }
 
-    public double getCurrentAngle() {
+    public double getCurrentServoAngle() {
         return turretController.getTotalRotation();
     }
 
-    public double getTargetAngle() {
+    public double getTargetServoAngle() {
         return turretController.getTargetRotation();
+    }
+
+    public double getCurrentAngle() {
+        return getCurrentServoAngle() * GEAR_RATIO;
+    }
+
+    public double getTargetAngle() {
+        return getTargetServoAngle() * GEAR_RATIO;
     }
 }

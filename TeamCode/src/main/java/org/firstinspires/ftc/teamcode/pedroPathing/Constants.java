@@ -23,8 +23,8 @@ public class Constants {
             .forwardZeroPowerAcceleration(-43.46051981916104)
             .lateralZeroPowerAcceleration(-66.40053118205549)
             .headingPIDFCoefficients(new PIDFCoefficients(1.5, 0.0, 0.1, 0.02))
-            .predictiveBrakingCoefficients(new PredictiveBrakingCoefficients(0.1, 0.0735, 0.001729  ))
-            .centripetalScaling(0)
+            .predictiveBrakingCoefficients(new PredictiveBrakingCoefficients(0.1, 0.0735, 0.001729))
+            .centripetalScaling(0.004)
 
 //            .translationalPIDFCoefficients(new PIDFCoefficients(0.15, 0.0, 0.01, 0.04))
 //            .headingPIDFCoefficients(new PIDFCoefficients(1.5, 0.0, 0.1, 0.02))

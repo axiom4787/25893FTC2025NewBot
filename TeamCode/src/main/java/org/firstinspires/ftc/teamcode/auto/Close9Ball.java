@@ -2,10 +2,10 @@ package org.firstinspires.ftc.teamcode.auto;
 
 import static org.firstinspires.ftc.teamcode.util.Globals.m;
 
+import org.firstinspires.ftc.teamcode.util.AutoOpMode;
+import org.firstinspires.ftc.teamcode.util.Globals;
+
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.telemetry.PanelsTelemetry;
-import com.bylazar.telemetry.TelemetryManager;
-import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
@@ -16,103 +16,42 @@ import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
-import org.firstinspires.ftc.teamcode.util.CommandOpModeWithAlliance;
-import org.firstinspires.ftc.teamcode.util.Globals;
-import org.firstinspires.ftc.teamcode.util.Hardware;
-import org.firstinspires.ftc.teamcode.subsystems.Hood;
-import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.Vision;
-import org.firstinspires.ftc.teamcode.subsystems.Shooter;
-import org.firstinspires.ftc.teamcode.subsystems.Turret;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-
 @Autonomous(name = "Close 9 ball | pre, r1, r2", group = "close", preselectTeleOp = "Teleop")
 @Configurable
-public class Close9Ball extends CommandOpModeWithAlliance {
-    public Follower follower;
-    private TelemetryManager panelsTelemetry; // Panels Telemetry instance
-
+public class Close9Ball extends AutoOpMode {
     PathChain startToScore, scoreToEnd,
             scoreToIntakeRow1, row1ToScore,
             scoreToIntakeRow2, row2ToScore;
 
-    Hood hood;
-    Intake intake;
-    Vision vision;
-    Shooter shooter;
-    Turret turret;
-
     @Override
-    public void initialize() {
-        super.reset();
-
-        Hardware.init(hardwareMap);
-        follower = Constants.createFollower(hardwareMap);
-
-        panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
-
-        hood = new Hood();
-        intake = new Intake();
-        vision = new Vision();
-        shooter = new Shooter();
-        turret = new Turret();
-    }
-
-    private boolean hasStarted = false;
-    @Override
-    public void run() {
-        if (!hasStarted) {
-            hasStarted = true;
-
-            Globals.setAlliance(alliance);
-            follower.setStartingPose(Globals.Close.START_POSE);
-            buildPaths();
-            scheduleAuto();
-        }
-
-        super.run();
-        follower.update();
-
-        // Relocalize here. Not sure how to constantly update Limelight localization
-
-        turret.update(follower);
-        hood.update(follower);
-        shooter.update(follower);
-
-        panelsTelemetry.debug("X", follower.getPose().getX());
-        panelsTelemetry.debug("Y", follower.getPose().getY());
-        panelsTelemetry.debug("Heading", follower.getPose().getHeading());
-        panelsTelemetry.update(telemetry);
-    }
-
-    public void scheduleAuto() {
+    public void scheduleAutoSequence() {
         schedule(new SequentialCommandGroup(
-                new InstantCommand(shooter::setShoot),
+                new InstantCommand(shooter::shoot),
                 new FollowPathCommand(follower, startToScore),
 
                 new InstantCommand(intake::index),
                 new WaitCommand(3000),
-                new InstantCommand(shooter::setIdle),
+                new InstantCommand(shooter::idle),
                 new InstantCommand(intake::intake),
 
                 new FollowPathCommand(follower, scoreToIntakeRow1),
                 new InstantCommand(intake::off),
-                new InstantCommand(shooter::setShoot),
+                new InstantCommand(shooter::shoot),
                 new FollowPathCommand(follower, row1ToScore),
 
                 new InstantCommand(intake::index),
                 new WaitCommand(3000),
-                new InstantCommand(shooter::setIdle),
+                new InstantCommand(shooter::idle),
                 new InstantCommand(intake::intake),
 
                 new FollowPathCommand(follower, scoreToIntakeRow2),
                 new InstantCommand(intake::off),
-                new InstantCommand(shooter::setShoot),
+                new InstantCommand(shooter::shoot),
                 new FollowPathCommand(follower, row2ToScore),
 
                 new InstantCommand(intake::index),
                 new WaitCommand(3000),
-                new InstantCommand(shooter::setOff),
+                new InstantCommand(shooter::off),
                 new InstantCommand(intake::off),
 
                 new FollowPathCommand(follower, scoreToEnd),

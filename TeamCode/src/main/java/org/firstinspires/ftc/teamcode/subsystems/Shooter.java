@@ -5,7 +5,6 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.util.Range;
-import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 
 import org.firstinspires.ftc.teamcode.util.Globals;
@@ -16,7 +15,6 @@ public class Shooter {
     private final MotorEx shooter;
 
     private double targetVelocityTicks = 0;
-    public static PIDFController pidf = new PIDFController(0.04, 0, 0.00001, 0.00002);
 
     private enum State { OFF, IDLE, SHOOT, REVERSE };
     private State state = State.IDLE;
@@ -25,19 +23,19 @@ public class Shooter {
         shooter = Hardware.getShooterMotor();
     }
 
-    public void setOff() {
+    public void off() {
         state = State.OFF;
     }
 
-    public void setIdle() {
+    public void idle() {
         state = State.IDLE;
     }
 
-    public void setShoot() {
+    public void shoot() {
         state = State.SHOOT;
     }
 
-    public void setReverse() {
+    public void reverse() {
         state = State.REVERSE;
     }
 
@@ -49,11 +47,11 @@ public class Shooter {
                 double dist = Math.hypot(distX, distY);
 
                 if (dist < 25) {
-                    setTargetVel(1300);
+                    setTargetVel(1100);
                 } else if (dist > 100) {
                     setTargetVel(2000);
                 } else {
-                    setTargetVel(Range.scale(dist, 25, 100, 1300, 1700));
+                    setTargetVel(Range.scale(dist, 25, 100, 1100, 1700));
                 }
                 break;
             case IDLE:
@@ -78,27 +76,25 @@ public class Shooter {
         t.update();
     }
 
+    /**
+     * Set the target velocity to {@code vel} rounded to the nearest 20
+     * @param vel - target velocity
+     */
     private void setTargetVel(double vel) {
-        boolean no = false;
+        targetVelocityTicks = Math.round(vel / 20f) * 20f;
+        // Round target to nearest multiple of 20 ticks
 
-        targetVelocityTicks = vel;
-        // lowkey seems to work fine
-        if (getVelocity() < targetVelocityTicks) {
+        if (getError() == 0) {
+            shooter.set(targetVelocityTicks / 2200f);
+        } else if (getError() > 0) {
             shooter.set(1);
         } else {
             shooter.set(0);
         }
-//        if (targetVelocityTicks - getVelocity() > 60 && no) {
-////            shooter.setRunMode(Motor.RunMode.RawPower);
-//            shooter.set(1);
-//        } else if (targetVelocityTicks - getVelocity() < -60 && no) {
-////            shooter.setRunMode(Motor.RunMode.RawPower);
-//            shooter.set(0);
-//        } else {
-////            shooter.setRunMode(Motor.RunMode.RawPower);
-//            double power = pidf.calculate(getVelocity(), targetVelocityTicks);
-//            shooter.set(power < 0 ? 0 : power);
-//        }
+    }
+
+    public double getError() {
+        return getTargetVelocity() - getVelocity();
     }
 
     public double getVelocity() {

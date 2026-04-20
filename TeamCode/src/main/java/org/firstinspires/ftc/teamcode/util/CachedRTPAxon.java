@@ -83,7 +83,7 @@ public class CachedRTPAxon {
         kP = 0.015;
         kI = 0.0005;
         kD = 0.0025;
-        kF = 0.0;
+        kF = 0.002;
         integralSum = 0.0;
         lastError = 0.0;
         maxIntegralSum = 100.0;
@@ -244,7 +244,7 @@ public class CachedRTPAxon {
         double dTerm = kD * derivative;
 
         double output = pTerm + iTerm + dTerm;
-//        output += kF * Math.signum(output);
+        output += kF * Math.signum(error);
 
         // Deadzone for output
         final double DEADZONE = 0.5;

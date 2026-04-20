@@ -49,11 +49,7 @@ public class Intake {
     public void stopIntake() {
         intakeMotor.set(Power.OFF);
     }
-
-    public void runIntake(double power) {
-        intakeMotor.set(power);
-    }
-
+    
     public void runIndexerIn() {
         indexerMotor.set(Power.FORWARD);
     }
@@ -64,9 +60,5 @@ public class Intake {
 
     public void stopIndexer() {
         indexerMotor.set(Power.OFF);
-    }
-
-    public void runIndexer(double power) {
-        indexerMotor.set(power);
     }
 }
