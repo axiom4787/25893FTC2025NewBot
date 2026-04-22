@@ -100,7 +100,7 @@ public class Solo12Ball extends AutoOpMode {
                 .build();
 
         scoreToIntakeRow3 = follower.pathBuilder()
-                .addPath(new BezierCurve(Globals.Close.SCORE_POSE, m(new Pose(90, 35.5)), Globals.Artifacts.ROW_3_START))
+                .addPath(new BezierCurve(Globals.Close.SCORE_POSE, m(new Pose(80, 35.5)), Globals.Artifacts.ROW_3_START))
                 .setLinearHeadingInterpolation(Globals.Close.SCORE_POSE.getHeading(), Globals.Artifacts.INTAKE_HEADING)
                 .addPath(new BezierLine(Globals.Artifacts.ROW_3_START, Globals.Artifacts.ROW_3_END))
                 .setConstantHeadingInterpolation(Globals.Artifacts.INTAKE_HEADING)

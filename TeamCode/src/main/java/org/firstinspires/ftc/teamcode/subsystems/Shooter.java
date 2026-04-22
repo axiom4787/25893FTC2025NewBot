@@ -17,7 +17,7 @@ public class Shooter {
     private double targetVelocityTicks = 0;
 
     private enum State { OFF, IDLE, SHOOT, REVERSE };
-    private State state = State.IDLE;
+    private State state = State.OFF;
 
     public Shooter() {
         shooter = Hardware.getShooterMotor();
@@ -47,11 +47,15 @@ public class Shooter {
                 double dist = Math.hypot(distX, distY);
 
                 if (dist < 25) {
+                    // Super close to goal
                     setTargetVel(1100);
                 } else if (dist > 100) {
-                    setTargetVel(2000);
+                    // Far launch zone
+                    setTargetVel(1900);
                 } else {
-                    setTargetVel(Range.scale(dist, 25, 100, 1100, 1700));
+                    // Linear interpolation from distance to velocity
+                    // 25 -> 1100, 100 -> 1600
+                    setTargetVel(Range.scale(dist, 25, 100, 1100, 1600));
                 }
                 break;
             case IDLE:

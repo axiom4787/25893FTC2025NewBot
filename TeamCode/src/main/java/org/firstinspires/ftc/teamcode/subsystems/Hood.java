@@ -26,6 +26,9 @@ public class Hood {
     }
 
     public void update(Follower follower) {
+        if (!Globals.Zones.isNearLaunchZone()) return;
+        // Don't do anything if not close to a launch zone.
+
         double distX = Globals.Misc.GOAL_X - follower.getPose().getX();
         double distY = Globals.Misc.GOAL_Y - follower.getPose().getY();
         double distFromGoal = Math.hypot(distX, distY);
@@ -37,11 +40,18 @@ public class Hood {
         // 140in - back of far launch zone
 
         if (distFromGoal > 100) {
+            // Far launch zone
             setHoodAngle(Position.UP);
+        } else if (distFromGoal > 80) {
+            // Edge of close launch zone
+            setHoodAngle(0.75);
         } else if (distFromGoal < 25) {
+            // Super close to goal
             setHoodAngle(0.25);
         } else {
-            double pct = Range.scale(distFromGoal, 25, 100, 0.25, 1);
+            double pct = Range.scale(distFromGoal, 25, 80, 0.25, 0.75);
+            // Linear interpolation from distance to hood angle.
+            // 25 -> 0.25, 80 -> 0.75, etc
             setHoodAngle(pct);
         }
     }

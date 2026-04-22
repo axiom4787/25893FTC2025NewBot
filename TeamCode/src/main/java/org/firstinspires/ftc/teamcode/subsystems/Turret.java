@@ -19,6 +19,11 @@ public class Turret {
     }
 
     public void update(Follower follower) {
+        if (!Globals.Zones.isNearLaunchZone()) {
+            turretController.setPower(0);
+            return;
+        } // Center turret if not close to a launch zone.
+
         double robotHeading = follower.getHeading();
 
         double turretOffset = 3.0; // 3 inches behind center of robot
@@ -29,8 +34,8 @@ public class Turret {
         double diffY = Globals.Misc.GOAL_Y - turretY;
         double headingTowardsGoal = Math.atan2(diffY, diffX);
 
-        double targetTurretAngle = MathFunctions.normalizeAngle(headingTowardsGoal - robotHeading);
-        if (targetTurretAngle > Math.PI) targetTurretAngle -= 2 * Math.PI; // get angle in the range of [-pi, pi]
+        double targetTurretAngle = MathFunctions.normalizeAngleSigned(headingTowardsGoal - robotHeading);
+        // Get angle in the range of [-pi, pi]
 
         targetTurretAngle = Math.toDegrees(targetTurretAngle) * GEAR_RATIO; // convert to degrees and account for gear ratio
         targetTurretAngle = Range.clip(targetTurretAngle, -MAX_SERVO_ANGLE_RIGHT, MAX_SERVO_ANGLE_LEFT); // limit how far the turret can go

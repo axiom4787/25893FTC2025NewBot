@@ -5,6 +5,8 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.skeletonarmy.marrow.zones.Point;
+import com.skeletonarmy.marrow.zones.PolygonZone;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -12,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class Globals {
     private Globals() {}
 
-    private static final double FIELD_WIDTH = 141.5;
+    public static final double FIELD_WIDTH = 141.5;
 
     public static Pose autoEndPose = new Pose(FIELD_WIDTH/2, FIELD_WIDTH/2);
     public static InstantCommand saveAutoEndPose(Follower follower) {
@@ -61,6 +63,7 @@ public class Globals {
         Artifacts.ROW_3_END   = Artifacts.ROW_3_END.mirror();
         Artifacts.INTAKE_HEADING = Math.PI - Artifacts.INTAKE_HEADING;
 
+        Misc.FIELD_RELATIVE_DRIVE_HEADING_OFFSET = Math.PI - Misc.FIELD_RELATIVE_DRIVE_HEADING_OFFSET;
         Misc.GOAL_X = FIELD_WIDTH - Misc.GOAL_X;
         Misc.GOAL = Misc.GOAL.mirror();
         Misc.EDGE_INTAKE_Y = FIELD_WIDTH - Misc.EDGE_INTAKE_Y;
@@ -73,7 +76,7 @@ public class Globals {
     }
 
     public static class Close {
-        public static Pose START_POSE = new Pose(106.25, 133, Math.toRadians(0));
+        public static Pose START_POSE = new Pose(110, 132, Math.toRadians(0));
 //        public static Pose SCORE_POSE = new Pose(106.25, 100, Math.toRadians(53));
         public static Pose SCORE_POSE = new Pose(95, 90, 0);
         public static Pose END_POSE   = new Pose(120, 100);
@@ -114,15 +117,15 @@ public class Globals {
     }
 
     public static class Artifacts {
-        public static double Y_1 = 82.5;
-        public static double Y_2 = 59;
-        public static double Y_3 = 35.5;
+        public static double Y_1 = 82.5 - 1;
+        public static double Y_2 = 59 - 3.5;
+        public static double Y_3 = 35.5 - 5;
 
         public static double X_START = 101;
 
-        public static double X_1_END = 125;
-        public static double X_2_END = 131;
-        public static double X_3_END = 131;
+        public static double X_1_END = 125 + 2;
+        public static double X_2_END = 131 - 0;
+        public static double X_3_END = 131 - 0;
 
         public static double INTAKE_HEADING = Math.toRadians(0);
 
@@ -156,6 +159,8 @@ public class Globals {
     }
 
     public static class Misc {
+        public static double FIELD_RELATIVE_DRIVE_HEADING_OFFSET = Math.PI;
+
         public static double GOAL_X = 135;
         public static double GOAL_Y = 135;
         public static Pose GOAL = new Pose(GOAL_X, GOAL_Y);
@@ -170,5 +175,43 @@ public class Globals {
         public static Pose PARK = new Pose(38, 32.75, Math.toRadians(90));
 
         public static Pose CORNER_RELOCALIZE = new Pose(133.5, 8, Math.toRadians(90));
+    }
+
+    public static class Zones {
+        private static final PolygonZone robotZone = new PolygonZone(16, 16);
+
+        public static PolygonZone CLOSE_LAUNCH = new PolygonZone(
+                new Point(0,     141.5),
+                new Point(141.5, 141.5),
+                new Point(70.75, 70.75)
+        );
+
+        public static PolygonZone FAR_LAUNCH = new PolygonZone(
+                new Point(41.17, 0),
+                new Point(94.33, 0),
+                new Point(70.75, 23.58)
+        );
+
+        public static boolean isInLaunchZone() {
+            return robotZone.isInside(CLOSE_LAUNCH) || robotZone.isInside(FAR_LAUNCH);
+        }
+
+        public static boolean isFullyInLaunchZone() {
+            return robotZone.isFullyInside(CLOSE_LAUNCH) || robotZone.isFullyInside(FAR_LAUNCH);
+        }
+
+        public static boolean isNearLaunchZone() {
+            double tol = 8;
+            return distToLaunchZone() < tol;
+        }
+
+        public static void updateRobotLocation(Follower follower) {
+            robotZone.setPosition(follower.getPose().getX(), follower.getPose().getY());
+            robotZone.setRotation(follower.getHeading());
+        }
+
+        public static double distToLaunchZone() {
+            return Math.min(robotZone.distanceTo(CLOSE_LAUNCH), robotZone.distanceTo(FAR_LAUNCH));
+        }
     }
 }
