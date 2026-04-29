@@ -78,7 +78,7 @@ public class Hardware {
         turretServo.setCachingTolerance(0.02);
         AnalogInput encoder = hwMap.get(AnalogInput.class, "verySmartServo");
         CachedRTPAxon axon = new CachedRTPAxon(turretServo, encoder);
-        axon.setPIDFCoefficients(0.015, 0, 0, 0);
+        axon.setPIDFCoefficients(0.01, 0, 0, 0.03);
         axon.forceResetTotalRotation();
         return axon;
     }

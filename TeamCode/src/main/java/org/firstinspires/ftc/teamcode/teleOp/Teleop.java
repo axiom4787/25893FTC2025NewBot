@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.subsystems.Insight;
 import org.firstinspires.ftc.teamcode.util.LinearOpModeWithAlliance;
 import org.firstinspires.ftc.teamcode.util.Globals;
 import org.firstinspires.ftc.teamcode.util.Hardware;
@@ -25,8 +26,9 @@ import java.util.List;
 public class Teleop extends LinearOpModeWithAlliance {
     private Hood hood;
     private Intake intake;
-    private Vision vision;
+//    private Vision vision;
     private Shooter shooter;
+    private Insight insight;
     private Turret turret;
 
     private Follower follower;
@@ -38,6 +40,10 @@ public class Teleop extends LinearOpModeWithAlliance {
     private List<LynxModule> allHubs;
     private ElapsedTime loopTimer = new ElapsedTime();
 
+    private ElapsedTime visionTimer = new ElapsedTime();
+
+    private boolean shooterEnabled = true;
+
     @Override
     public void runOpMode() {
         follower = Constants.createFollower(hardwareMap);
@@ -46,11 +52,12 @@ public class Teleop extends LinearOpModeWithAlliance {
         Hardware.init(hardwareMap);
         hood = new Hood();
         intake = new Intake();
-        vision = new Vision(telemetry);
+//        vision = new Vision(telemetry);
+        insight = new Insight(telemetry);
         shooter = new Shooter();
         turret = new Turret();
 
-        vision.start();
+//        vision.start();
 
         allHubs = hardwareMap.getAll(LynxModule.class);
         allHubs.forEach(hub -> {
@@ -67,6 +74,7 @@ public class Teleop extends LinearOpModeWithAlliance {
         follower.startTeleOpDrive(false);
 
         loopTimer.reset();
+        visionTimer.reset();
 
         while (opModeIsActive()) {
             allHubs.forEach(LynxModule::clearBulkCache);
@@ -97,6 +105,8 @@ public class Teleop extends LinearOpModeWithAlliance {
                 follower.setPose(Globals.Misc.PARK.mirror());
             } // drive to the opponent's parking zone to relocalize
 
+            if (gamepad1.xWasPressed()) shooterEnabled = !shooterEnabled;
+
             boolean isNearLaunchZone = Globals.Zones.isNearLaunchZone();
 
             if (gamepad1.left_trigger_pressed) {
@@ -113,7 +123,9 @@ public class Teleop extends LinearOpModeWithAlliance {
                 intake.off();
             }
 
-            if (gamepad1.right_bumper) {
+            if (!shooterEnabled) {
+                shooter.off();
+            } else if (gamepad1.right_bumper) {
                 shooter.reverse();
             } else if (isNearLaunchZone) {
                 shooter.shoot();
@@ -125,11 +137,11 @@ public class Teleop extends LinearOpModeWithAlliance {
             turret.update(follower);
             hood.update(follower);
 
-//            // Todo: Make vision actually work
-//            if (Math.random() > 0.95) {
-//                vision.update();
-//                vision.updatePose(follower);
-//            }
+            if (visionTimer.milliseconds() > 1_000) {
+                visionTimer.reset();
+
+                insight.updateBotPose(follower);
+            }
 
             follower.setTeleOpDrive(-forward, right, -turn, false, Globals.Misc.FIELD_RELATIVE_DRIVE_HEADING_OFFSET);
 
@@ -140,33 +152,26 @@ public class Teleop extends LinearOpModeWithAlliance {
     }
 
     private void log() {
-        String sep = telemetry.getCaptionValueSeparator();
-
         double x = follower.getPose().getX();
         double y = follower.getPose().getY();
         double h = Math.toDegrees(follower.getHeading());
 
-        //telemetry.addData("Alliance", allianceColored());
-        telemetry.addLine(String.format("Alliance%s%s", sep, allianceColored()));
+        telemetry_addData("Alliance", getAlliance());
         telemetry.addData("Robot X | Y | H", "%4.2f | %4.2f | %4.2f", x, y, h);
-        //telemetry.addData("looptime (ms)", looptimeColored());
-        telemetry.addLine(String.format("looptime (ms)%s%s", sep, looptimeColored()));
+        telemetry_addData("looptime (ms)", getLoopTime());
         telemetry.addLine();
         telemetry.addData("Turret angle", turret.getCurrentAngle());
         telemetry.addData("Turret target", turret.getTargetAngle());
         telemetry.addData("Turret raw power", turret.turretController.getPower());
-        //telemetry.addData("Turret error", turretErrorColored());
-        telemetry.addLine(String.format("Turret error%s%s", sep, turretErrorColored()));
+        telemetry_addData("Turret error", getTurretError());
         telemetry.addLine();
         telemetry.addData("Shooter vel", shooter.getVelocity());
         telemetry.addData("Shooter target", shooter.getTargetVelocity());
-        //telemetry.addData("Shooter error", shooterErrorColored());
-        telemetry.addLine(String.format("Shooter error%s%s", sep, shooterErrorColored()));
+        telemetry_addData("Shooter error", getShooterError());
         telemetry.addLine();
         telemetry.addData("Hood angle", hood.getAngle());
         telemetry.addLine();
-        //telemetry.addData("Distance to launch zone", "%3.2f", distToLaunchColored());
-        telemetry.addLine(String.format("Distance to launch zone%s%s", sep, distToLaunchColored()));
+        telemetry_addData("Distance to launch zone", getDistToZone());
         telemetry.update();
     }
 
@@ -179,7 +184,7 @@ public class Teleop extends LinearOpModeWithAlliance {
         return ff + (1 - ff) * squared;
     }
 
-    private String allianceColored() {
+    private String getAlliance() {
         if (isRedAlliance()) {
             return color("Red", "ef5350");
         } else {
@@ -187,30 +192,41 @@ public class Teleop extends LinearOpModeWithAlliance {
         }
     }
 
-    private String distToLaunchColored() {
+    private String getDistToZone() {
         double dist = Globals.Zones.distToLaunchZone();
+
+        String color;
         if (dist < 1) {
-            return color(dist, "00ff00");
+            color = "00ff00";
         } else if (dist < 8) {
-            return color(dist, "ffff00");
+            color = "ffff00";
         } else {
-            return color(dist, "ff0000");
+            color = "ff0000";
         }
+
+        String str = String.format("%3.2f", dist);
+        return color(str, color);
     }
 
-    private String looptimeColored() {
+    private String getLoopTime() {
         double ms = loopTimer.milliseconds();
+
+        String color;
         if (ms < 5) {
-            return color(ms, "00ff00");
+            color = "00ff00";
         } else if (ms < 10) {
-            return color(ms, "ffff00");
+            color = "ffff00";
         } else {
-            return color(ms, "ff0000");
+            color = "ff0000";
         }
+
+        String str = String.format("%3.2f", loopTimer.milliseconds());
+        return color(str, color);
     }
 
-    private String shooterErrorColored() {
+    private String getShooterError() {
         double error = shooter.getError();
+
         if (error < -20) {
             return color(error, "0000ff");
         } else if (error <= 20) {
@@ -222,18 +238,30 @@ public class Teleop extends LinearOpModeWithAlliance {
         }
     }
 
-    private String turretErrorColored() {
+    private String getTurretError() {
         double error = turret.getTargetAngle() - turret.getCurrentAngle();
+
+        String color;
         if (error < 2) {
-            return color(error, "00ff00");
+            color = "00ff00";
         } else if (error < 5) {
-            return color(error, "ffff00");
+            color = "ffff00";
         } else {
-            return color(error, "ff0000");
+            color = "ff0000";
         }
+
+        String str = String.format("%3.2f", error);
+        return color(str, color);
     }
 
     private String color(Object thing, String color) {
         return "<font color='#" + color + "'>" + thing + "</font>";
+    }
+
+    // telemetry.addData does not approve of colors, so we use this
+    private void telemetry_addData(String caption, String value) {
+        String sep = telemetry.getCaptionValueSeparator();
+
+        telemetry.addLine(caption + sep + value);
     }
 }

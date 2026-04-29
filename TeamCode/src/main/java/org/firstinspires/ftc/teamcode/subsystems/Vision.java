@@ -18,6 +18,7 @@ import java.util.OptionalDouble;
 
 public class Vision {
     private final Limelight3A limeLight;
+    public double gottenHeading = 67;
 
     // Params
     double trustThreshold = 0.2; // meters; I want to have vision be within at least 10cm
@@ -25,6 +26,7 @@ public class Vision {
     Telemetry telemetry;
     public Vision(Telemetry telemetry) {
         limeLight = Hardware.getLimelight();
+        limeLight.setPollRateHz(100);
         this.telemetry = telemetry;
         start();
     }
@@ -52,11 +54,34 @@ public class Vision {
     }
 
     // Get the last updated robot pose
-    private Pose getRobotPose() {
+    public Pose getRobotPose(Follower follower) {
         double m_to_in = 39.37; // 1m = 39.37 in
-        return new Pose(botpose.getPosition().x * m_to_in + Globals.FIELD_WIDTH / 2,
-                botpose.getPosition().y * -m_to_in + Globals.FIELD_WIDTH / 2,
-                Math.toRadians(botpose.getOrientation().getYaw() - 90));
+        // LL:
+        //  negative y -> blue goal
+        //  negative x -> obelisk
+        //  positive y -> red goal
+        //  positive x -> far zone
+        //  0 deg      -> facing far zone
+        //  90 deg     -> facing red goal
+        //  heading increases ccw
+
+        // pedro:
+        //  0y    -> far zone
+        //  0x    -> blue goal
+        //  max y -> obelisk
+        //  max x -> red goal
+        //  0 deg -> facing red goal
+        //  heading increases ccw
+
+        double llX = botpose.getPosition().x;
+        double llY = botpose.getPosition().y;
+        double llH = botpose.getOrientation().getYaw();
+
+        double pedroX = llY *  m_to_in + Globals.FIELD_WIDTH / 2; // good?
+        double pedroY = llX * -m_to_in + Globals.FIELD_WIDTH / 2; // good?
+        double pedroH = Math.toRadians(llH - 90); // good?
+
+        return new Pose(pedroX, pedroY, follower.getHeading());
     }
 
     public void updatePose(Follower follower) {
@@ -69,18 +94,33 @@ public class Vision {
         Position testPose = botpose.getPosition();
         if (testPose.x == 0f && testPose.y == 0f) return;
 
-        Pose currentPose = follower.getPose();
-        Pose visionPose = getRobotPose();
+        Pose visionPose = getRobotPose(follower);
 //        telemetry.addData("LOOK AT ME, TOO!!! -->", visionPose);
 
-        // Mix X and Y
-        double mixedX = (currentPose.getX() * (1 - trust)) + (visionPose.getX() * trust);
-        double mixedY = (currentPose.getY() * (1 - trust)) + (visionPose.getY() * trust);
+        // Mix X, Y, and heading
+//        double mixedX = (currentPose.getX() * (1 - trust)) + (visionPose.getX() * trust);
+//        double mixedY = (currentPose.getY() * (1 - trust)) + (visionPose.getY() * trust);
+//        double mixedH = (currentPose.getHeading() * (1 - trust) + (visionPose.getHeading() * trust));
 
-        double h = follower.getHeading();
+        if (trust < 0.85) return;
+        // Do not set pose from vision if we don't trust the LL
 
-        follower.setX(mixedX);
-        follower.setY(mixedY);
-        follower.setHeading(visionPose.getHeading());
+        follower.setPose(visionPose);
+
+//        double mixedX = visionPose.getX();
+//        double mixedY = visionPose.getY();
+//
+////        follower.setX(mixedX);
+////        follower.setY(mixedY);
+//
+//        gottenHeading = follower.getHeading();
+//
+//        follower.setPose(follower.getPose().withX(mixedX).withY(mixedY));
+//
+//        follower.setHeading(gottenHeading);
+
+//        follower.setHeading(follower.getHeading());
+
+        // follower.setPose(new Pose(mixedX, mixedY, mixedH));
     }
 }

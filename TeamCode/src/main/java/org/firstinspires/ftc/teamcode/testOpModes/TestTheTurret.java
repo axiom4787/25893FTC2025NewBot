@@ -13,6 +13,8 @@ import org.firstinspires.ftc.teamcode.util.Hardware;
 @Disabled
 public class TestTheTurret extends LinearOpMode {
     CachedRTPAxon turret;
+    public static double kP = 0.01;
+    public static double kD = 0.00;
     public static double kF = 0.05;
     TelemetryManager t;
 
@@ -25,8 +27,7 @@ public class TestTheTurret extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            turret.setPIDFCoefficients(0, 0, 0, kF);
-            turret.setPower(kF);
+            turret.setPIDFCoefficients(kP, 0, kD, kF);
             t.addData("t", turret.getPower());
             t.update();
         }
