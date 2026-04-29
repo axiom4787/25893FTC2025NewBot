@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.teleOp;
 import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.control.PIDFController;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.MathFunctions;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -26,7 +27,6 @@ import java.util.List;
 public class Teleop extends LinearOpModeWithAlliance {
     private Hood hood;
     private Intake intake;
-//    private Vision vision;
     private Shooter shooter;
     private Insight insight;
     private Turret turret;
@@ -43,7 +43,6 @@ public class Teleop extends LinearOpModeWithAlliance {
     private ElapsedTime visionTimer = new ElapsedTime();
 
     private boolean shooterEnabled = true;
-
     @Override
     public void runOpMode() {
         follower = Constants.createFollower(hardwareMap);
@@ -52,12 +51,9 @@ public class Teleop extends LinearOpModeWithAlliance {
         Hardware.init(hardwareMap);
         hood = new Hood();
         intake = new Intake();
-//        vision = new Vision(telemetry);
-        insight = new Insight(telemetry);
+        insight = new Insight();
         shooter = new Shooter();
         turret = new Turret();
-
-//        vision.start();
 
         allHubs = hardwareMap.getAll(LynxModule.class);
         allHubs.forEach(hub -> {
@@ -137,10 +133,14 @@ public class Teleop extends LinearOpModeWithAlliance {
             turret.update(follower);
             hood.update(follower);
 
-            if (visionTimer.milliseconds() > 1_000) {
+            if (visionTimer.milliseconds() > 1_000 && follower.getVelocity().getMagnitude() < 4) {
                 visionTimer.reset();
 
                 insight.updateBotPose(follower);
+//                Pose newPose = insight.updateBotPose(follower);
+//                if (newPose.getX() != 0 || newPose.getY() != 0) {
+//                    follower.setPose(newPose);
+//                }
             }
 
             follower.setTeleOpDrive(-forward, right, -turn, false, Globals.Misc.FIELD_RELATIVE_DRIVE_HEADING_OFFSET);
@@ -170,6 +170,8 @@ public class Teleop extends LinearOpModeWithAlliance {
         telemetry_addData("Shooter error", getShooterError());
         telemetry.addLine();
         telemetry.addData("Hood angle", hood.getAngle());
+        telemetry.addLine();
+        telemetry.addData("Vision trust", insight.trust);
         telemetry.addLine();
         telemetry_addData("Distance to launch zone", getDistToZone());
         telemetry.update();

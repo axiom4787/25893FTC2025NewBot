@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
+import org.firstinspires.ftc.teamcode.subsystems.Insight;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
@@ -21,7 +22,7 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
 
     public Hood hood;
     public Intake intake;
-    public Vision vision;
+    public Insight insight;
     public Shooter shooter;
     public Turret turret;
 
@@ -29,6 +30,7 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
 
     private List<LynxModule> allHubs;
     private ElapsedTime loopTimer = new ElapsedTime();
+    private ElapsedTime visionTimer = new ElapsedTime();
 
     @Override
     public final void initialize() {
@@ -41,7 +43,7 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
 
         hood = new Hood();
         intake = new Intake();
-        vision = new Vision(telemetry);
+        insight = new Insight();
         shooter = new Shooter();
         turret = new Turret();
 
@@ -63,6 +65,8 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
             follower.setStartingPose(Globals.Close.START_POSE);
             buildPaths();
             scheduleAutoSequence();
+
+            visionTimer.reset();
         }
 
         super.run();
@@ -70,9 +74,11 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
         follower.update();
         Globals.Zones.updateRobotLocation(follower);
 
-        // Relocalize
-//        vision.update();
-//        vision.updatePose(follower);
+        if (visionTimer.milliseconds() > 1_000) {
+            visionTimer.reset();
+
+            insight.updateBotPose(follower);
+        }
 
         turret.update(follower);
         hood.update(follower);
