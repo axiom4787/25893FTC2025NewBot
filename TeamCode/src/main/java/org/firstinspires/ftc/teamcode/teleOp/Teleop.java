@@ -1,25 +1,26 @@
 package org.firstinspires.ftc.teamcode.teleOp;
 
+import static org.firstinspires.ftc.teamcode.util.Globals.Poses.*;
+import static org.firstinspires.ftc.teamcode.util.Globals.*;
+
 import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.control.PIDFController;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.MathFunctions;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.subsystems.Insight;
-import org.firstinspires.ftc.teamcode.util.LinearOpModeWithAlliance;
-import org.firstinspires.ftc.teamcode.util.Globals;
-import org.firstinspires.ftc.teamcode.util.Hardware;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.Vision;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.subsystems.Vision;
+import org.firstinspires.ftc.teamcode.util.Context;
+import org.firstinspires.ftc.teamcode.util.Globals;
+import org.firstinspires.ftc.teamcode.util.LinearOpModeWithAlliance;
 
 import java.util.List;
 
@@ -28,10 +29,10 @@ public class Teleop extends LinearOpModeWithAlliance {
     private Hood hood;
     private Intake intake;
     private Shooter shooter;
-    private Insight insight;
+    private Vision vision;
     private Turret turret;
 
-    private Follower follower;
+    public Follower follower;
 
     private final PIDFCoefficients headingPIDFCoefficients = Constants.followerConstants.coefficientsHeadingPIDF;
     private final PIDFController headingPIDFController = new PIDFController(headingPIDFCoefficients);
@@ -46,12 +47,12 @@ public class Teleop extends LinearOpModeWithAlliance {
     @Override
     public void runOpMode() {
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(Globals.autoEndPose);
+        follower.setStartingPose(Globals.getSavedPose());
 
-        Hardware.init(hardwareMap);
+        Context.init(this);
         hood = new Hood();
         intake = new Intake();
-        insight = new Insight();
+        vision = new Vision();
         shooter = new Shooter();
         turret = new Turret();
 
@@ -76,7 +77,7 @@ public class Teleop extends LinearOpModeWithAlliance {
             allHubs.forEach(LynxModule::clearBulkCache);
 
             follower.update();
-            Globals.Zones.updateRobotLocation(follower);
+            Globals.updateRobotLocation(follower.getPose());
 
             double forward = normalizeDrive(-gamepad1.left_stick_y);
             double right = normalizeDrive(gamepad1.left_stick_x);
@@ -92,18 +93,18 @@ public class Teleop extends LinearOpModeWithAlliance {
             }
 
             if (headingLock) {
-                double error = MathFunctions.normalizeAngleSigned(Globals.Misc.GATE_INTAKE.getHeading() - follower.getHeading());
+                double error = MathFunctions.normalizeAngleSigned(heading(GATE_INTAKE) - follower.getHeading());
                 headingPIDFController.updateError(error);
                 turn = -headingPIDFController.run();
             } // use a PID controller to auto turn to the correct heading for gate intaking
 
             if (gamepad1.y) {
-                follower.setPose(Globals.Misc.PARK.mirror());
+                follower.setPose(pose(PARK).mirror());
             } // drive to the opponent's parking zone to relocalize
 
             if (gamepad1.xWasPressed()) shooterEnabled = !shooterEnabled;
 
-            boolean isNearLaunchZone = Globals.Zones.isNearLaunchZone();
+            boolean isNearLaunchZone = Globals.isNearLaunchZone();
 
             if (gamepad1.left_trigger_pressed) {
                 intake.intake();
@@ -129,21 +130,13 @@ public class Teleop extends LinearOpModeWithAlliance {
                 shooter.idle();
             }
 
-            shooter.update(follower);
-            turret.update(follower);
-            hood.update(follower);
+            shooter.update();
+            turret.update();
+            hood.update();
 
-            if (visionTimer.milliseconds() > 1_000 && follower.getVelocity().getMagnitude() < 4) {
-                visionTimer.reset();
+            vision.update(); // Relocalize periodically
 
-                insight.updateBotPose(follower);
-//                Pose newPose = insight.updateBotPose(follower);
-//                if (newPose.getX() != 0 || newPose.getY() != 0) {
-//                    follower.setPose(newPose);
-//                }
-            }
-
-            follower.setTeleOpDrive(-forward, right, -turn, false, Globals.Misc.FIELD_RELATIVE_DRIVE_HEADING_OFFSET);
+            follower.setTeleOpDrive(-forward, right, -turn, false, heading(DRIVE_OFFSET));
 
             log();
 
@@ -171,7 +164,7 @@ public class Teleop extends LinearOpModeWithAlliance {
         telemetry.addLine();
         telemetry.addData("Hood angle", hood.getAngle());
         telemetry.addLine();
-        telemetry.addData("Vision trust", insight.trust);
+        telemetry.addData("Vision trust", vision.trust);
         telemetry.addLine();
         telemetry_addData("Distance to launch zone", getDistToZone());
         telemetry.update();
@@ -195,7 +188,7 @@ public class Teleop extends LinearOpModeWithAlliance {
     }
 
     private String getDistToZone() {
-        double dist = Globals.Zones.distToLaunchZone();
+        double dist = Globals.distToLaunchZone();
 
         String color;
         if (dist < 1) {

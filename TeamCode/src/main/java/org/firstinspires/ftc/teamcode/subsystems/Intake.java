@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 
-import org.firstinspires.ftc.teamcode.util.Hardware;
+import org.firstinspires.ftc.teamcode.util.Context;
 
 public class Intake {
     public static class Power {
@@ -11,54 +11,51 @@ public class Intake {
         public static final double REVERSE = -1.0;
     }
 
+    private enum State { OFF, IN, OUT, INDEX }
+
+    private State state = State.OFF;
+
     private final MotorEx intakeMotor, indexerMotor;
 
     public Intake() {
-        intakeMotor = Hardware.getIntakeMotor();
-        indexerMotor = Hardware.getIndexerMotor();
+        intakeMotor = Context.getIntakeMotor();
+        indexerMotor = Context.getIndexerMotor();
     }
 
     public void intake() {
-        runIntakeIn();
-        runIndexerOut();
+        state = State.IN;
     }
 
     public void index() {
-        runIntakeIn();
-        runIndexerIn();
+        state = State.INDEX;
     }
 
     public void reverse() {
-        runIntakeOut();
-        runIndexerOut();
+        state = State.OUT;
     }
 
     public void off() {
-        stopIntake();
-        stopIndexer();
+        state = State.OFF;
     }
 
-    public void runIntakeIn() {
-        intakeMotor.set(Power.FORWARD);
-    }
-
-    public void runIntakeOut() {
-        intakeMotor.set(Power.REVERSE);
-    }
-
-    public void stopIntake() {
-        intakeMotor.set(Power.OFF);
-    }
-    
-    public void runIndexerIn() {
-        indexerMotor.set(Power.FORWARD);
-    }
-
-    public void runIndexerOut() {
-        indexerMotor.set(Power.REVERSE);
-    }
-
-    public void stopIndexer() {
-        indexerMotor.set(Power.OFF);
+    private void update() {
+        switch (state) {
+            case IN:
+                intakeMotor.set(Power.FORWARD);
+                indexerMotor.set(Power.REVERSE);
+                break;
+            case OUT:
+                intakeMotor.set(Power.REVERSE);
+                indexerMotor.set(Power.REVERSE);
+                break;
+            case INDEX:
+                intakeMotor.set(Power.FORWARD);
+                indexerMotor.set(Power.FORWARD);
+                break;
+            case OFF:
+                intakeMotor.set(Power.OFF);
+                indexerMotor.set(Power.OFF);
+                break;
+        }
     }
 }

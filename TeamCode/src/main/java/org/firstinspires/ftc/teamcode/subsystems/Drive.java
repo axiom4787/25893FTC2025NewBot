@@ -1,26 +1,19 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.util.Hardware;
+import org.firstinspires.ftc.teamcode.util.Context;
 import org.firstinspires.ftc.teamcode.util.DriveMotors;
 
 public class Drive {
-    private final MotorEx frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
+    private final DriveMotors driveMotors;
     private final IMU imu;
 
     public Drive() {
-        DriveMotors driveMotors = Hardware.getDriveMotors();
+        driveMotors = Context.getDriveMotors();
 
-        frontLeftDrive = driveMotors.frontLeft;
-        frontRightDrive = driveMotors.frontRight;
-        backLeftDrive = driveMotors.backLeft;
-        backRightDrive = driveMotors.backRight;
-
-        imu = Hardware.getIMU();
+        imu = Context.getIMU();
     }
 
     public void driveRobotRelative(double forward, double right, double rotate) {
@@ -44,19 +37,19 @@ public class Drive {
         }
 
         // Send calculated power to wheels
-        frontLeftDrive.set(frontLeftPower);
-        frontRightDrive.set(frontRightPower);
-        backLeftDrive.set(backLeftPower);
-        backRightDrive.set(backRightPower);
+        driveMotors.frontLeft.set(frontLeftPower);
+        driveMotors.frontRight.set(frontRightPower);
+        driveMotors.backLeft.set(backLeftPower);
+        driveMotors.backRight.set(backRightPower);
     }
 
-    public void driveFieldRelative(double forward, double right, double rotate, Follower follower) {
+    public void driveFieldRelative(double forward, double right, double rotate) {
         // First, convert cartesian offset to polar coordinates
         double theta = Math.atan2(forward, right);
         double r = Math.hypot(right, forward);
 
         // Second, rotate angle by the angle the robot is pointing
-        theta = AngleUnit.normalizeRadians(theta - follower.getHeading());
+        theta = AngleUnit.normalizeRadians(theta - imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
 
         // Third, convert back to cartesian
         double newForward = r * Math.sin(theta);

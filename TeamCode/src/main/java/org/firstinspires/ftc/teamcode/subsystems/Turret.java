@@ -1,12 +1,15 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import com.pedropathing.follower.Follower;
+import static org.firstinspires.ftc.teamcode.util.Globals.Poses.*;
+import static org.firstinspires.ftc.teamcode.util.Globals.*;
+
+import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.MathFunctions;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.util.CachedRTPAxon;
+import org.firstinspires.ftc.teamcode.util.Context;
 import org.firstinspires.ftc.teamcode.util.Globals;
-import org.firstinspires.ftc.teamcode.util.Hardware;
 
 public class Turret {
     public final CachedRTPAxon turretController;
@@ -15,24 +18,28 @@ public class Turret {
     public static final double MAX_SERVO_ANGLE_LEFT  = GEAR_RATIO * 120;
 
     public Turret() {
-        turretController = Hardware.getTurretServo();
+        turretController = Context.getTurretServo();
     }
 
-    public void update(Follower follower) {
-        if (!Globals.Zones.isNearLaunchZone()) {
-            turretController.setPower(0);
+    public void update() {
+        if (!Globals.isNearLaunchZone()) {
+            turretController.setTargetRotation(0);
+            turretController.update();
             return;
         } // Center turret if not close to a launch zone.
 
-        double robotHeading = follower.getHeading();
+        Pose robotPose = Context.follower.getPose();
+
+        double robotHeading = robotPose.getHeading();
 
         double turretOffset = 3.0; // 3 inches behind center of robot
-        double turretX = follower.getPose().getX() - turretOffset * Math.cos(follower.getHeading());
-        double turretY = follower.getPose().getY() - turretOffset * Math.sin(follower.getHeading());
+        double turretX = robotPose.getX() - turretOffset * Math.cos(robotPose.getHeading());
+        double turretY = robotPose.getY() - turretOffset * Math.sin(robotPose.getHeading());
 
-        double diffX = Globals.Misc.GOAL_X - turretX;
-        double diffY = Globals.Misc.GOAL_Y - turretY;
+        double diffX = pose(GOAL).getX() - turretX;
+        double diffY = pose(GOAL).getY() - turretY;
         double headingTowardsGoal = Math.atan2(diffY, diffX);
+        // Get angle from center of turret to goal
 
         double targetTurretAngle = MathFunctions.normalizeAngleSigned(headingTowardsGoal - robotHeading);
         // Get angle in the range of [-pi, pi]

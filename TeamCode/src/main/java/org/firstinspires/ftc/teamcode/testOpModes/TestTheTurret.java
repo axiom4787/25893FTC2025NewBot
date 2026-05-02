@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.util.CachedRTPAxon;
-import org.firstinspires.ftc.teamcode.util.Hardware;
+import org.firstinspires.ftc.teamcode.util.Context;
 
 @TeleOp
 @Disabled
@@ -19,8 +19,8 @@ public class TestTheTurret extends LinearOpMode {
     TelemetryManager t;
 
     public void runOpMode() {
-        Hardware.init(hardwareMap);
-        turret = Hardware.getTurretServo();
+        Context.init(hardwareMap);
+        turret = Context.getTurretServo();
 
         t = PanelsTelemetry.INSTANCE.getTelemetry();
 

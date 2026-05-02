@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.util;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.follower.Follower;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -14,15 +16,28 @@ import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 
-@Configurable
-public class Hardware {
-    private static HardwareMap hwMap;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.teleOp.Teleop;
 
-    public static void init(HardwareMap hardwareMap) {
-        hwMap = hardwareMap;
+@Configurable
+public class Context {
+    public static HardwareMap hwMap;
+    public static Telemetry telemetry;
+    public static Follower follower;
+
+    public static void init(OpMode runningOpMode) {
+        hwMap = runningOpMode.hardwareMap;
+        telemetry = runningOpMode.telemetry;
+        if (runningOpMode instanceof Teleop) {
+            follower = ((Teleop) runningOpMode).follower;
+        } else if (runningOpMode instanceof AutoOpMode) {
+            follower = ((AutoOpMode) runningOpMode).follower;
+        } else {
+            throw new RuntimeException();
+        }
     }
 
-    private Hardware() {}
+    private Context() {}
 
     public static DriveMotors getDriveMotors() {
         return new DriveMotors(

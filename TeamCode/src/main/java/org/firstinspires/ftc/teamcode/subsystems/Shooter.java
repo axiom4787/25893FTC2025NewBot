@@ -3,24 +3,34 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
-import com.pedropathing.follower.Follower;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
 
+import org.firstinspires.ftc.teamcode.util.Context;
 import org.firstinspires.ftc.teamcode.util.Globals;
-import org.firstinspires.ftc.teamcode.util.Hardware;
 
 @Configurable
 public class Shooter {
     private final MotorEx shooter;
+    private final VoltageSensor voltageSensor;
+
+    private static final double VOLTAGE_WHEN_TUNED = 13.5;
 
     private double targetVelocityTicks = 0;
 
     private enum State { OFF, IDLE, SHOOT, REVERSE };
     private State state = State.OFF;
 
+    private ElapsedTime timer = new ElapsedTime();
+
     public Shooter() {
-        shooter = Hardware.getShooterMotor();
+        shooter = Context.getShooterMotor();
+        shooter.setFeedforwardCoefficients(0, 0);
+        shooter.setVeloCoefficients(0, 0, 0);
+
+        voltageSensor = Context.getVoltageSensor();
     }
 
     public void off() {
@@ -39,12 +49,13 @@ public class Shooter {
         state = State.REVERSE;
     }
 
-    public void update(Follower follower) {
+    public void update() {
         switch (state) {
             case SHOOT:
-                double distX = Globals.Misc.GOAL_X - follower.getPose().getX();
-                double distY = Globals.Misc.GOAL_Y - follower.getPose().getY();
-                double dist = Math.hypot(distX, distY);
+//                if (timer.milliseconds() < 10) break;
+//                timer.reset();
+
+                double dist = Globals.distToGoal();
 
                 if (dist < 25) {
                     // Super close to goal
@@ -77,16 +88,19 @@ public class Shooter {
         t.addData("Shooter velocity", getVelocity());
         t.addData("Shooter target", getTargetVelocity());
         t.addData("power", shooter.getRawPower());
+        t.addData("voltage", voltageSensor.getVoltage());
         t.update();
     }
 
     /**
      * Set the target velocity to {@code vel} rounded to the nearest 20
-     * @param vel - target velocity
+     * @param vel target velocity in ticks
      */
     private void setTargetVel(double vel) {
         targetVelocityTicks = Math.round(vel / 20f) * 20f;
         // Round target to nearest multiple of 20 ticks
+
+        // Todo: FF + PID with voltage compensation
 
         if (getError() == 0) {
             shooter.set(targetVelocityTicks / 2200f);

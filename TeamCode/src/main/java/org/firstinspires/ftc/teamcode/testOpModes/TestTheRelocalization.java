@@ -5,30 +5,29 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.subsystems.Vision;
-import org.firstinspires.ftc.teamcode.util.Hardware;
+import org.firstinspires.ftc.teamcode.util.Context;
 
 @TeleOp(name = "test vision pose")
 public class TestTheRelocalization extends LinearOpMode {
     @Override
     public void runOpMode() {
-        Hardware.init(hardwareMap);
+        Context.init(hardwareMap);
 
-        Vision vision = new Vision(telemetry);
+        Vision vision = new Vision();
 
         waitForStart();
 
         while (opModeIsActive()) {
-            vision.update();
-//            Pose visionPose = vision.getRobotPose();
+            Pose visionPose = vision.getPose();
 
-//            double x = visionPose.getX();
-//            double y = visionPose.getY();
-//            double h = visionPose.getHeading();
+            double x = visionPose.getX();
+            double y = visionPose.getY();
+            double h = visionPose.getHeading();
 
             telemetry.addLine("vision coords");
-//            telemetry.addData("vision x", x);
-//            telemetry.addData("vision y", y);
-//            telemetry.addData("vision h", h);
+            telemetry.addData("vision x", x);
+            telemetry.addData("vision y", y);
+            telemetry.addData("vision h", h);
             telemetry.update();
         }
     }

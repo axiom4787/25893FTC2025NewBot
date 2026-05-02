@@ -1,11 +1,11 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.util.Range;
 import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
+import org.firstinspires.ftc.teamcode.util.Context;
 import org.firstinspires.ftc.teamcode.util.Globals;
-import org.firstinspires.ftc.teamcode.util.Hardware;
+
 
 public class Hood {
     private static class PhysicalPosition {
@@ -22,16 +22,14 @@ public class Hood {
     private final ServoEx hoodActuator;
 
     public Hood() {
-        hoodActuator = Hardware.getHoodActuator();
+        hoodActuator = Context.getHoodActuator();
     }
 
-    public void update(Follower follower) {
-        if (!Globals.Zones.isNearLaunchZone()) return;
+    public void update() {
+        if (!Globals.isNearLaunchZone()) return;
         // Don't do anything if not close to a launch zone.
 
-        double distX = Globals.Misc.GOAL_X - follower.getPose().getX();
-        double distY = Globals.Misc.GOAL_Y - follower.getPose().getY();
-        double distFromGoal = Math.hypot(distX, distY);
+        double distFromGoal = Globals.distToGoal();
 
         // 20in  - up against goal
         // 60in  - mid close launch zone, max hood farther than here

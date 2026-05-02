@@ -1,14 +1,17 @@
 package org.firstinspires.ftc.teamcode.util;
 
+import static org.firstinspires.ftc.teamcode.util.Globals.Poses.*;
+import static org.firstinspires.ftc.teamcode.util.Globals.*;
+
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
-import org.firstinspires.ftc.teamcode.subsystems.Insight;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
@@ -22,7 +25,7 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
 
     public Hood hood;
     public Intake intake;
-    public Insight insight;
+    public Vision vision;
     public Shooter shooter;
     public Turret turret;
 
@@ -36,14 +39,14 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
     public final void initialize() {
         super.reset();
 
-        Hardware.init(hardwareMap);
+        Context.init(this);
         follower = Constants.createFollower(hardwareMap);
 
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
         hood = new Hood();
         intake = new Intake();
-        insight = new Insight();
+        vision = new Vision();
         shooter = new Shooter();
         turret = new Turret();
 
@@ -62,7 +65,7 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
             hasStarted = true;
 
             Globals.setAlliance(alliance);
-            follower.setStartingPose(Globals.Close.START_POSE);
+            follower.setStartingPose(pose(CLOSE_START));
             buildPaths();
             scheduleAutoSequence();
 
@@ -72,22 +75,23 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
         super.run();
 
         follower.update();
-        Globals.Zones.updateRobotLocation(follower);
+        Globals.updateRobotLocation(follower.getPose());
 
-        if (visionTimer.milliseconds() > 1_000) {
+        if (visionTimer.milliseconds() > 500) {
             visionTimer.reset();
 
-            insight.updateBotPose(follower);
+            Pose visionPose = vision.getPose();
+            if (visionPose != null) follower.setPose(visionPose);
         }
 
-        turret.update(follower);
-        hood.update(follower);
-        shooter.update(follower);
+        turret.update();
+        hood.update();
+        shooter.update();
 
-        panelsTelemetry.debug("X", follower.getPose().getX());
-        panelsTelemetry.debug("Y", follower.getPose().getY());
-        panelsTelemetry.debug("Heading", follower.getPose().getHeading());
-        panelsTelemetry.debug("looptime (ms)", loopTimer.milliseconds());
+        panelsTelemetry.addData("X", follower.getPose().getX());
+        panelsTelemetry.addData("Y", follower.getPose().getY());
+        panelsTelemetry.addData("Heading", follower.getPose().getHeading());
+        panelsTelemetry.addData("looptime (ms)", loopTimer.milliseconds());
         panelsTelemetry.update(telemetry);
 
         loopTimer.reset();
