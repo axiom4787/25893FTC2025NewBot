@@ -12,9 +12,9 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.seattlesolvers.solverslib.hardware.motors.CRServoEx;
-import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 import com.seattlesolvers.solverslib.hardware.motors.Motor;
 import com.seattlesolvers.solverslib.hardware.motors.MotorEx;
+import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.teleOp.Teleop;
@@ -24,8 +24,11 @@ public class Context {
     public static HardwareMap hwMap;
     public static Telemetry telemetry;
     public static Follower follower;
+    public static OpMode opMode;
 
     public static void init(OpMode runningOpMode) {
+        opMode = runningOpMode;
+
         hwMap = runningOpMode.hardwareMap;
         telemetry = runningOpMode.telemetry;
         if (runningOpMode instanceof Teleop) {
@@ -38,6 +41,11 @@ public class Context {
     }
 
     private Context() {}
+
+    public static ServoEx getBlockerServo() {
+        ServoEx blocker = new ServoEx(hwMap, "blocker");
+        return blocker;
+    }
 
     public static DriveMotors getDriveMotors() {
         return new DriveMotors(
