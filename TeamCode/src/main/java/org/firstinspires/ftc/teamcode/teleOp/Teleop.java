@@ -50,6 +50,9 @@ public class Teleop extends LinearOpModeWithAlliance {
     private ElapsedTime visionTimer2 = new ElapsedTime();
 
     private boolean shooterEnabled = true;
+
+    private final boolean useVisionInTeleop = true;
+
     @Override
     public void runOpMode() {
         follower = Constants.createFollower(hardwareMap);
@@ -65,7 +68,8 @@ public class Teleop extends LinearOpModeWithAlliance {
 
         allHubs = hardwareMap.getAll(LynxModule.class);
         allHubs.forEach(hub -> {
-            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+            if (useVisionInTeleop) hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+            if (!useVisionInTeleop) hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
             hub.setConstant(0x8000FF);
         });
 
@@ -83,7 +87,7 @@ public class Teleop extends LinearOpModeWithAlliance {
         follower.setStartingPose(new Pose(70.75, 70.75, 0));
 
         while (opModeIsActive()) {
-//            allHubs.forEach(LynxModule::clearBulkCache);
+            if (!useVisionInTeleop) allHubs.forEach(LynxModule::clearBulkCache);
 
             follower.update();
             Globals.updateRobotLocation(follower.getPose());
@@ -156,7 +160,7 @@ public class Teleop extends LinearOpModeWithAlliance {
             shooter.update();
             turret.update();
             hood.update();
-            vision.update();
+            if (useVisionInTeleop) vision.update();
 
             follower.setTeleOpDrive(-forward, right, -turn, false, heading(DRIVE_OFFSET));
 

@@ -17,8 +17,6 @@ public class Vision {
 
     private static final double trustThreshold = 0.2; // 0.2 meters
 
-    public double trust = 0.0;
-
     public ElapsedTime timer = new ElapsedTime();
 
     public Vision() {
@@ -29,12 +27,11 @@ public class Vision {
 
         timer.reset();
     }
-
     public Pose getPose() {
-        boolean isOdoMovingXY = Context.follower.getVelocity().getMagnitude() > 4;
+        boolean isOdoMovingXY = Context.follower.getVelocity().getMagnitude() > 1;
         double headingVel = MathFunctions.normalizeAngleSigned(Context.follower.getVelocity().getTheta());
-        boolean isOdoMovingHeading = Math.abs(headingVel) > 5;
-        boolean isOdoMoving = isOdoMovingXY || isOdoMovingHeading;
+        boolean isBusy = Context.follower.isBusy(); // Math.abs(headingVel) > 5;
+        boolean isOdoMoving = isOdoMovingXY || isBusy;
 
         if (isOdoMoving) return null;
 
@@ -55,12 +52,13 @@ public class Vision {
     }
 
     public void update() {
-        if (timer.milliseconds() > 500) {
-            timer.reset();
-
+        if (timer.milliseconds() > 450) {
             limelight.updateRobotOrientation(Math.toDegrees(
                     Context.follower.getHeading() + Math.PI / 2
             ));
+        }
+        if (timer.milliseconds() > 500) {
+            timer.reset();
 
             Pose visionPose = getPose();
             if (visionPose != null) Context.follower.setPose(visionPose);

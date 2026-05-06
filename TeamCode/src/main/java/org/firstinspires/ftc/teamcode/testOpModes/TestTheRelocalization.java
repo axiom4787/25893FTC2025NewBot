@@ -46,7 +46,6 @@ public class TestTheRelocalization extends LinearOpMode {
             telemetry.addData("vision x", x);
             telemetry.addData("vision y", y);
             telemetry.addData("vision h", h);
-            telemetry.addData("vision trust", vision.trust);
             telemetry.addData("odo", follower.getPose().toString());
             telemetry.update();
         }

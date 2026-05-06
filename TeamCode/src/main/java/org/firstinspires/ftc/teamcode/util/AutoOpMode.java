@@ -37,6 +37,8 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
     private List<LynxModule> allHubs;
     private ElapsedTime loopTimer = new ElapsedTime();
 
+    private final boolean useVisionInAuto = false;
+
     @Override
     public final void initialize() {
         super.reset();
@@ -53,18 +55,23 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
         turret = new Turret();
         lights = new Lights();
 
-        lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+        if (useVisionInAuto) lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.AQUA);
+        if (!useVisionInAuto) lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
 
         allHubs = hardwareMap.getAll(LynxModule.class);
         allHubs.forEach(hub -> {
-            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+            if (useVisionInAuto) {
+                hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+            } else {
+                hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+            }
             hub.setConstant(0x8000FF);
         });
     }
 
     @Override
     public final void run() {
-//        allHubs.forEach(LynxModule::clearBulkCache);
+        if (!useVisionInAuto) allHubs.forEach(LynxModule::clearBulkCache);
 
         if (!hasStarted) {
             hasStarted = true;
@@ -80,20 +87,20 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
         follower.update();
         Globals.updateRobotLocation(follower.getPose());
 
-        vision.update();
+        if (useVisionInAuto) vision.update();
 
-        shooter.off(); // force no shooter
+//        shooter.off(); // force no shooter
 
         turret.update();
         hood.update();
         shooter.update();
         intake.update();
 
+        panelsTelemetry.addData("isbusy", follower.isBusy());
         panelsTelemetry.addData("X", follower.getPose().getX());
         panelsTelemetry.addData("Y", follower.getPose().getY());
         panelsTelemetry.addData("Heading", follower.getPose().getHeading());
         panelsTelemetry.addData("looptime (ms)", loopTimer.milliseconds());
-        panelsTelemetry.addData("LL trust", vision.trust);
 
         panelsTelemetry.update(telemetry);
 

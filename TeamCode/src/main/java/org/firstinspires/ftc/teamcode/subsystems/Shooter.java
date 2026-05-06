@@ -79,8 +79,6 @@ public class Shooter {
             default:
                 shooter.set(0.0);
         }
-
-        log();
     }
 
     private void log() {
