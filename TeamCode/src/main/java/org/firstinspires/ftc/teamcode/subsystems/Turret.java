@@ -23,8 +23,7 @@ public class Turret {
 
     public void update() {
         if (!Globals.isNearLaunchZone()) {
-            turretController.setTargetRotation(0);
-            turretController.update();
+            turretController.setPower(0);
             return;
         } // Center turret if not close to a launch zone.
 

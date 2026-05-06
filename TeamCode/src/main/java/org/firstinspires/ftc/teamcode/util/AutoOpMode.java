@@ -8,11 +8,13 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Lights;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.subsystems.Vision;
@@ -28,19 +30,19 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
     public Vision vision;
     public Shooter shooter;
     public Turret turret;
+    public Lights lights;
 
     private boolean hasStarted = false;
 
     private List<LynxModule> allHubs;
     private ElapsedTime loopTimer = new ElapsedTime();
-    private ElapsedTime visionTimer = new ElapsedTime();
 
     @Override
     public final void initialize() {
         super.reset();
 
-        Context.init(this);
         follower = Constants.createFollower(hardwareMap);
+        Context.init(this);
 
         panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
@@ -49,27 +51,26 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
         vision = new Vision();
         shooter = new Shooter();
         turret = new Turret();
+        lights = new Lights();
 
         allHubs = hardwareMap.getAll(LynxModule.class);
         allHubs.forEach(hub -> {
-            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
             hub.setConstant(0x8000FF);
         });
     }
 
     @Override
     public final void run() {
-        allHubs.forEach(LynxModule::clearBulkCache);
+//        allHubs.forEach(LynxModule::clearBulkCache);
 
         if (!hasStarted) {
             hasStarted = true;
 
             Globals.setAlliance(alliance);
-            follower.setStartingPose(pose(CLOSE_START));
+            follower.setStartingPose(getStartPose());
             buildPaths();
             scheduleAutoSequence();
-
-            visionTimer.reset();
         }
 
         super.run();
@@ -77,21 +78,21 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
         follower.update();
         Globals.updateRobotLocation(follower.getPose());
 
-        if (visionTimer.milliseconds() > 500) {
-            visionTimer.reset();
+        vision.update();
 
-            Pose visionPose = vision.getPose();
-            if (visionPose != null) follower.setPose(visionPose);
-        }
+        shooter.off(); // force no shooter
 
         turret.update();
         hood.update();
         shooter.update();
+        intake.update();
 
         panelsTelemetry.addData("X", follower.getPose().getX());
         panelsTelemetry.addData("Y", follower.getPose().getY());
         panelsTelemetry.addData("Heading", follower.getPose().getHeading());
         panelsTelemetry.addData("looptime (ms)", loopTimer.milliseconds());
+        panelsTelemetry.addData("LL trust", vision.trust);
+
         panelsTelemetry.update(telemetry);
 
         loopTimer.reset();
@@ -108,4 +109,6 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
      * ex: schedule(new SequentialCommandGroup(...));
      */
     public abstract void scheduleAutoSequence();
+
+    public abstract Pose getStartPose();
 }

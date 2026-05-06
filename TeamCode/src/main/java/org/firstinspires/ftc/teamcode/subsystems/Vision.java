@@ -1,17 +1,19 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.MathFunctions;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.pedroPathing.PanelsDrawing;
 import org.firstinspires.ftc.teamcode.util.Context;
 import org.firstinspires.ftc.teamcode.util.Globals;
 
 public class Vision {
-    private final Limelight3A limelight;
+    public final Limelight3A limelight;
 
     private static final double trustThreshold = 0.2; // 0.2 meters
 
@@ -23,38 +25,48 @@ public class Vision {
         limelight = Context.getLimelight();
         limelight.setPollRateHz(100);
         limelight.pipelineSwitch(0);
+        limelight.start();
 
         timer.reset();
     }
 
     public Pose getPose() {
+        boolean isOdoMovingXY = Context.follower.getVelocity().getMagnitude() > 4;
+        double headingVel = MathFunctions.normalizeAngleSigned(Context.follower.getVelocity().getTheta());
+        boolean isOdoMovingHeading = Math.abs(headingVel) > 5;
+        boolean isOdoMoving = isOdoMovingXY || isOdoMovingHeading;
+
+        if (isOdoMoving) return null;
+
         LLResult result = limelight.getLatestResult();
 
         if (result == null || !result.isValid()) return null;
 
-        Pose3D botpose = result.getBotpose();
+        Pose3D botpose = result.getBotpose_MT2();
 
         if (botpose == null || botpose.getPosition().x == 0 || botpose.getPosition().y == 0) return null;
 
-        double[] sx = result.getStddevMt1();
-        trust = Math.max(0, 1.0 - (Math.max(sx[0], sx[1]) / trustThreshold));
+//        double[] sx = result.getStddevMt1();
+//        trust = Math.max(0, 1.0 - (Math.max(sx[0], sx[1]) / trustThreshold));
 
-        if (trust < 0.85) return null;
+//        if (trust < 0.50) return null;
 
         return convertLLtoPedro(botpose);
     }
 
     public void update() {
-        boolean isOdoMovingXY = Context.follower.getVelocity().getMagnitude() > 4;
-        boolean isOdoMovingHeading = Math.abs(Context.follower.getVelocity().getTheta()) > Math.toRadians(20);
-        boolean isOdoMoving = isOdoMovingXY || isOdoMovingHeading;
-
-        if (timer.milliseconds() > 500 && !isOdoMoving) {
+        if (timer.milliseconds() > 500) {
             timer.reset();
+
+            limelight.updateRobotOrientation(Math.toDegrees(
+                    Context.follower.getHeading() + Math.PI / 2
+            ));
 
             Pose visionPose = getPose();
             if (visionPose != null) Context.follower.setPose(visionPose);
         }
+
+        PanelsDrawing.drawDebug(Context.follower);
     }
 
     private Pose convertLLtoPedro(Pose3D llPose) {
@@ -67,6 +79,8 @@ public class Vision {
         double pedroX = llY *  m_to_in + Globals.FIELD_WIDTH / 2;
         double pedroY = llX * -m_to_in + Globals.FIELD_WIDTH / 2;
         double pedroH = llH - Math.PI / 2;
+
+        pedroH = Context.follower.getHeading();
 
         return new Pose(pedroX, pedroY, pedroH);
     }

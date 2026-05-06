@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.auto;
 import static org.firstinspires.ftc.teamcode.util.Globals.Poses.*;
 import static org.firstinspires.ftc.teamcode.util.Globals.*;
 
+import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -101,5 +102,10 @@ public class Far9Ball extends AutoOpMode {
                 new InstantCommand(shooter::off),
                 new InstantCommand(intake::off)
         ));
+    }
+
+    @Override
+    public Pose getStartPose() {
+        return pose(FAR_START);
     }
 }

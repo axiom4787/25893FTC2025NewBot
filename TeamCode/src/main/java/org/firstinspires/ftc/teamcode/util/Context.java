@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.util;
 
-import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
@@ -18,8 +17,8 @@ import com.seattlesolvers.solverslib.hardware.servos.ServoEx;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.teleOp.Teleop;
+import org.firstinspires.ftc.teamcode.testOpModes.TestTheRelocalization;
 
-@Configurable
 public class Context {
     public static HardwareMap hwMap;
     public static Telemetry telemetry;
@@ -35,8 +34,8 @@ public class Context {
             follower = ((Teleop) runningOpMode).follower;
         } else if (runningOpMode instanceof AutoOpMode) {
             follower = ((AutoOpMode) runningOpMode).follower;
-        } else {
-            throw new RuntimeException();
+        } else if (runningOpMode instanceof TestTheRelocalization) {
+            follower = ((TestTheRelocalization) runningOpMode).follower;
         }
     }
 

@@ -19,7 +19,7 @@ public class TestTheTurret extends LinearOpMode {
     TelemetryManager t;
 
     public void runOpMode() {
-        Context.init(hardwareMap);
+        Context.init(this);
         turret = Context.getTurretServo();
 
         t = PanelsTelemetry.INSTANCE.getTelemetry();

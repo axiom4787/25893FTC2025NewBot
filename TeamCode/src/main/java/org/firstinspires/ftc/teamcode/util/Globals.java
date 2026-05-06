@@ -52,8 +52,8 @@ public class Globals {
     }
 
     public enum Poses {
-        CLOSE_START(110, 132, 0),
-        CLOSE_SCORE(95, 90, 0),
+        CLOSE_START(109, 132, 0),
+        CLOSE_SCORE(95, 90, 55),
         CLOSE_END(120, 100, 0),
 
         FAR_START(84, 8.5, 90),
@@ -110,13 +110,13 @@ public class Globals {
 
         private static class Artifacts {
             // Todo: Don't artificially offset locations
-            public static double Y_1 = 82.5 - 1.0;
-            public static double Y_2 = 59.0 - 3.5;
-            public static double Y_3 = 35.5 - 5.0;
+            public static double Y_1 = 82.5;
+            public static double Y_2 = 58.5;
+            public static double Y_3 = 35.5;
 
             public static double X_START = 101;
 
-            public static double X_1_END = 125 + 2;
+            public static double X_1_END = 125;
             public static double X_2_END = 131;
             public static double X_3_END = 131;
 

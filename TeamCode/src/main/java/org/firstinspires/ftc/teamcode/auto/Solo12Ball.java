@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.auto;
 import static org.firstinspires.ftc.teamcode.util.Globals.Poses.*;
 import static org.firstinspires.ftc.teamcode.util.Globals.*;
 
+import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.InstantCommand;
@@ -92,7 +93,7 @@ public class Solo12Ball extends AutoOpMode {
         row2ToScore = follower.pathBuilder()
                 .addPath(line(pose(R2_END), pose(R2_START)))
                 .setConstantHeadingInterpolation(heading(INTAKE_ROW))
-                .addPath(line(pose(R2_END), pose(CLOSE_SCORE)))
+                .addPath(line(pose(R2_START), pose(CLOSE_SCORE)))
                 .setLinearHeadingInterpolation(heading(INTAKE_ROW), heading(CLOSE_SCORE))
                 .build();
 
@@ -112,5 +113,10 @@ public class Solo12Ball extends AutoOpMode {
                 .addPath(line(pose(CLOSE_SCORE), pose(CLOSE_END)))
                 .setLinearHeadingInterpolation(heading(CLOSE_SCORE), heading(CLOSE_END))
                 .build();
+    }
+
+    @Override
+    public Pose getStartPose() {
+        return pose(CLOSE_START);
     }
 }

@@ -3,11 +3,14 @@ package org.firstinspires.ftc.teamcode.teleOp;
 import static org.firstinspires.ftc.teamcode.util.Globals.Poses.*;
 import static org.firstinspires.ftc.teamcode.util.Globals.*;
 
+import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.control.PIDFController;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.MathFunctions;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -15,6 +18,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Hood;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Lights;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.subsystems.Vision;
@@ -31,6 +35,7 @@ public class Teleop extends LinearOpModeWithAlliance {
     private Shooter shooter;
     private Vision vision;
     private Turret turret;
+    private Lights lights;
 
     public Follower follower;
 
@@ -42,12 +47,13 @@ public class Teleop extends LinearOpModeWithAlliance {
     private ElapsedTime loopTimer = new ElapsedTime();
 
     private ElapsedTime visionTimer = new ElapsedTime();
+    private ElapsedTime visionTimer2 = new ElapsedTime();
 
     private boolean shooterEnabled = true;
     @Override
     public void runOpMode() {
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(Globals.getSavedPose());
+//        follower.setStartingPose(Globals.getSavedPose());
 
         Context.init(this);
         hood = new Hood();
@@ -55,10 +61,11 @@ public class Teleop extends LinearOpModeWithAlliance {
         vision = new Vision();
         shooter = new Shooter();
         turret = new Turret();
+        lights = new Lights();
 
         allHubs = hardwareMap.getAll(LynxModule.class);
         allHubs.forEach(hub -> {
-            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
             hub.setConstant(0x8000FF);
         });
 
@@ -73,8 +80,10 @@ public class Teleop extends LinearOpModeWithAlliance {
         loopTimer.reset();
         visionTimer.reset();
 
+        follower.setStartingPose(new Pose(70.75, 70.75, 0));
+
         while (opModeIsActive()) {
-            allHubs.forEach(LynxModule::clearBulkCache);
+//            allHubs.forEach(LynxModule::clearBulkCache);
 
             follower.update();
             Globals.updateRobotLocation(follower.getPose());
@@ -130,11 +139,24 @@ public class Teleop extends LinearOpModeWithAlliance {
                 shooter.idle();
             }
 
+            if (gamepad1.right_trigger_pressed && Globals.isInLaunchZone()) {
+                lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.WHITE);
+            } else if (gamepad1.left_trigger_pressed) {
+                lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.GOLD);
+            } else if (Globals.isInLaunchZone()) {
+                lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+            } else {
+                RevBlinkinLedDriver.BlinkinPattern allianceColor = isRedAlliance()
+                        ? RevBlinkinLedDriver.BlinkinPattern.RED
+                        : RevBlinkinLedDriver.BlinkinPattern.BLUE;
+                lights.setPattern(allianceColor);
+            }
+
+            intake.update();
             shooter.update();
             turret.update();
             hood.update();
-
-            vision.update(); // Relocalize periodically
+            vision.update();
 
             follower.setTeleOpDrive(-forward, right, -turn, false, heading(DRIVE_OFFSET));
 
@@ -151,22 +173,21 @@ public class Teleop extends LinearOpModeWithAlliance {
 
         telemetry_addData("Alliance", getAlliance());
         telemetry.addData("Robot X | Y | H", "%4.2f | %4.2f | %4.2f", x, y, h);
-        telemetry_addData("looptime (ms)", getLoopTime());
         telemetry.addLine();
         telemetry.addData("Turret angle", turret.getCurrentAngle());
         telemetry.addData("Turret target", turret.getTargetAngle());
         telemetry.addData("Turret raw power", turret.turretController.getPower());
-        telemetry_addData("Turret error", getTurretError());
+        telemetry.addData("Turret error", "%3.2f", turret.getTargetAngle() - turret.getCurrentAngle());
         telemetry.addLine();
         telemetry.addData("Shooter vel", shooter.getVelocity());
         telemetry.addData("Shooter target", shooter.getTargetVelocity());
-        telemetry_addData("Shooter error", getShooterError());
+        telemetry.addData("Shooter error", "%4.0f", shooter.getError());
         telemetry.addLine();
         telemetry.addData("Hood angle", hood.getAngle());
         telemetry.addLine();
-        telemetry.addData("Vision trust", vision.trust);
+        telemetry.addData("Distance to launch zone", "%3.2f", Globals.distToGoal());
         telemetry.addLine();
-        telemetry_addData("Distance to launch zone", getDistToZone());
+        telemetry_addData("looptime (ms)", getLoopTime());
         telemetry.update();
     }
 
@@ -187,65 +208,19 @@ public class Teleop extends LinearOpModeWithAlliance {
         }
     }
 
-    private String getDistToZone() {
-        double dist = Globals.distToLaunchZone();
-
-        String color;
-        if (dist < 1) {
-            color = "00ff00";
-        } else if (dist < 8) {
-            color = "ffff00";
-        } else {
-            color = "ff0000";
-        }
-
-        String str = String.format("%3.2f", dist);
-        return color(str, color);
-    }
-
     private String getLoopTime() {
         double ms = loopTimer.milliseconds();
 
         String color;
-        if (ms < 5) {
+        if (ms < 8) {
             color = "00ff00";
-        } else if (ms < 10) {
+        } else if (ms < 15) {
             color = "ffff00";
         } else {
-            color = "ff0000";
+            color = "ffffff";
         }
 
         String str = String.format("%3.2f", loopTimer.milliseconds());
-        return color(str, color);
-    }
-
-    private String getShooterError() {
-        double error = shooter.getError();
-
-        if (error < -20) {
-            return color(error, "0000ff");
-        } else if (error <= 20) {
-            return color(error, "00ff00");
-        } else if (error <= 60) {
-            return color(error, "ffff00");
-        } else {
-            return color(error, "ff0000");
-        }
-    }
-
-    private String getTurretError() {
-        double error = turret.getTargetAngle() - turret.getCurrentAngle();
-
-        String color;
-        if (error < 2) {
-            color = "00ff00";
-        } else if (error < 5) {
-            color = "ffff00";
-        } else {
-            color = "ff0000";
-        }
-
-        String str = String.format("%3.2f", error);
         return color(str, color);
     }
 

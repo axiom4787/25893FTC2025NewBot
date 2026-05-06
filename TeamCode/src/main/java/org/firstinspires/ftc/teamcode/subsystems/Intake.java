@@ -46,7 +46,7 @@ public class Intake {
         state = State.OFF;
     }
 
-    private void update() {
+    public void update() {
         switch (state) {
             case IN:
                 intakeMotor.set(Power.FORWARD);
