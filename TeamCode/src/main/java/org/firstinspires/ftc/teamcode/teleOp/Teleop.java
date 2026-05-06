@@ -108,21 +108,21 @@ public class Teleop extends LinearOpModeWithAlliance {
             } // use a PID controller to auto turn to the correct heading for gate intaking
 
             if (gamepad1.y) {
-                follower.setPose(pose(PARK).mirror());
-            } // drive to the opponent's parking zone to relocalize
+                follower.setHeading(Math.PI - heading(DRIVE_OFFSET));
+            } // wall slam to reset heading
 
             if (gamepad1.xWasPressed()) shooterEnabled = !shooterEnabled;
 
             boolean isNearLaunchZone = Globals.isNearLaunchZone();
 
-            if (gamepad1.left_trigger_pressed) {
-                intake.intake();
-            } else if (gamepad1.right_trigger_pressed) {
+            if (gamepad1.right_trigger_pressed) {
                 if (isNearLaunchZone) {
                     intake.index();
                 } else {
                     intake.off();
                 }
+            } else if (gamepad1.left_trigger_pressed) {
+                intake.intake();
             } else if (gamepad1.left_bumper) {
                 intake.reverse();
             } else {

@@ -53,6 +53,8 @@ public abstract class AutoOpMode extends CommandOpModeWithAlliance {
         turret = new Turret();
         lights = new Lights();
 
+        lights.setPattern(RevBlinkinLedDriver.BlinkinPattern.GREEN);
+
         allHubs = hardwareMap.getAll(LynxModule.class);
         allHubs.forEach(hub -> {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
