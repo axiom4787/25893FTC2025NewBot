@@ -13,8 +13,8 @@ public class Intake {
     }
 
     public static class BlockerPos {
-        public static final double OPEN = 1.0;
-        public static final double CLOSED = 0.0;
+        public static final double OPEN = 0.03;
+        public static final double CLOSED = 0.30;
     }
 
     private enum State { OFF, IN, OUT, INDEX }

@@ -25,6 +25,10 @@ public class Globals {
         Globals.alliance = alliance;
     }
 
+    public static Alliance getAlliance() {
+        return alliance;
+    }
+
     // Poses, mirroring, lines, curves
 
     public static Pose pose(Poses pose) {

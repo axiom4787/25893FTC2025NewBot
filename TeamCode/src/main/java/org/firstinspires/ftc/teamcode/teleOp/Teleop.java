@@ -76,6 +76,7 @@ public class Teleop extends LinearOpModeWithAlliance {
         telemetry.setMsTransmissionInterval(100);
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
 
+        alliance = Globals.getAlliance();
         selectAlliance();
         Globals.setAlliance(alliance);
 
