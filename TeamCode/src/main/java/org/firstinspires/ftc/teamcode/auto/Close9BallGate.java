@@ -12,6 +12,7 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.util.AutoOpMode;
+import org.firstinspires.ftc.teamcode.util.Globals;
 
 @Autonomous(name = "Close 9 ball gate | pre, r2, gate", group = "close", preselectTeleOp = "Teleop")
 public class Close9BallGate extends AutoOpMode {
@@ -25,19 +26,19 @@ public class Close9BallGate extends AutoOpMode {
                 new FollowPathCommand(follower, startToScore),
 
                 new InstantCommand(intake::index),
-                new WaitCommand(3000),
+                Globals.waitForShoot(),
                 new InstantCommand(shooter::idle),
                 new InstantCommand(intake::intake),
 
-                new FollowPathCommand(follower, scoreToIntakeRow2),
-                new InstantCommand(intake::off),
-                new InstantCommand(shooter::shoot),
-                new FollowPathCommand(follower, row2ToScore),
-
-                new InstantCommand(intake::index),
-                new WaitCommand(3000),
-                new InstantCommand(shooter::idle),
-                new InstantCommand(intake::intake),
+//                new FollowPathCommand(follower, scoreToIntakeRow2),
+//                new InstantCommand(intake::off),
+//                new InstantCommand(shooter::shoot),
+//                new FollowPathCommand(follower, row2ToScore),
+//
+//                new InstantCommand(intake::index),
+//                Globals.waitForShoot(),
+//                new InstantCommand(shooter::idle),
+//                new InstantCommand(intake::intake),
 
                 new FollowPathCommand(follower, scoreToGate),
                 new InstantCommand(intake::off),
@@ -45,7 +46,7 @@ public class Close9BallGate extends AutoOpMode {
                 new FollowPathCommand(follower, gateToScore),
 
                 new InstantCommand(intake::index),
-                new WaitCommand(3000),
+                Globals.waitForShoot(),
                 new InstantCommand(shooter::off),
                 new InstantCommand(intake::off),
 
@@ -69,17 +70,17 @@ public class Close9BallGate extends AutoOpMode {
         row2ToScore = follower.pathBuilder()
                 .addPath(line(pose(R2_END), pose(R2_START)))
                 .setConstantHeadingInterpolation(heading(INTAKE_ROW))
-                .addPath(line(pose(R2_END), pose(CLOSE_SCORE)))
+                .addPath(curve(pose(R2_START), pose(95, 59), pose(CLOSE_SCORE)))
                 .setLinearHeadingInterpolation(heading(INTAKE_ROW), heading(CLOSE_SCORE))
                 .build();
 
         scoreToGate = follower.pathBuilder()
-                .addPath(curve(pose(CLOSE_SCORE), pose(104, 73), pose(GATE_INTAKE)))
+                .addPath(curve(pose(CLOSE_SCORE), pose(95, 58.5), pose(GATE_INTAKE)))
                 .setLinearHeadingInterpolation(heading(CLOSE_SCORE), heading(GATE_INTAKE))
                 .build();
 
         gateToScore = follower.pathBuilder()
-                .addPath(curve(pose(GATE_INTAKE), pose(104, 73), pose(CLOSE_SCORE)))
+                .addPath(curve(pose(GATE_INTAKE), pose(95, 58.5), pose(CLOSE_SCORE)))
                 .setLinearHeadingInterpolation(heading(GATE_INTAKE), heading(CLOSE_SCORE))
                 .build();
 

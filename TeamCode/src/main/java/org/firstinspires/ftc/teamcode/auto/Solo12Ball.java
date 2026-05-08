@@ -12,6 +12,7 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.util.AutoOpMode;
+import org.firstinspires.ftc.teamcode.util.Globals;
 
 @Autonomous(name = "Close 12 ball | pre, r1, r2, r3", group = "close", preselectTeleOp = "Teleop")
 public class Solo12Ball extends AutoOpMode {
@@ -27,7 +28,7 @@ public class Solo12Ball extends AutoOpMode {
                 new FollowPathCommand(follower, startToScore),
 
                 new InstantCommand(intake::index),
-                new WaitCommand(3000),
+                Globals.waitForShoot(),
                 new InstantCommand(shooter::idle),
                 new InstantCommand(intake::intake),
 
@@ -37,7 +38,7 @@ public class Solo12Ball extends AutoOpMode {
                 new FollowPathCommand(follower, row1ToScore),
 
                 new InstantCommand(intake::index),
-                new WaitCommand(3000),
+                Globals.waitForShoot(),
                 new InstantCommand(shooter::idle),
                 new InstantCommand(intake::intake),
 
@@ -47,7 +48,7 @@ public class Solo12Ball extends AutoOpMode {
                 new FollowPathCommand(follower, row2ToScore),
 
                 new InstantCommand(intake::index),
-                new WaitCommand(3000),
+                Globals.waitForShoot(),
                 new InstantCommand(shooter::idle),
                 new InstantCommand(intake::intake),
 
@@ -57,7 +58,7 @@ public class Solo12Ball extends AutoOpMode {
                 new FollowPathCommand(follower, row3ToScore),
 
                 new InstantCommand(intake::index),
-                new WaitCommand(3000),
+                Globals.waitForShoot(),
                 new InstantCommand(shooter::off),
                 new InstantCommand(intake::off),
 
@@ -93,7 +94,7 @@ public class Solo12Ball extends AutoOpMode {
         row2ToScore = follower.pathBuilder()
                 .addPath(line(pose(R2_END), pose(R2_START)))
                 .setConstantHeadingInterpolation(heading(INTAKE_ROW))
-                .addPath(line(pose(R2_START), pose(CLOSE_SCORE)))
+                .addPath(curve(pose(R2_START), pose(95, 59), pose(CLOSE_SCORE)))
                 .setLinearHeadingInterpolation(heading(INTAKE_ROW), heading(CLOSE_SCORE))
                 .build();
 

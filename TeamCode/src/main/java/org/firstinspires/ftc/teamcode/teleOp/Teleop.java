@@ -47,7 +47,6 @@ public class Teleop extends LinearOpModeWithAlliance {
     private ElapsedTime loopTimer = new ElapsedTime();
 
     private ElapsedTime visionTimer = new ElapsedTime();
-    private ElapsedTime visionTimer2 = new ElapsedTime();
 
     private boolean shooterEnabled = true;
 
@@ -73,7 +72,7 @@ public class Teleop extends LinearOpModeWithAlliance {
             hub.setConstant(0x8000FF);
         });
 
-        telemetry.setMsTransmissionInterval(100);
+//        telemetry.setMsTransmissionInterval(100);
         telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
 
         alliance = Globals.getAlliance();

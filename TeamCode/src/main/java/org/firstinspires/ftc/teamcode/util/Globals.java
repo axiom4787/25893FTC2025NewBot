@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.util;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.seattlesolvers.solverslib.command.Command;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.skeletonarmy.marrow.zones.Point;
 import com.skeletonarmy.marrow.zones.PolygonZone;
 
@@ -56,8 +58,8 @@ public class Globals {
     }
 
     public enum Poses {
-        CLOSE_START(109, 132, 0),
-        CLOSE_SCORE(95, 90, 55),
+        CLOSE_START(108, 132, 0),
+        CLOSE_SCORE(95, 90, 0), // 55
         CLOSE_END(120, 100, 0),
 
         FAR_START(84, 8.5, 90),
@@ -75,7 +77,7 @@ public class Globals {
 
         DRIVE_OFFSET(180),
 
-        GATE_INTAKE(129.5, 59.5, 30),
+        GATE_INTAKE(129.5, 58.5, 30),
 
         CORNER_SPIKE(132, 9, 0),
 
@@ -113,7 +115,6 @@ public class Globals {
         }
 
         private static class Artifacts {
-            // Todo: Don't artificially offset locations
             public static double Y_1 = 82.5;
             public static double Y_2 = 58.5;
             public static double Y_3 = 35.5;
@@ -170,5 +171,9 @@ public class Globals {
 
     public static double distToGoal() {
         return pose(Poses.GOAL).distanceFrom(savedPose);
+    }
+
+    public static WaitCommand waitForShoot() {
+        return new WaitCommand(2000);
     }
 }
