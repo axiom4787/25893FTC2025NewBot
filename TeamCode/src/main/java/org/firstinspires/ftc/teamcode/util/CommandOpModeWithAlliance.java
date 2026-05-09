@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.util;
 
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 public abstract class CommandOpModeWithAlliance extends CommandOpMode {
     public Alliance alliance = Alliance.RED;
 
@@ -12,7 +14,8 @@ public abstract class CommandOpModeWithAlliance extends CommandOpMode {
     public void selectAlliance() {
         Object action = telemetry.addAction(this::changeWarningColor);
 
-//        telemetry.speak("twin read the DS");
+        telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
+        telemetry.speak("sonion read the DS");
 
         while (opModeInInit()) {
             if (gamepad1.left_bumper) alliance = Alliance.RED;

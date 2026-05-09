@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.util;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 public abstract class LinearOpModeWithAlliance extends LinearOpMode {
     public Alliance alliance = Alliance.RED;
 
@@ -12,6 +14,7 @@ public abstract class LinearOpModeWithAlliance extends LinearOpMode {
     public void selectAlliance() {
         Object action = telemetry.addAction(this::changeWarningColor);
 
+        telemetry.setDisplayFormat(Telemetry.DisplayFormat.HTML);
 //        telemetry.speak("twin read the DS");
 
         while (opModeInInit()) {

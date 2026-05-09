@@ -1,14 +1,13 @@
 package org.firstinspires.ftc.teamcode.auto;
 
+import static org.firstinspires.ftc.teamcode.util.Globals.Paths.*;
 import static org.firstinspires.ftc.teamcode.util.Globals.Poses.*;
-import static org.firstinspires.ftc.teamcode.util.Globals.*;
 
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
-import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
 import org.firstinspires.ftc.teamcode.util.AutoOpMode;

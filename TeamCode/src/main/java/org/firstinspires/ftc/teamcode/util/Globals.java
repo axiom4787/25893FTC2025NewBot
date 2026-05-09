@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.util;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.skeletonarmy.marrow.zones.Point;
 import com.skeletonarmy.marrow.zones.PolygonZone;
@@ -33,29 +32,32 @@ public class Globals {
 
     // Poses, mirroring, lines, curves
 
-    public static Pose pose(Poses pose) {
-        return pose(pose.x, pose.y);
+    public static class Paths {
+        public static Pose pose(Poses pose) {
+            return pose(pose.x, pose.y);
+        }
+
+        public static Pose pose(double x, double y) {
+            return alliance == Alliance.RED ? new Pose(x, y) : new Pose(FIELD_WIDTH - x, y);
+        }
+
+        public static double heading(Poses pose) {
+            return heading(pose.heading);
+        }
+
+        public static double heading(double heading) {
+            return alliance == Alliance.RED ? Math.toRadians(heading) : Math.toRadians(180 - heading);
+        }
+
+        public static BezierLine line(Pose start, Pose end) {
+            return new BezierLine(start, end);
+        }
+
+        public static BezierCurve curve(Pose... points) {
+            return new BezierCurve(points);
+        }
     }
 
-    public static Pose pose(double x, double y) {
-        return alliance == Alliance.RED ? new Pose(x, y) : new Pose(FIELD_WIDTH - x, y);
-    }
-
-    public static double heading(Poses pose) {
-        return heading(pose.heading);
-    }
-
-    public static double heading(double heading) {
-        return alliance == Alliance.RED ? Math.toRadians(heading) : Math.toRadians(180 - heading);
-    }
-
-    public static BezierLine line(Pose start, Pose end) {
-        return new BezierLine(start, end);
-    }
-
-    public static BezierCurve curve(Pose... points) {
-        return new BezierCurve(points);
-    }
 
     public enum Poses {
         CLOSE_START(108, 132, 0),
@@ -85,6 +87,10 @@ public class Globals {
 
         GOAL(135, 135), // Todo: Make goal pose 138, 138 when we retune for new hood
         ;
+
+        public static void idk() {
+
+        }
 
         public final double x;
         public final double y;
@@ -163,14 +169,13 @@ public class Globals {
     public static void updateRobotLocation(Pose robotPose) {
         Zones.robotZone.setPosition(robotPose.getX(), robotPose.getY());
         Zones.robotZone.setRotation(robotPose.getHeading());
-
         savedPose = robotPose;
     }
 
     // Misc util methods
 
     public static double distToGoal() {
-        return pose(Poses.GOAL).distanceFrom(savedPose);
+        return Paths.pose(Poses.GOAL).distanceFrom(savedPose);
     }
 
     public static WaitCommand waitForShoot() {

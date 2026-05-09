@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.auto;
 
 import static org.firstinspires.ftc.teamcode.util.Globals.Poses.*;
-import static org.firstinspires.ftc.teamcode.util.Globals.*;
+import static org.firstinspires.ftc.teamcode.util.Globals.Paths.*;
 
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;

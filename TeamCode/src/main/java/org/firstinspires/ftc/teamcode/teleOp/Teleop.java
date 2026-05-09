@@ -1,13 +1,11 @@
 package org.firstinspires.ftc.teamcode.teleOp;
 
+import static org.firstinspires.ftc.teamcode.util.Globals.Paths.*;
 import static org.firstinspires.ftc.teamcode.util.Globals.Poses.*;
-import static org.firstinspires.ftc.teamcode.util.Globals.*;
 
-import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.control.PIDFController;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.MathFunctions;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;

@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import static org.firstinspires.ftc.teamcode.util.Globals.Paths.*;
 import static org.firstinspires.ftc.teamcode.util.Globals.Poses.*;
-import static org.firstinspires.ftc.teamcode.util.Globals.*;
 
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.MathFunctions;
@@ -44,9 +44,10 @@ public class Turret {
         // Get angle in the range of [-pi, pi]
 
         targetTurretAngle = Math.toDegrees(targetTurretAngle) * GEAR_RATIO; // convert to degrees and account for gear ratio
-        targetTurretAngle = Range.clip(targetTurretAngle, -MAX_SERVO_ANGLE_RIGHT, MAX_SERVO_ANGLE_LEFT); // limit how far the turret can go
 
-        turretController.setTargetRotation(targetTurretAngle);
+        double angleClipped = Range.clip(targetTurretAngle, -MAX_SERVO_ANGLE_RIGHT, MAX_SERVO_ANGLE_LEFT); // limit how far the turret can go
+
+        turretController.setTargetRotation(angleClipped);
         turretController.update();
     }
 
@@ -59,10 +60,18 @@ public class Turret {
     }
 
     public double getCurrentAngle() {
-        return getCurrentServoAngle() * GEAR_RATIO;
+        return getCurrentServoAngle() / GEAR_RATIO;
     }
 
     public double getTargetAngle() {
-        return getTargetServoAngle() * GEAR_RATIO;
+        return getTargetServoAngle() / GEAR_RATIO;
+    }
+
+    public double getError() {
+        return getTargetAngle() - getCurrentAngle();
+    }
+
+    public double getAbsError() {
+        return Math.abs(getError());
     }
 }
