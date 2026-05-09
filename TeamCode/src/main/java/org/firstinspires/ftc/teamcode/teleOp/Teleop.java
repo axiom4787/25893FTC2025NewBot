@@ -55,7 +55,7 @@ public class Teleop extends LinearOpModeWithAlliance {
     @Override
     public void runOpMode() {
         follower = Constants.createFollower(hardwareMap);
-//        follower.setStartingPose(Globals.getSavedPose());
+        follower.setStartingPose(Globals.getSavedPose());
 
         Context.init(this);
         hood = new Hood();
@@ -84,7 +84,7 @@ public class Teleop extends LinearOpModeWithAlliance {
         loopTimer.reset();
         visionTimer.reset();
 
-        follower.setStartingPose(new Pose(70.75, 70.75, 0));
+//        follower.setStartingPose(new Pose(70.75, 70.75, 0));
 
         while (opModeIsActive()) {
             if (!useVisionInTeleop) allHubs.forEach(LynxModule::clearBulkCache);
